@@ -40,7 +40,7 @@
     "tap-min": "^1.0.0"
   },
   "dependencies": {
-    "boom": "^2.8.0",
+    "boom": "^3.0.0",
     "request": "^2.61.0"
   }
 }
