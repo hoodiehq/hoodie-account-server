@@ -41,6 +41,7 @@
     "tap-min": "^1.0.0"
   },
   "dependencies": {
+    "@gar/hapi-json-api": "^1.0.6",
     "boom": "^2.8.0",
     "request": "^2.61.0"
   }

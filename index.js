@@ -9,6 +9,15 @@ var plugins = [
 ]
 
 function hapiAccount (server, options, next) {
+  server.register({
+    register: require('@gar/hapi-json-api'),
+    options: {}
+  }, function (error) {
+    if (error) {
+      throw error
+    }
+  })
+
   server.register(plugins.map(function (plugin) {
     return {
       register: plugin,
