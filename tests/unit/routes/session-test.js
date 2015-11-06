@@ -1,5 +1,6 @@
 var nock = require('nock')
 var test = require('tap').test
+var lodash = require('lodash')
 
 var getServer = require('../utils/get-server')
 var couchdbErrorTests = require('../utils/couchdb-error-tests')
@@ -9,10 +10,18 @@ getServer(function (error, server) {
     return test.fail(error)
   }
 
+  var jsonAPIHeaders = {
+    accept: 'application/vnd.api+json',
+    'content-type': 'application/vnd.api+json'
+  }
+
+  var headersWithAuth = lodash.merge({authorization: 'Bearer 123'}, jsonAPIHeaders)
+
   test('PUT /session', function (group) {
     var postSessionRouteOptions = {
       method: 'PUT',
       url: '/session',
+      headers: jsonAPIHeaders,
       payload: {
         username: 'john@example.com',
         password: 'secret'
@@ -24,10 +33,7 @@ getServer(function (error, server) {
         password: postSessionRouteOptions.payload.password
       })
     }
-
     group.test('CouchDB User does no exist', function (t) {
-      t.plan(4)
-
       var couchdb = postSessionResponseMock()
         .reply(401, {
           error: 'unauthorized',
@@ -36,9 +42,11 @@ getServer(function (error, server) {
 
       server.inject(postSessionRouteOptions, function (response) {
         t.is(response.statusCode, 401, 'returns 401 status')
-        t.is(response.result.error, 'Unauthorized', '"Unauthorized" error')
-        t.is(response.result.message, 'Name or password is incorrect.', '"Name or password is incorrect." message')
+        t.is(response.result.errors.length, 1, 'returns one error')
+        t.is(response.result.errors[0].title, 'Unauthorized', 'returns "Unauthorized" error')
+        t.is(response.result.errors[0].detail, 'Name or password is incorrect.', 'returns "Name or password is incorrect." message')
         t.doesNotThrow(couchdb.done, 'CouchDB received request')
+        t.end()
       })
     })
 
@@ -67,17 +75,14 @@ getServer(function (error, server) {
     var getSessionRouteOptions = {
       method: 'GET',
       url: '/session',
-      headers: {
-        authorization: 'Bearer 123'
-      }
+      headers: headersWithAuth
     }
+
     function getSessionResponseMock () {
       return nock('http://localhost:5984').get('/_session')
     }
 
     group.test('CouchDB Session does no exist', function (t) {
-      t.plan(3)
-
       var couchdb = getSessionResponseMock()
         .reply(200, {
           userCtx: { name: null }
@@ -85,8 +90,10 @@ getServer(function (error, server) {
 
       server.inject(getSessionRouteOptions, function (response) {
         t.is(response.statusCode, 404, 'returns 404 status')
-        t.is(response.result.error, 'Not Found', '"Not Found" error')
+        t.is(response.result.errors.length, 1, 'returns one error')
+        t.is(response.result.errors[0].title, 'Not Found', 'returns "Not Found" error')
         t.doesNotThrow(couchdb.done, 'CouchDB received request')
+        t.end()
       })
     })
 
@@ -111,9 +118,7 @@ getServer(function (error, server) {
     var deleteSessionRouteOptions = {
       method: 'DELETE',
       url: '/session',
-      headers: {
-        authorization: 'Bearer 123'
-      }
+      headers: headersWithAuth
     }
     function deleteSessionResponseMock () {
       return nock('http://localhost:5984').delete('/_session')
@@ -121,8 +126,6 @@ getServer(function (error, server) {
 
     // CouchDB response is the same, no matter if session existed or not
     group.test('CouchDB responds', function (t) {
-      t.plan(2)
-
       var couchdb = deleteSessionResponseMock()
         .reply(200, {
           ok: true
@@ -133,6 +136,7 @@ getServer(function (error, server) {
       server.inject(deleteSessionRouteOptions, function (response) {
         t.is(response.statusCode, 204, 'returns 204 status')
         t.doesNotThrow(couchdb.done, 'CouchDB received request')
+        t.end()
       })
     })
 

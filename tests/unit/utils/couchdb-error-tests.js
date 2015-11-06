@@ -6,7 +6,8 @@ function couchdbErrorTests (server, group, couchdbMock, routeOptions) {
 
     server.inject(routeOptions, function (response) {
       t.is(response.statusCode, 500, 'returns 500 status')
-      t.is(response.result.error, 'Internal Server Error', '"Internal Server Error" error')
+      t.is(response.result.errors.length, 1, 'returns one error')
+      t.is(response.result.errors[0].title, 'Internal Server Error', 'returns "Internal Server Error" error')
       t.end()
     })
   })
@@ -19,7 +20,8 @@ function couchdbErrorTests (server, group, couchdbMock, routeOptions) {
 
     server.inject(routeOptions, function (response) {
       t.is(response.statusCode, 418, 'returns 418 status')
-      t.is(response.result.error, 'I\'m a teapot', '"I\'m a teapot" error')
+      t.is(response.result.errors.length, 1, 'returns one error')
+      t.is(response.result.errors[0].title, 'I\'m a teapot', 'returns "I\'m a teapot" error')
       t.end()
     })
   })
@@ -31,7 +33,8 @@ function couchdbErrorTests (server, group, couchdbMock, routeOptions) {
 
     server.inject(routeOptions, function (response) {
       t.is(response.statusCode, 500, 'returns 500 status')
-      t.is(response.result.error, 'Internal Server Error', '"Internal Server Error" error')
+      t.is(response.result.errors.length, 1, 'returns one error')
+      t.is(response.result.errors[0].title, 'Internal Server Error', 'returns "Internal Server Error" error')
       t.end()
     })
   })

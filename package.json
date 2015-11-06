@@ -32,6 +32,7 @@
     "coveralls": "^2.11.4",
     "gaze-cli": "^0.2.0",
     "hapi": "^11.0.2",
+    "lodash": "^3.10.1",
     "nock": "^2.10.0",
     "nyc": "^3.1.0",
     "semantic-release": "^6.0.3",

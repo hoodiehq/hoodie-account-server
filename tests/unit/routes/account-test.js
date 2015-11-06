@@ -1,5 +1,6 @@
 var nock = require('nock')
 var test = require('tap').test
+var lodash = require('lodash')
 
 var getServer = require('../utils/get-server')
 var couchdbErrorTests = require('../utils/couchdb-error-tests')
@@ -9,10 +10,18 @@ getServer(function (error, server) {
     return test.fail(error)
   }
 
+  var jsonAPIHeaders = {
+    accept: 'application/vnd.api+json',
+    'content-type': 'application/vnd.api+json'
+  }
+
+  var headersWithAuth = lodash.merge({authorization: 'Bearer 123'}, jsonAPIHeaders)
+
   test('PUT /session/account', function (group) {
     var putAccountRouteOptions = {
       method: 'PUT',
       url: '/session/account',
+      headers: jsonAPIHeaders,
       payload: {
         username: 'john',
         password: 'secret'
@@ -42,8 +51,6 @@ getServer(function (error, server) {
     }
 
     group.test('CouchDB User does not exist', function (t) {
-      t.plan(4)
-
       var couchdb = putAccountResponseMock()
         .reply(201, {
           ok: true,
@@ -52,16 +59,15 @@ getServer(function (error, server) {
         })
 
       server.inject(putAccountRouteOptions, function (response) {
-        t.is(response.statusCode, 201, 'returns 401 status')
+        t.is(response.statusCode, 201, 'returns 201 status')
         t.is(response.result.username, 'john', 'returns username')
         t.is(response.result.session.id, '123', 'returns session.id')
         t.doesNotThrow(couchdb.done, 'CouchDB received request')
+        t.end()
       })
     })
 
     group.test('CouchDB User already exist', function (t) {
-      t.plan(3)
-
       putAccountResponseMock()
         .reply(409, {
           error: 'conflict',
@@ -69,9 +75,11 @@ getServer(function (error, server) {
         })
 
       server.inject(putAccountRouteOptions, function (response) {
-        t.is(response.statusCode, 409, 'returns 401 status')
-        t.is(response.result.error, 'Conflict', 'returns "Conflict" error')
-        t.is(response.result.message, 'Document update conflict.', 'returns "Document update conflict." error message')
+        t.is(response.statusCode, 409, 'returns 409 status')
+        t.is(response.result.errors.length, 1, 'returns one error')
+        t.is(response.result.errors[0].title, 'Conflict', 'returns "Conflict" error')
+        t.is(response.result.errors[0].detail, 'Document update conflict.', 'returns "Document update conflict." error message')
+        t.end()
       })
     })
 
@@ -84,9 +92,7 @@ getServer(function (error, server) {
     var putAccountRouteOptions = {
       method: 'GET',
       url: '/session/account',
-      headers: {
-        authorization: 'Bearer 123'
-      }
+      headers: headersWithAuth
     }
     function getAccountResponseMock () {
       return nock('http://localhost:5984')
@@ -103,8 +109,6 @@ getServer(function (error, server) {
     }
 
     group.test('Session does exist', function (t) {
-      t.plan(2)
-
       getAccountResponseMock()
         // has session
         .reply(200, {
@@ -112,14 +116,13 @@ getServer(function (error, server) {
         })
 
       server.inject(putAccountRouteOptions, function (response) {
-        t.is(response.statusCode, 200, 'returns 401 status')
+        t.is(response.statusCode, 200, 'returns 200 status')
         t.is(response.result.username, 'john', 'returns username')
+        t.end()
       })
     })
 
     group.test('Session does not exist', function (t) {
-      t.plan(2)
-
       getAccountResponseMock()
         // has session
         .reply(200, {
@@ -127,8 +130,10 @@ getServer(function (error, server) {
         })
 
       server.inject(putAccountRouteOptions, function (response) {
-        t.is(response.statusCode, 404, 'returns 401 status')
-        t.is(response.result.error, 'Not Found', 'returns "Not Found" error')
+        t.is(response.statusCode, 404, 'returns 404 status')
+        t.is(response.result.errors.length, 1, 'returns one error')
+        t.is(response.result.errors[0].title, 'Not Found', 'returns "Not Found" error')
+        t.end()
       })
     })
 
@@ -141,9 +146,7 @@ getServer(function (error, server) {
     var deleteAccountRouteOptions = {
       method: 'DELETE',
       url: '/session/account',
-      headers: {
-        authorization: 'Bearer 123'
-      }
+      headers: headersWithAuth
     }
     function deleteAccountResponseMock () {
       return nock('http://localhost:5984')
@@ -158,8 +161,6 @@ getServer(function (error, server) {
     }
 
     group.test('Session does exist', function (t) {
-      t.plan(2)
-
       deleteAccountResponseMock()
         // has session
         .reply(200, {
@@ -169,12 +170,11 @@ getServer(function (error, server) {
       server.inject(deleteAccountRouteOptions, function (response) {
         t.is(response.statusCode, 204, 'returns 204 status')
         t.is(response.result, null, 'returns no body')
+        t.end()
       })
     })
 
     group.test('Session does not exist', function (t) {
-      t.plan(2)
-
       deleteAccountResponseMock()
         // has session
         .reply(200, {
@@ -183,7 +183,9 @@ getServer(function (error, server) {
 
       server.inject(deleteAccountRouteOptions, function (response) {
         t.is(response.statusCode, 404, 'returns 404 status')
-        t.is(response.result.error, 'Not Found', 'returns "Not Found" error')
+        t.is(response.result.errors.length, 1, 'returns one error')
+        t.is(response.result.errors[0].title, 'Not Found', 'returns "Not Found" error')
+        t.end()
       })
     })
 
