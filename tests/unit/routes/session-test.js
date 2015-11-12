@@ -4,6 +4,7 @@ var lodash = require('lodash')
 
 var getServer = require('../utils/get-server')
 var couchdbErrorTests = require('../utils/couchdb-error-tests')
+var authorizationHeaderNotAllowedErrorTest = require('../utils/authorization-header-not-allowed-error')
 
 getServer(function (error, server) {
   if (error) {
@@ -23,16 +24,24 @@ getServer(function (error, server) {
       url: '/session',
       headers: jsonAPIHeaders,
       payload: {
-        username: 'john@example.com',
-        password: 'secret'
+        data: {
+          type: 'session',
+          attributes: {
+            username: 'john',
+            password: 'secret'
+          }
+        }
       }
     }
     function postSessionResponseMock () {
       return nock('http://localhost:5984').post('/_session', {
-        name: postSessionRouteOptions.payload.username,
-        password: postSessionRouteOptions.payload.password
+        name: postSessionRouteOptions.payload.data.attributes.username,
+        password: postSessionRouteOptions.payload.data.attributes.password
       })
     }
+
+    authorizationHeaderNotAllowedErrorTest(server, group, postSessionRouteOptions, headersWithAuth)
+
     group.test('CouchDB User does no exist', function (t) {
       var couchdb = postSessionResponseMock()
         .reply(401, {
@@ -50,23 +59,33 @@ getServer(function (error, server) {
       })
     })
 
-    group.test('CouchDB User does exist', function (t) {
+    couchdbErrorTests(server, group, postSessionResponseMock, postSessionRouteOptions)
+
+    group.test('Session was created', function (t) {
       postSessionResponseMock().reply(201, {
         ok: true,
         name: null,
         roles: []
       }, {
-        'Set-Cookie': ['AuthSession=123; Version=1; Expires=Tue, 08-Sep-2015 00:35:52 GMT; Max-Age=1209600; Path=/; HttpOnly']
+        'Set-Cookie': ['AuthSession=sessionid123; Version=1; Expires=Tue, 08-Sep-2015 00:35:52 GMT; Max-Age=1209600; Path=/; HttpOnly']
+      }).get('/_users/org.couchdb.user:jane-doe').reply(201, {
+        _id: 'org.couchdb.user:jane-doe',
+        _rev: '1-123',
+        name: 'jane-doe',
+        roles: [],
+        accountId: 'abc1234',
+        profile: {}
       })
 
+      var sessionResponse = require('../fixtures/session-response.json')
+
       server.inject(postSessionRouteOptions, function (response) {
+        delete response.result.meta
         t.is(response.statusCode, 201, 'returns 201 status')
-        t.is(response.result.id, '123', 'returns session id')
+        t.deepEqual(response.result, sessionResponse, 'returns the right content')
         t.end()
       })
     })
-
-    couchdbErrorTests(server, group, postSessionResponseMock, postSessionRouteOptions)
 
     group.end()
   })
