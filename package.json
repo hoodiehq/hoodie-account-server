@@ -6,8 +6,8 @@
     "coverage": "nyc report --reporter=text-lcov | coveralls",
     "start": "bin/server",
     "pretest": "standard",
-    "test": "nyc tap --no-cov tests/unit/**/*-test.js",
-    "test:watch": "gaze 'clear && node tests | tap-min' 'tests/**/*.js' 'index.js' 'lib/**/*.js'",
+    "test": "nyc tap --no-cov tests",
+    "test:watch": "gaze 'bin/watch-and-test.sh $path' 'tests/**/*.js' 'index.js' 'lib/**/*.js'",
     "semantic-release": "semantic-release pre && npm publish && semantic-release post",
     "postsemantic-release": "npm run coverage"
   },
