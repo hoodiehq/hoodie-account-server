@@ -23,7 +23,7 @@ getServer(function (error, server) {
       url: '/session/account',
       headers: jsonAPIHeaders,
       payload: {
-        username: 'john',
+        username: 'pat',
         password: 'secret'
       }
     }
@@ -42,7 +42,7 @@ getServer(function (error, server) {
           'Set-Cookie': ['AuthSession=123; Version=1; Expires=Tue, 08-Sep-2015 00:35:52 GMT; Max-Age=1209600; Path=/; HttpOnly']
         })
         // send create _users doc request
-        .put('/_users/org.couchdb.user%3Ajohn', {
+        .put('/_users/org.couchdb.user%3Apat', {
           name: putAccountRouteOptions.payload.username,
           password: putAccountRouteOptions.payload.password,
           roles: [],
@@ -60,7 +60,7 @@ getServer(function (error, server) {
 
       server.inject(putAccountRouteOptions, function (response) {
         t.is(response.statusCode, 201, 'returns 201 status')
-        t.is(response.result.username, 'john', 'returns username')
+        t.is(response.result.username, 'pat', 'returns username')
         t.is(response.result.session.id, '123', 'returns session.id')
         t.doesNotThrow(couchdb.done, 'CouchDB received request')
         t.end()
@@ -97,11 +97,11 @@ getServer(function (error, server) {
     function getAccountResponseMock () {
       return nock('http://localhost:5984')
         // mock valid response to sign in request
-        .get('/_users/org.couchdb.user%3Ajohn')
+        .get('/_users/org.couchdb.user%3Apat')
         .reply(200, {
-          _id: 'org.couchdb.user:john',
+          _id: 'org.couchdb.user:pat',
           _rev: '1-abc',
-          name: 'john',
+          name: 'pat',
           type: 'user',
           roles: []
         })
@@ -112,12 +112,12 @@ getServer(function (error, server) {
       getAccountResponseMock()
         // has session
         .reply(200, {
-          userCtx: { name: 'john' }
+          userCtx: { name: 'pat' }
         })
 
       server.inject(putAccountRouteOptions, function (response) {
         t.is(response.statusCode, 200, 'returns 200 status')
-        t.is(response.result.username, 'john', 'returns username')
+        t.is(response.result.username, 'pat', 'returns username')
         t.end()
       })
     })
@@ -151,10 +151,10 @@ getServer(function (error, server) {
     function deleteAccountResponseMock () {
       return nock('http://localhost:5984')
         // mock valid response to sign in request
-        .delete('/_users/org.couchdb.user%3Ajohn')
+        .delete('/_users/org.couchdb.user%3Apat')
         .reply(202, {
           ok: true,
-          id: 'org.couchdb.user:john',
+          id: 'org.couchdb.user:pat',
           rev: '2-def'
         })
         .get('/_session')
@@ -164,7 +164,7 @@ getServer(function (error, server) {
       deleteAccountResponseMock()
         // has session
         .reply(200, {
-          userCtx: { name: 'john' }
+          userCtx: { name: 'pat' }
         })
 
       server.inject(deleteAccountRouteOptions, function (response) {

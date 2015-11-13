@@ -22,7 +22,7 @@
       "id": "abc1234",
       "type": "account",
       "attributes": {
-        "username": "jane-doe"
+        "username": "pat-doe"
       },
       "relationships": {
         "profile": {

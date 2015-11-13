@@ -27,7 +27,7 @@ getServer(function (error, server) {
         data: {
           type: 'session',
           attributes: {
-            username: 'jane-doe',
+            username: 'pat-doe',
             password: 'secret'
           }
         }
@@ -108,7 +108,7 @@ getServer(function (error, server) {
         data: {
           type: 'session',
           attributes: {
-            username: 'jane-doe',
+            username: 'pat-doe',
             password: 'secret'
           }
         }
@@ -120,7 +120,7 @@ getServer(function (error, server) {
 
       nock('http://localhost:5984')
         .post('/_session', {
-          name: 'jane-doe',
+          name: 'pat-doe',
           password: 'secret'
         })
         .reply(201, {
@@ -132,11 +132,11 @@ getServer(function (error, server) {
         }, {
           'Set-Cookie': ['AuthSession=sessionid123; Version=1; Expires=Tue, 08-Sep-2015 00:35:52 GMT; Max-Age=1209600; Path=/; HttpOnly']
         })
-        .get('/_users/org.couchdb.user:jane-doe')
+        .get('/_users/org.couchdb.user:pat-doe')
         .reply(200, {
           profile: {
-            fullName: 'Jane Doe',
-            email: 'jane@example.com'
+            fullName: 'pat Doe',
+            email: 'pat@example.com'
           }
         })
 
@@ -180,7 +180,7 @@ getServer(function (error, server) {
     group.test('CouchDB Session does exist', function (t) {
       getSessionResponseMock().reply(200, {
         userCtx: {
-          name: 'jane-doe',
+          name: 'pat-doe',
           roles: [
             'id:abc1234'
           ]
@@ -216,17 +216,17 @@ getServer(function (error, server) {
       .reply(200, {
         ok: true,
         userCtx: {
-          name: 'jane-doe',
+          name: 'pat-doe',
           roles: [
             'id:abc1234'
           ]
         }
       })
-      .get('/_users/org.couchdb.user:jane-doe')
+      .get('/_users/org.couchdb.user:pat-doe')
       .reply(200, {
         profile: {
-          fullName: 'Jane Doe',
-          email: 'jane@example.com'
+          fullName: 'pat Doe',
+          email: 'pat@example.com'
         }
       })
 
@@ -283,17 +283,17 @@ getServer(function (error, server) {
        .reply(200, {
          ok: true,
          userCtx: {
-           name: 'jane-doe',
+           name: 'pat-doe',
            roles: [
              'id:abc1234'
            ]
          }
        })
-      .get('/_users/org.couchdb.user:jane-doe')
+      .get('/_users/org.couchdb.user:pat-doe')
       .reply(200, {
         profile: {
-          fullName: 'Jane Doe',
-          email: 'jane@example.com'
+          fullName: 'pat Doe',
+          email: 'pat@example.com'
         }
       })
       .delete('/_session')
@@ -326,17 +326,17 @@ getServer(function (error, server) {
        .reply(200, {
          ok: true,
          userCtx: {
-           name: 'jane-doe',
+           name: 'pat-doe',
            roles: [
              'id:abc1234'
            ]
          }
        })
-      .get('/_users/org.couchdb.user:jane-doe')
+      .get('/_users/org.couchdb.user:pat-doe')
       .reply(200, {
         profile: {
-          fullName: 'Jane Doe',
-          email: 'jane@example.com'
+          fullName: 'pat Doe',
+          email: 'pat@example.com'
         }
       })
       .delete('/_session')

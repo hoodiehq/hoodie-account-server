@@ -22,7 +22,7 @@
       "id": "abc1234",
       "type": "account",
       "attributes": {
-        "username": "jane-doe"
+        "username": "pat-doe"
       },
       "relationships": {
         "profile": {
@@ -40,8 +40,8 @@
       "id": "abc1234-profile",
       "type": "profile",
       "attributes": {
-        "fullName": "Jane Doe",
-        "email": "jane@example.com"
+        "fullName": "pat Doe",
+        "email": "pat@example.com"
       }
     }
   ]
