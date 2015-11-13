@@ -16,7 +16,7 @@ getServer(function (error, server) {
     'content-type': 'application/vnd.api+json'
   }
 
-  var headersWithAuth = lodash.merge({authorization: 'Bearer 123'}, jsonAPIHeaders)
+  var headersWithAuth = lodash.merge({authorization: 'Bearer sessionid123'}, jsonAPIHeaders)
 
   test('PUT /session', function (group) {
     var postSessionRouteOptions = {
@@ -64,6 +64,8 @@ getServer(function (error, server) {
     group.test('Session was created', function (t) {
       postSessionResponseMock().reply(201, {
         ok: true,
+        // name is null when user is also a CouchDB admin, so we work around it
+        // https://issues.apache.org/jira/browse/COUCHDB-1356
         name: null,
         roles: [
           'id:abc1234'
@@ -81,6 +83,12 @@ getServer(function (error, server) {
         t.end()
       })
     })
+
+    group.test('Session was created, but user is CouchDB admin', function (t) {
+      // TODO: unclear how to handle CouchDB admins. A _users doc is optional for CouchDB admins.
+      t.end()
+    })
+
     couchdbErrorTests(server, group, postSessionResponseMock, postSessionRouteOptions)
 
     group.end()
@@ -171,12 +179,20 @@ getServer(function (error, server) {
 
     group.test('CouchDB Session does exist', function (t) {
       getSessionResponseMock().reply(200, {
-        userCtx: { name: 'jane@example.com' }
+        userCtx: {
+          name: 'jane-doe',
+          roles: [
+            'id:abc1234'
+          ]
+        }
       })
 
+      var sessionResponse = require('../fixtures/session-response.json')
+
       server.inject(getSessionRouteOptions, function (response) {
+        delete response.result.meta
         t.is(response.statusCode, 200, 'returns 200 status')
-        t.is(response.result.id, '123', 'returns session id')
+        t.deepEqual(response.result, sessionResponse, 'returns the right content')
         t.end()
       })
     })
@@ -184,6 +200,42 @@ getServer(function (error, server) {
     couchdbErrorTests(server, group, getSessionResponseMock, getSessionRouteOptions)
 
     group.end()
+  })
+
+  test('GET /session?include=account.profile', function (t) {
+    t.plan(1)
+
+    var postSessionRouteOptions = {
+      method: 'GET',
+      url: '/session?include=account.profile',
+      headers: headersWithAuth
+    }
+
+    nock('http://localhost:5984')
+      .get('/_session')
+      .reply(200, {
+        ok: true,
+        userCtx: {
+          name: 'jane-doe',
+          roles: [
+            'id:abc1234'
+          ]
+        }
+      })
+      .get('/_users/org.couchdb.user:jane-doe')
+      .reply(200, {
+        profile: {
+          fullName: 'Jane Doe',
+          email: 'jane@example.com'
+        }
+      })
+
+    var sessionWitProfileResponse = require('../fixtures/session-with-profile-response.json')
+
+    server.inject(postSessionRouteOptions, function (response) {
+      delete response.result.meta
+      t.deepEqual(response.result, sessionWitProfileResponse, 'returns the right content')
+    })
   })
 
   test('DELETE /session', function (group) {
@@ -215,5 +267,91 @@ getServer(function (error, server) {
     couchdbErrorTests(server, group, deleteSessionResponseMock, deleteSessionRouteOptions)
 
     group.end()
+  })
+
+  test('DELETE /session?include=account', function (t) {
+    t.plan(2)
+
+    var postSessionRouteOptions = {
+      method: 'DELETE',
+      url: '/session?include=account',
+      headers: headersWithAuth
+    }
+
+    nock('http://localhost:5984')
+       .get('/_session')
+       .reply(200, {
+         ok: true,
+         userCtx: {
+           name: 'jane-doe',
+           roles: [
+             'id:abc1234'
+           ]
+         }
+       })
+      .get('/_users/org.couchdb.user:jane-doe')
+      .reply(200, {
+        profile: {
+          fullName: 'Jane Doe',
+          email: 'jane@example.com'
+        }
+      })
+      .delete('/_session')
+      .reply(200, {
+        ok: true
+      }, {
+        'Set-Cookie': 'AuthSession=; Version=1; Path=/; HttpOnly'
+      })
+
+    var sessionResponse = require('../fixtures/session-response.json')
+
+    server.inject(postSessionRouteOptions, function (response) {
+      delete response.result.meta
+      t.is(response.statusCode, 200, 'returns 200 status')
+      t.deepEqual(response.result, sessionResponse, 'returns the right content')
+    })
+  })
+
+  test('DELETE /session?include=account.profile', function (t) {
+    t.plan(2)
+
+    var postSessionRouteOptions = {
+      method: 'DELETE',
+      url: '/session?include=account.profile',
+      headers: headersWithAuth
+    }
+
+    nock('http://localhost:5984')
+       .get('/_session')
+       .reply(200, {
+         ok: true,
+         userCtx: {
+           name: 'jane-doe',
+           roles: [
+             'id:abc1234'
+           ]
+         }
+       })
+      .get('/_users/org.couchdb.user:jane-doe')
+      .reply(200, {
+        profile: {
+          fullName: 'Jane Doe',
+          email: 'jane@example.com'
+        }
+      })
+      .delete('/_session')
+      .reply(200, {
+        ok: true
+      }, {
+        'Set-Cookie': 'AuthSession=; Version=1; Path=/; HttpOnly'
+      })
+
+    var sessionWitProfileResponse = require('../fixtures/session-with-profile-response.json')
+
+    server.inject(postSessionRouteOptions, function (response) {
+      delete response.result.meta
+      t.is(response.statusCode, 200, 'returns 200 status')
+      t.deepEqual(response.result, sessionWitProfileResponse, 'returns the right content')
+    })
   })
 })
