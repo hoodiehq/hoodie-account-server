@@ -27,7 +27,7 @@ getServer(function (error, server) {
         data: {
           type: 'session',
           attributes: {
-            username: 'john',
+            username: 'jane-doe',
             password: 'secret'
           }
         }
@@ -42,7 +42,7 @@ getServer(function (error, server) {
 
     authorizationHeaderNotAllowedErrorTest(server, group, postSessionRouteOptions, headersWithAuth)
 
-    group.test('CouchDB User does no exist', function (t) {
+    group.test('Invalid credentials', function (t) {
       var couchdb = postSessionResponseMock()
         .reply(401, {
           error: 'unauthorized',
@@ -50,11 +50,11 @@ getServer(function (error, server) {
         })
 
       server.inject(postSessionRouteOptions, function (response) {
+        t.doesNotThrow(couchdb.done, 'CouchDB received request')
         t.is(response.statusCode, 401, 'returns 401 status')
         t.is(response.result.errors.length, 1, 'returns one error')
         t.is(response.result.errors[0].title, 'Unauthorized', 'returns "Unauthorized" error')
         t.is(response.result.errors[0].detail, 'Name or password is incorrect.', 'returns "Name or password is incorrect." message')
-        t.doesNotThrow(couchdb.done, 'CouchDB received request')
         t.end()
       })
     })
@@ -65,16 +65,11 @@ getServer(function (error, server) {
       postSessionResponseMock().reply(201, {
         ok: true,
         name: null,
-        roles: []
+        roles: [
+          'id:abc1234'
+        ]
       }, {
         'Set-Cookie': ['AuthSession=sessionid123; Version=1; Expires=Tue, 08-Sep-2015 00:35:52 GMT; Max-Age=1209600; Path=/; HttpOnly']
-      }).get('/_users/org.couchdb.user:jane-doe').reply(201, {
-        _id: 'org.couchdb.user:jane-doe',
-        _rev: '1-123',
-        name: 'jane-doe',
-        roles: [],
-        accountId: 'abc1234',
-        profile: {}
       })
 
       var sessionResponse = require('../fixtures/session-response.json')
@@ -84,6 +79,64 @@ getServer(function (error, server) {
         t.is(response.statusCode, 201, 'returns 201 status')
         t.deepEqual(response.result, sessionResponse, 'returns the right content')
         t.end()
+      })
+    })
+    couchdbErrorTests(server, group, postSessionResponseMock, postSessionRouteOptions)
+
+    group.end()
+  })
+
+  // > Because compound documents require full linkage, intermediate
+  //   resources in a multi-part path must be returned along with the leaf
+  //   nodes. For example, a response to a request for comments.author should
+  //   include comments as well as the author of each of those comments.
+  // — http://jsonapi.org/format/#fetching-includes
+  test('PUT /session?include=account.profile', function (group) {
+    var postSessionRouteOptions = {
+      method: 'PUT',
+      url: '/session?include=account.profile',
+      headers: jsonAPIHeaders,
+      payload: {
+        data: {
+          type: 'session',
+          attributes: {
+            username: 'jane-doe',
+            password: 'secret'
+          }
+        }
+      }
+    }
+
+    group.test('Session was created', function (t) {
+      t.plan(1)
+
+      nock('http://localhost:5984')
+        .post('/_session', {
+          name: 'jane-doe',
+          password: 'secret'
+        })
+        .reply(201, {
+          ok: true,
+          name: null,
+          roles: [
+            'id:abc1234'
+          ]
+        }, {
+          'Set-Cookie': ['AuthSession=sessionid123; Version=1; Expires=Tue, 08-Sep-2015 00:35:52 GMT; Max-Age=1209600; Path=/; HttpOnly']
+        })
+        .get('/_users/org.couchdb.user:jane-doe')
+        .reply(200, {
+          profile: {
+            fullName: 'Jane Doe',
+            email: 'jane@example.com'
+          }
+        })
+
+      var sessionWitProfileResponse = require('../fixtures/session-with-profile-response.json')
+
+      server.inject(postSessionRouteOptions, function (response) {
+        delete response.result.meta
+        t.deepEqual(response.result, sessionWitProfileResponse, 'returns the right content')
       })
     })
 
@@ -118,7 +171,7 @@ getServer(function (error, server) {
 
     group.test('CouchDB Session does exist', function (t) {
       getSessionResponseMock().reply(200, {
-        userCtx: { name: 'john@example.com' }
+        userCtx: { name: 'jane@example.com' }
       })
 
       server.inject(getSessionRouteOptions, function (response) {
