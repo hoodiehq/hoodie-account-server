@@ -2,9 +2,9 @@ var nock = require('nock')
 var test = require('tap').test
 var lodash = require('lodash')
 
-var getServer = require('../utils/get-server')
-var couchdbErrorTests = require('../utils/couchdb-error-tests')
-var authorizationHeaderNotAllowedErrorTest = require('../utils/authorization-header-not-allowed-error')
+var getServer = require('./utils/get-server')
+var couchdbErrorTests = require('./utils/couchdb-error-tests')
+var authorizationHeaderNotAllowedErrorTest = require('./utils/authorization-header-not-allowed-error')
 
 getServer(function (error, server) {
   if (error) {
@@ -74,7 +74,7 @@ getServer(function (error, server) {
         'Set-Cookie': ['AuthSession=sessionid123; Version=1; Expires=Tue, 08-Sep-2015 00:35:52 GMT; Max-Age=1209600; Path=/; HttpOnly']
       })
 
-      var sessionResponse = require('../fixtures/session-response.json')
+      var sessionResponse = require('./fixtures/session-response.json')
 
       server.inject(postSessionRouteOptions, function (response) {
         delete response.result.meta
@@ -140,7 +140,7 @@ getServer(function (error, server) {
           }
         })
 
-      var sessionWitProfileResponse = require('../fixtures/session-with-profile-response.json')
+      var sessionWitProfileResponse = require('./fixtures/session-with-profile-response.json')
 
       server.inject(postSessionRouteOptions, function (response) {
         delete response.result.meta
@@ -198,7 +198,7 @@ getServer(function (error, server) {
         }
       })
 
-      var sessionResponse = require('../fixtures/session-response.json')
+      var sessionResponse = require('./fixtures/session-response.json')
 
       server.inject(getSessionRouteOptions, function (response) {
         delete response.result.meta
@@ -241,7 +241,7 @@ getServer(function (error, server) {
         }
       })
 
-    var sessionWitProfileResponse = require('../fixtures/session-with-profile-response.json')
+    var sessionWitProfileResponse = require('./fixtures/session-with-profile-response.json')
 
     server.inject(getSessionRouteOptions, function (response) {
       delete response.result.meta
@@ -328,7 +328,7 @@ getServer(function (error, server) {
         'Set-Cookie': 'AuthSession=; Version=1; Path=/; HttpOnly'
       })
 
-    var sessionResponse = require('../fixtures/session-response.json')
+    var sessionResponse = require('./fixtures/session-response.json')
 
     server.inject(postSessionRouteOptions, function (response) {
       delete response.result.meta
@@ -371,7 +371,7 @@ getServer(function (error, server) {
         'Set-Cookie': 'AuthSession=; Version=1; Path=/; HttpOnly'
       })
 
-    var sessionWitProfileResponse = require('../fixtures/session-with-profile-response.json')
+    var sessionWitProfileResponse = require('./fixtures/session-with-profile-response.json')
 
     server.inject(postSessionRouteOptions, function (response) {
       delete response.result.meta

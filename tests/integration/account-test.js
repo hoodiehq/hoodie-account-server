@@ -2,8 +2,8 @@ var nock = require('nock')
 var test = require('tap').test
 var lodash = require('lodash')
 
-var getServer = require('../utils/get-server')
-var couchdbErrorTests = require('../utils/couchdb-error-tests')
+var getServer = require('./utils/get-server')
+var couchdbErrorTests = require('./utils/couchdb-error-tests')
 
 getServer(function (error, server) {
   if (error) {
