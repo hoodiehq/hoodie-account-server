@@ -12,7 +12,7 @@ var validations = require('../utils/validations')
 function sessionRoutes (server, options, next) {
   var couchUrl = options.couchdb || options.adapter.location
   var prefix = options.prefix || ''
-  var session = getApi({ url: couchUrl }).session
+  var sessions = getApi({ url: couchUrl }).sessions
   var serialise = serialiseSession.bind(null, {
     baseUrl: server.info.uri + prefix
   })
@@ -32,7 +32,7 @@ function sessionRoutes (server, options, next) {
       var password = request.payload.data.attributes.password
       var query = request.query
 
-      session.add({
+      sessions.add({
         username: username,
         password: password,
         include: query.include
@@ -61,7 +61,7 @@ function sessionRoutes (server, options, next) {
     handler: function (request, reply) {
       var id = toBearerToken(request)
 
-      session.find(id, {
+      sessions.find(id, {
         include: request.query.include
       })
 
@@ -86,7 +86,7 @@ function sessionRoutes (server, options, next) {
     handler: function (request, reply) {
       var id = toBearerToken(request)
 
-      session.remove(id, {
+      sessions.remove(id, {
         include: request.query.include
       })
 

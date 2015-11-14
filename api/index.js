@@ -10,7 +10,7 @@ function accountApi (options) {
   var state = _.clone(options)
 
   return {
-    session: {
+    sessions: {
       add: addSession.bind(null, state),
       find: findSession.bind(null, state),
       remove: removeSession.bind(null, state)
