@@ -3,7 +3,7 @@ module.exports.attributes = {
   name: 'account-routes-session'
 }
 
-var getApi = require('../../api')
+var getApi = require('../api')
 var joiFailAction = require('../utils/joi-fail-action')
 var serialiseSession = require('../utils/session/serialise')
 var toBearerToken = require('../utils/to-bearer-token')

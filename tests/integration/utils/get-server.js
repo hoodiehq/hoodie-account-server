@@ -2,7 +2,7 @@ module.exports = getServer
 
 var Hapi = require('hapi')
 
-var hapiAccount = require('../../../index')
+var hapiAccount = require('../../../plugin')
 
 function getServer (callback) {
   var server = new Hapi.Server()

@@ -1,7 +1,7 @@
 {
   "name": "hapi-couchdb-account-api",
   "description": "Account REST API backed by CouchDB",
-  "main": "index.js",
+  "main": "plugin/index.js",
   "scripts": {
     "coverage": "nyc report --reporter=text-lcov | coveralls",
     "start": "bin/server",

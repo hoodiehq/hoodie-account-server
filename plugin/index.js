@@ -3,9 +3,9 @@ hapiAccount.attributes = {
   name: 'account'
 }
 
-var plugins = [
-  require('./lib/routes/session'),
-  require('./lib/routes/account')
+var routePlugins = [
+  require('../routes/session'),
+  require('../routes/account')
 ]
 
 function hapiAccount (server, options, next) {
@@ -18,7 +18,7 @@ function hapiAccount (server, options, next) {
     }
   })
 
-  server.register(plugins.map(function (plugin) {
+  server.register(routePlugins.map(function (plugin) {
     return {
       register: plugin,
       options: options
