@@ -175,7 +175,12 @@ var options = {
 })
 
 server.register({register: hapiAccount}, options, function (error) {
-  // server is ready
+  if (error) {
+    throw error
+  }
+
+  // plugin account api, see below
+
 });
 
 server.connection({
@@ -187,8 +192,9 @@ server.start(function () {
 });
 ```
 
-`hapi-couchdb-account-api` also adds a `server.app.account.admin` API, which is the same as the
-[account admin client](https://github.com/hoodiehq/account-client/tree/master/admin) API.
+`hapi-couchdb-account-api` also adds a Promise-based API at
+`server.plugins.account.api`
+
 
 ### options.couchdb
 
@@ -238,6 +244,38 @@ A JSON schema to validate account properties against.
 
 Handlers for custom requests
 
+### Account server API
+
+After registering the hapi plugin, the account API becomes available at
+`server.plugins.account.api`. It can also be directly required using
+
+```js
+var api = require ('hapi-couchdb-account-api/api')({
+  url: couchdbUrl
+})
+```
+
+All methods return promises
+
+```js
+api.sessions.add({username: 'pat', password: 'secret'/*, [jsonApiOptions] */})
+api.sessions.find(id /*, jsonApiOptions */)
+api.sessions.remove(id /*, jsonApiOptions */)
+
+api.accounts.add({username: 'pat', password: 'secret'/*, [jsonApiOptions] */})
+api.accounts.find(id /*, jsonApiOptions */)
+api.accounts.findAll(/* jsonApiOptions */)
+api.accounts.update(id, {password: 'newsecret'} /*, jsonApiOptions */)
+api.accounts.remove(id /*, jsonApiOptions */)
+
+api.profiles.find(id /*, jsonApiOptions */)
+api.profiles.update(id, {fullname: 'Pat Hook'})
+
+api.requests.add({type: 'passwordreset', contact: 'pat@example.com'/*, [jsonApiOptions] */})
+api.requests.find(id /*, jsonApiOptions */)
+api.requests.findAll(/* jsonApiOptions */)
+api.requests.remove(id /*, update, jsonApiOptions*/)
+```
 
 ## Testing
 
