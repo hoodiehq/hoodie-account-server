@@ -1,6 +1,7 @@
+var Joi = require('joi')
+var lodash = require('lodash')
 var nock = require('nock')
 var test = require('tap').test
-var lodash = require('lodash')
 
 var getServer = require('./utils/get-server')
 var couchdbErrorTests = require('./utils/couchdb-error-tests')
@@ -23,47 +24,48 @@ getServer(function (error, server) {
       url: '/session/account',
       headers: jsonAPIHeaders,
       payload: {
-        username: 'pat',
-        password: 'secret'
+        data: {
+          type: 'account',
+          attributes: {
+            username: 'pat',
+            password: 'secret'
+          }
+        }
       }
     }
+
     function putAccountResponseMock () {
       return nock('http://localhost:5984')
-        // mock valid response to sign in request
-        .post('/_session', {
-          name: putAccountRouteOptions.payload.username,
-          password: putAccountRouteOptions.payload.password
-        })
-        .reply(201, {
-          ok: true,
-          name: null,
-          roles: []
-        }, {
-          'Set-Cookie': ['AuthSession=123; Version=1; Expires=Tue, 08-Sep-2015 00:35:52 GMT; Max-Age=1209600; Path=/; HttpOnly']
-        })
         // send create _users doc request
-        .put('/_users/org.couchdb.user%3Apat', {
-          name: putAccountRouteOptions.payload.username,
-          password: putAccountRouteOptions.payload.password,
-          roles: [],
-          type: 'user'
+        .put('/_users/org.couchdb.user:pat', function (body) {
+          return Joi.object({
+            name: Joi.any().only('pat').required(),
+            password: Joi.any().only('secret').required(),
+            type: Joi.any().only('user').required(),
+            roles: Joi.array().items(Joi.string().regex(/^id:[0-9a-f]{12}$/)).max(1).min(1)
+          }).validate(body).error === null
         })
     }
 
     group.test('CouchDB User does not exist', function (t) {
-      var couchdb = putAccountResponseMock()
+      t.plan(3)
+
+      putAccountResponseMock()
         .reply(201, {
           ok: true,
-          id: 'org.couchdb.user:funky',
+          id: 'org.couchdb.user:pat',
           rev: '1-abc'
         })
 
+      var accountFixture = require('./fixtures/account.json')
+
       server.inject(putAccountRouteOptions, function (response) {
+        delete response.result.meta
         t.is(response.statusCode, 201, 'returns 201 status')
-        t.is(response.result.username, 'pat', 'returns username')
-        t.is(response.result.session.id, '123', 'returns session.id')
-        t.doesNotThrow(couchdb.done, 'CouchDB received request')
-        t.end()
+        t.match(response.result.data.id, /^[0-9a-f]{12}$/, 'sets id')
+        response.result.data.id = 'abc1234'
+        response.result.data.relationships.profile.data.id = 'abc1234-profile'
+        t.deepEqual(response.result, accountFixture, 'returns account in right format')
       })
     })
 
@@ -89,7 +91,7 @@ getServer(function (error, server) {
   })
 
   test('GET /session/account', function (group) {
-    var putAccountRouteOptions = {
+    var getAccountRouteOptions = {
       method: 'GET',
       url: '/session/account',
       headers: headersWithAuth
@@ -97,28 +99,35 @@ getServer(function (error, server) {
     function getAccountResponseMock () {
       return nock('http://localhost:5984')
         // mock valid response to sign in request
-        .get('/_users/org.couchdb.user%3Apat')
+        .get('/_users/org.couchdb.user:pat')
         .reply(200, {
           _id: 'org.couchdb.user:pat',
           _rev: '1-abc',
           name: 'pat',
           type: 'user',
-          roles: []
+          roles: ['id:abc1234']
         })
         .get('/_session')
     }
 
     group.test('Session does exist', function (t) {
+      t.plan(2)
+
       getAccountResponseMock()
         // has session
         .reply(200, {
-          userCtx: { name: 'pat' }
+          userCtx: {
+            name: 'pat',
+            roles: ['id:abc1234']
+          }
         })
 
-      server.inject(putAccountRouteOptions, function (response) {
+      var accountFixture = require('./fixtures/account.json')
+
+      server.inject(getAccountRouteOptions, function (response) {
+        delete response.result.meta
         t.is(response.statusCode, 200, 'returns 200 status')
-        t.is(response.result.username, 'pat', 'returns username')
-        t.end()
+        t.deepEqual(response.result, accountFixture, 'returns account in right format')
       })
     })
 
@@ -129,7 +138,7 @@ getServer(function (error, server) {
           userCtx: { name: null }
         })
 
-      server.inject(putAccountRouteOptions, function (response) {
+      server.inject(getAccountRouteOptions, function (response) {
         t.is(response.statusCode, 404, 'returns 404 status')
         t.is(response.result.errors.length, 1, 'returns one error')
         t.is(response.result.errors[0].title, 'Not Found', 'returns "Not Found" error')
@@ -137,9 +146,30 @@ getServer(function (error, server) {
       })
     })
 
-    couchdbErrorTests(server, group, getAccountResponseMock, putAccountRouteOptions)
+    couchdbErrorTests(server, group, getAccountResponseMock, getAccountRouteOptions)
 
     group.end()
+  })
+
+  test('GET /session/account?include=profile', function (t) {
+    t.fail('GET /session/account?include=profile', {
+      skip: true
+    })
+    t.end()
+  })
+
+  test('PATCH /session/account', function (t) {
+    t.fail('PATCH /session/account', {
+      skip: true
+    })
+    t.end()
+  })
+
+  test('PATCH /session/account?include=profile', function (t) {
+    t.fail('PATCH /session/account?include=profile', {
+      skip: true
+    })
+    t.end()
   })
 
   test('DELETE /session/account', function (group) {
@@ -151,7 +181,7 @@ getServer(function (error, server) {
     function deleteAccountResponseMock () {
       return nock('http://localhost:5984')
         // mock valid response to sign in request
-        .delete('/_users/org.couchdb.user%3Apat')
+        .delete('/_users/org.couchdb.user:pat')
         .reply(202, {
           ok: true,
           id: 'org.couchdb.user:pat',
@@ -160,21 +190,27 @@ getServer(function (error, server) {
         .get('/_session')
     }
 
-    group.test('Session does exist', function (t) {
+    group.test('with valid session', function (t) {
+      t.plan(2)
+
       deleteAccountResponseMock()
         // has session
         .reply(200, {
-          userCtx: { name: 'pat' }
+          userCtx: {
+            name: 'pat',
+            roles: ['id:abc1234']
+          }
         })
 
       server.inject(deleteAccountRouteOptions, function (response) {
         t.is(response.statusCode, 204, 'returns 204 status')
         t.is(response.result, null, 'returns no body')
-        t.end()
       })
     })
 
-    group.test('Session does not exist', function (t) {
+    group.test('without valid session', function (t) {
+      t.plan(3)
+
       deleteAccountResponseMock()
         // has session
         .reply(200, {
@@ -185,12 +221,18 @@ getServer(function (error, server) {
         t.is(response.statusCode, 404, 'returns 404 status')
         t.is(response.result.errors.length, 1, 'returns one error')
         t.is(response.result.errors[0].title, 'Not Found', 'returns "Not Found" error')
-        t.end()
       })
     })
 
     couchdbErrorTests(server, group, deleteAccountResponseMock, deleteAccountRouteOptions)
 
     group.end()
+  })
+
+  test('DELETE /session/account?include=profile', function (t) {
+    t.fail('DELETE /session/account?include=profile', {
+      skip: true
+    })
+    t.end()
   })
 })

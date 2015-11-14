@@ -19,3 +19,9 @@ validations.sessionQuery = Joi.object({
     statusCode: 403
   })
 }).unknown()
+
+validations.accountQuery = Joi.object({
+  include: Joi.any().only(['profile']).meta({
+    statusCode: 403
+  })
+}).unknown()
