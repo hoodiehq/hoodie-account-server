@@ -10,7 +10,7 @@ var toBearerToken = require('../utils/to-bearer-token')
 var validations = require('../utils/validations')
 
 function sessionRoutes (server, options, next) {
-  var couchUrl = options.couchdb || options.adapter.location
+  var couchUrl = options.couchdb
   var prefix = options.prefix || ''
   var sessions = getApi({ url: couchUrl }).sessions
   var serialise = serialiseSession.bind(null, {
