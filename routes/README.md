@@ -39,11 +39,11 @@ DELETE /accounts/{username}
 
 The route groups are implemented as hapi plugins themselves.
 
-- (session.js)[session.js]
-- (account.js)[account.js] [tbd #20](https://github.com/hoodiehq/hapi-couchdb-account/issues/20)
-- (profile.js)[profile.js] [tbd #21](https://github.com/hoodiehq/hapi-couchdb-account/issues/21)
-- (requests.js)[requests.js] [tbd #22](https://github.com/hoodiehq/hapi-couchdb-account/issues/22)
-- (accounts.js)[accounts.js] [tbd #34](https://github.com/hoodiehq/hapi-couchdb-account/issues/34)
+- [session.js](session.js)
+- [account.js](account.js) ([tbd #20](https://github.com/hoodiehq/hapi-couchdb-account/issues/20))
+- [profile.js](profile.js) ([tbd #21](https://github.com/hoodiehq/hapi-couchdb-account/issues/21))
+- [requests.js](requests.js) ([tbd #22](https://github.com/hoodiehq/hapi-couchdb-account/issues/22))
+- [accounts.js](accounts.js) ([tbd #34](https://github.com/hoodiehq/hapi-couchdb-account/issues/34))
 
 The options passed to the routes plugins are the same as the ones passed to the
 [main plugin](../plugin/README.md).
