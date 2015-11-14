@@ -1,4 +1,4 @@
-[back to hapi-couchdb-account](../README.md)
+[back to hapi-couchdb-account](README.md)
 
 # How it works
 
