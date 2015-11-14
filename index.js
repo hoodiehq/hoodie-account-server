@@ -1,6 +1,6 @@
 module.exports = hapiAccount
 hapiAccount.attributes = {
-  name: 'account-api'
+  name: 'account'
 }
 
 var plugins = [

@@ -162,6 +162,17 @@ getServer(function (error, server) {
       return nock('http://localhost:5984').get('/_session')
     }
 
+    group.test('No Authorization header sent', function (t) {
+      server.inject({
+        method: 'GET',
+        url: '/session',
+        headers: {}
+      }, function (response) {
+        t.is(response.statusCode, 403, 'returns 403 status')
+        t.end()
+      })
+    })
+
     group.test('CouchDB Session does no exist', function (t) {
       var couchdb = getSessionResponseMock()
         .reply(200, {
@@ -205,7 +216,7 @@ getServer(function (error, server) {
   test('GET /session?include=account.profile', function (t) {
     t.plan(1)
 
-    var postSessionRouteOptions = {
+    var getSessionRouteOptions = {
       method: 'GET',
       url: '/session?include=account.profile',
       headers: headersWithAuth
@@ -232,9 +243,23 @@ getServer(function (error, server) {
 
     var sessionWitProfileResponse = require('../fixtures/session-with-profile-response.json')
 
-    server.inject(postSessionRouteOptions, function (response) {
+    server.inject(getSessionRouteOptions, function (response) {
       delete response.result.meta
       t.deepEqual(response.result, sessionWitProfileResponse, 'returns the right content')
+    })
+  })
+
+  test('GET /session?include=foobar', function (t) {
+    t.plan(1)
+
+    var getSessionRouteOptions = {
+      method: 'GET',
+      url: '/session?include=foobar',
+      headers: headersWithAuth
+    }
+
+    server.inject(getSessionRouteOptions, function (response) {
+      t.is(response.statusCode, 403, 'returns 403 status')
     })
   })
 
