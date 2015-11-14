@@ -1,7 +1,7 @@
 clear
 
 if [[ $1 =~ -test.js$ ]]; then
-  tap "$1";
+  tap -b $(node -e 'process.stdout.write(process.argv[1].replace(process.cwd() + "/", ""))' $1)
 else
-  tap tests;
+  tap -b tests/**/*-test.js
 fi
