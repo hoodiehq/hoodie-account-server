@@ -1,4 +1,4 @@
-[back to hapi-couchdb-account](..)
+[back to hapi-couchdb-account](../README.md)
 
 # hapi CouchDB Account Plugin
 
