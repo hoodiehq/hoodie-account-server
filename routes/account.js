@@ -1,7 +1,12 @@
+module.exports = accountRoutes
+module.exports.attributes = {
+  name: 'account-routes-account'
+}
+
 var Boom = require('boom')
 
-module.exports = function (server, options, next) {
-  var couchUrl = options.couchdb || options.adapter.location
+function accountRoutes (server, options, next) {
+  var couchUrl = options.couchdb.url
   var prefix = options.prefix || ''
 
   var request = require('request').defaults({
@@ -10,7 +15,7 @@ module.exports = function (server, options, next) {
     timeout: 10000 // 10 seconds
   })
 
-  server.route([{
+  var getAccountRoute = {
     method: 'GET',
     path: prefix + '/session/account',
     handler: function (_req, reply) {
@@ -66,7 +71,9 @@ module.exports = function (server, options, next) {
         })
       })
     }
-  }, {
+  }
+
+  var signUpRoute = {
     method: 'PUT',
     path: prefix + '/session/account',
     handler: function (_req, reply) {
@@ -123,7 +130,9 @@ module.exports = function (server, options, next) {
         })
       })
     }
-  }, {
+  }
+
+  var destroyAccountRoute = {
     method: 'DELETE',
     path: prefix + '/session/account',
     handler: function (_req, reply) {
@@ -177,11 +186,13 @@ module.exports = function (server, options, next) {
         })
       })
     }
-  }])
+  }
+
+  server.route([
+    getAccountRoute,
+    signUpRoute,
+    destroyAccountRoute
+  ])
 
   next()
-}
-
-module.exports.attributes = {
-  name: 'account-routes-account'
 }

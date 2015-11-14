@@ -11,9 +11,8 @@ function getServer (callback) {
   server.register({
     register: hapiAccount,
     options: {
-      adapter: {
-        name: 'couchdb',
-        location: 'http://localhost:5984',
+      couchdb: {
+        url: 'http://localhost:5984',
         admin: {
           username: 'admin',
           password: 'secret'
