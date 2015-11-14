@@ -3,8 +3,6 @@ module.exports.attributes = {
   name: 'account-routes-account'
 }
 
-var Boom = require('boom')
-
 var getApi = require('../api')
 var joiFailAction = require('../utils/joi-fail-action')
 var serialiseAccount = require('../utils/account/serialise')
@@ -19,12 +17,6 @@ function accountRoutes (server, options, next) {
   var accounts = api.accounts
   var serialise = serialiseAccount.bind(null, {
     baseUrl: server.info.uri + prefix
-  })
-
-  var request = require('request').defaults({
-    json: true,
-    baseUrl: couchUrl,
-    timeout: 10000 // 10 seconds
   })
 
   var signUpRoute = {
