@@ -1,0 +1,40 @@
+{
+  "links": {
+    "self": "http://localhost:80/session"
+  },
+  "data": {
+    "id": "sessionid123",
+    "type": "session",
+    "relationships": {
+      "account": {
+        "links": {
+          "related": "http://localhost:80/session/account"
+        },
+        "data": {
+          "id": "abc1234",
+          "type": "account"
+        }
+      }
+    }
+  },
+  "included": [
+    {
+      "id": "abc1234",
+      "type": "account",
+      "attributes": {
+        "username": "pat-doe"
+      },
+      "relationships": {
+        "profile": {
+          "links": {
+            "related": "http://localhost:80/session/account/profile"
+          },
+          "data": {
+            "id": "abc1234-profile",
+            "type": "accountProfile"
+          }
+        }
+      }
+    }
+  ]
+}
