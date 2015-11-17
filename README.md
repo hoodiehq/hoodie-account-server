@@ -39,6 +39,7 @@ server.start(function () {
 
 ## More
 
+- [Plugin & Options](plugin/README.md)
 - [Routes](routes/README.md)
 - [API](api/README.md)
 - [How it works](how-it-works.md)
