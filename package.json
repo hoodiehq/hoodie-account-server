@@ -1,0 +1,50 @@
+{
+  "name": "hoodie-server-account",
+  "description": "Account REST API backed by CouchDB",
+  "main": "plugin/index.js",
+  "scripts": {
+    "coverage": "nyc report --reporter=text-lcov | coveralls",
+    "start": "bin/server",
+    "pretest": "standard",
+    "test": "nyc tap --no-cov tests/**/*-test.js",
+    "test:watch": "gaze 'bin/watch-and-test.sh $path' 'tests/**/*.js' '*.js' 'api/**/*.js' 'plugin/**/*.js' 'routes/**/*.js' 'utils/**/*.js'",
+    "semantic-release": "semantic-release pre && npm publish && semantic-release post",
+    "postsemantic-release": "npm run coverage"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hoodiehq/hoodie-server-account.git"
+  },
+  "keywords": [
+    "hapi",
+    "plugin",
+    "couchdb",
+    "account",
+    "hoodie"
+  ],
+  "author": "The Hoodie Community (hood.ie)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/hoodiehq/hoodie-server-account/issues"
+  },
+  "homepage": "https://github.com/hoodiehq/hoodie-server-account#readme",
+  "devDependencies": {
+    "coveralls": "^2.11.4",
+    "gaze-cli": "^0.2.0",
+    "hapi": "^11.1.1",
+    "lodash": "^3.10.1",
+    "nock": "^3.0.0",
+    "nyc": "^3.2.2",
+    "semantic-release": "^6.0.3",
+    "standard": "^5.4.0",
+    "tap": "^2.2.1",
+    "tap-min": "^1.0.0"
+  },
+  "dependencies": {
+    "@gar/hapi-json-api": "^1.0.6",
+    "boom": "^3.0.0",
+    "joi": "^7.0.0",
+    "randomstring": "^1.1.3",
+    "request": "^2.65.0"
+  }
+}
