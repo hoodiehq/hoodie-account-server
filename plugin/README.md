@@ -98,7 +98,7 @@ couchdb: {
 #### Example 2
 
 ```js
-couchdb: 'http://admin:secret@localhost@5984'
+couchdb: 'http://admin:secret@localhost:5984'
 ```
 
 ### options.confirmation
