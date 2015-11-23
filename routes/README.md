@@ -40,10 +40,10 @@ DELETE /accounts/{username}
 The route groups are implemented as hapi plugins themselves.
 
 - [session.js](session.js)
-- [account.js](account.js) ([tbd #20](https://github.com/hoodiehq/hoodie-standalone-account/issues/20))
-- [profile.js](profile.js) ([tbd #21](https://github.com/hoodiehq/hoodie-standalone-account/issues/21))
-- [requests.js](requests.js) ([tbd #22](https://github.com/hoodiehq/hoodie-standalone-account/issues/22))
-- [accounts.js](accounts.js) ([tbd #34](https://github.com/hoodiehq/hoodie-standalone-account/issues/34))
+- [account.js](account.js)
+- [profile.js](profile.js) ([tbd hoodie-server-account#11](https://github.com/hoodiehq/hoodie-server-account/issues/11))
+- [requests.js](requests.js) ([hoodie-server-account#10](https://github.com/hoodiehq/hoodie-server-account/issues/10))
+- [accounts.js](accounts.js) ([hoodie-server-account#12](https://github.com/hoodiehq/hoodie-server-account/issues/12))
 
 The options passed to the routes plugins are the same as the ones passed to the
 [main plugin](../plugin/README.md).
