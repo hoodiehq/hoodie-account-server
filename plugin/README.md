@@ -58,7 +58,10 @@ var options = {
   }
 })
 
-server.register({register: hapiAccount}, options, function (error) {
+server.register({
+  register: hapiAccount,
+  options: options
+}, function (error) {
   if (error) {
     throw error
   }
