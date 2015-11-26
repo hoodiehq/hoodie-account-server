@@ -22,7 +22,10 @@
       "id": "abc1234",
       "type": "account",
       "attributes": {
-        "username": "pat-doe"
+        "username": "pat-doe",
+        "roles": [
+          "mycustomrole"
+        ]
       },
       "relationships": {
         "profile": {

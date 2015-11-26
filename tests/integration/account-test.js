@@ -146,6 +146,26 @@ getServer(function (error, server) {
       })
     })
 
+    group.test('admin: Session does exist, but user is _admin', function (t) {
+      t.plan(2)
+
+      nock('http://localhost:5984')
+        .get('/_session')
+        // has session
+        .reply(200, {
+          userCtx: {
+            name: 'admin',
+            roles: ['_admin']
+          }
+        })
+
+      server.inject(getAccountRouteOptions, function (response) {
+        delete response.result.meta
+        t.is(response.statusCode, 403, 'returns 403 status')
+        t.deepEqual(response.result.errors[0].detail, 'Admin users have no account', 'returns account in right format')
+      })
+    })
+
     couchdbErrorTests(server, group, getAccountResponseMock, getAccountRouteOptions)
 
     group.end()
