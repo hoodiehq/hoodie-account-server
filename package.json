@@ -42,7 +42,7 @@
     "tap-min": "^1.0.0"
   },
   "dependencies": {
-    "@gar/hapi-json-api": "^1.0.6",
+    "@gar/hapi-json-api": "^1.0.7",
     "boom": "^3.0.0",
     "joi": "^7.0.0",
     "randomstring": "^1.1.3",
