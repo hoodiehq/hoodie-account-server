@@ -5,7 +5,8 @@ hapiAccount.attributes = {
 
 var routePlugins = [
   require('../routes/session'),
-  require('../routes/account')
+  require('../routes/account'),
+  require('../routes/accounts')
 ]
 
 function hapiAccount (server, options, next) {

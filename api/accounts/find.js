@@ -8,7 +8,7 @@ function findAccount (state, username, options) {
     getAccount({
       couchUrl: state.url,
       username: username,
-      includeProfile: options.include === 'profile'
+      bearerToken: options.bearerToken
     }, function (error, doc) {
       if (error) {
         return reject(error)
@@ -18,6 +18,11 @@ function findAccount (state, username, options) {
         username: doc.name,
         id: findIdInRoles(doc.roles)
       }
+
+      if (options.include === 'profile') {
+        account.profile = account.profile
+      }
+
       resolve(account)
     })
   })

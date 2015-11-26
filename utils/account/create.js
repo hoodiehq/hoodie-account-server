@@ -3,10 +3,10 @@ module.exports = createAccount
 var Boom = require('boom')
 var randomstring = require('randomstring')
 
-function createAccount (options, callback) {
+function createAccount (state, options, callback) {
   var request = require('request').defaults({
     json: true,
-    baseUrl: options.couchUrl,
+    baseUrl: state.url,
     timeout: 10000 // 10 seconds
   })
 
@@ -16,7 +16,7 @@ function createAccount (options, callback) {
     charset: 'hex'
   })
 
-  request.put({
+  var requestOptions = {
     url: '/_users/' + accountKey,
     body: {
       type: 'user',
@@ -26,7 +26,15 @@ function createAccount (options, callback) {
       name: options.username,
       password: options.password
     }
-  }, function (error, response, body) {
+  }
+
+  if (state.admin) {
+    requestOptions.auth = {
+      user: state.admin.username,
+      pass: state.admin.password
+    }
+  }
+  request.put(requestOptions, function (error, response, body) {
     if (error) {
       return callback(Boom.wrap(error))
     }

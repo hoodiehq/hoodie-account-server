@@ -12,7 +12,7 @@ var validations = require('../utils/validations')
 function sessionRoutes (server, options, next) {
   var couchUrl = options.couchdb.url
   var prefix = options.prefix || ''
-  var sessions = getApi({ url: couchUrl }).sessions
+  var sessions = getApi({ url: couchUrl, admin: options.admin }).sessions
   var serialise = serialiseSession.bind(null, {
     baseUrl: server.info.uri + prefix
   })
@@ -21,6 +21,7 @@ function sessionRoutes (server, options, next) {
     method: 'PUT',
     path: prefix + '/session',
     config: {
+      auth: false,
       validate: {
         headers: validations.bearerTokenHeaderForbidden,
         query: validations.sessionQuery,
@@ -52,6 +53,7 @@ function sessionRoutes (server, options, next) {
     method: 'GET',
     path: prefix + '/session',
     config: {
+      auth: false,
       validate: {
         headers: validations.bearerTokenHeader,
         query: validations.sessionQuery,
@@ -77,6 +79,7 @@ function sessionRoutes (server, options, next) {
     method: 'DELETE',
     path: prefix + '/session',
     config: {
+      auth: false,
       validate: {
         headers: validations.bearerTokenHeader,
         query: validations.sessionQuery,

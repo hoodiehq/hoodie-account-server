@@ -2,8 +2,10 @@ module.exports = createSession
 
 var Boom = require('boom')
 
+var findcustomRoles = require('../find-custom-roles')
 var findIdInRoles = require('../find-id-in-roles')
 var getAccount = require('../account/get')
+var hasAdminRole = require('../has-admin-role')
 
 function createSession (options, callback) {
   var request = require('request').defaults({
@@ -36,12 +38,19 @@ function createSession (options, callback) {
     bearerToken = bearerToken.pop()
 
     var accountId = findIdInRoles(body.roles)
+    var isAdmin = hasAdminRole(body.roles)
     var session = {
       id: bearerToken,
       account: {
         id: accountId,
-        username: options.username
+        username: options.username,
+        isAdmin: isAdmin,
+        roles: findcustomRoles(body.roles)
       }
+    }
+
+    if (isAdmin && options.includeProfile) {
+      return callback(Boom.forbidden('Admin accounts have no profile'))
     }
 
     if (!options.includeProfile) {

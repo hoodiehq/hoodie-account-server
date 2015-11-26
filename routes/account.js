@@ -3,6 +3,8 @@ module.exports.attributes = {
   name: 'account-routes-account'
 }
 
+var Boom = require('boom')
+
 var getApi = require('../api')
 var joiFailAction = require('../utils/joi-fail-action')
 var serialiseAccount = require('../utils/account/serialise')
@@ -12,7 +14,7 @@ var validations = require('../utils/validations')
 function accountRoutes (server, options, next) {
   var couchUrl = options.couchdb.url
   var prefix = options.prefix || ''
-  var api = getApi({ url: couchUrl })
+  var api = getApi({ url: couchUrl, admin: options.admin })
   var sessions = api.sessions
   var accounts = api.accounts
   var serialise = serialiseAccount.bind(null, {
@@ -23,6 +25,7 @@ function accountRoutes (server, options, next) {
     method: 'PUT',
     path: prefix + '/session/account',
     config: {
+      auth: false,
       validate: {
         headers: validations.bearerTokenHeaderForbidden,
         query: validations.accountQuery,
@@ -53,6 +56,9 @@ function accountRoutes (server, options, next) {
   var getAccountRoute = {
     method: 'GET',
     path: prefix + '/session/account',
+    config: {
+      auth: false
+    },
     handler: function (request, reply) {
       var sessionId = toBearerToken(request)
 
@@ -61,6 +67,10 @@ function accountRoutes (server, options, next) {
       })
 
       .then(function (session) {
+        if (session.account.isAdmin) {
+          throw Boom.forbidden('Admin users have no account')
+        }
+
         return accounts.find(session.account.username, {
           bearerToken: sessionId,
           include: request.query.include
@@ -78,6 +88,9 @@ function accountRoutes (server, options, next) {
   var destroyAccountRoute = {
     method: 'DELETE',
     path: prefix + '/session/account',
+    config: {
+      auth: false
+    },
     handler: function (request, reply) {
       var sessionId = toBearerToken(request)
 

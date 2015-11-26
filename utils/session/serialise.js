@@ -1,6 +1,17 @@
 module.exports = serialiseSession
 
 function serialiseSession (options, session) {
+  if (session.account.isAdmin) {
+    return {
+      links: {
+        self: options.baseUrl + '/session'
+      },
+      data: {
+        id: session.id,
+        type: 'session'
+      }
+    }
+  }
   var json = {
     links: {
       self: options.baseUrl + '/session'
@@ -25,7 +36,8 @@ function serialiseSession (options, session) {
         id: session.account.id,
         type: 'account',
         attributes: {
-          username: session.account.username
+          username: session.account.username,
+          roles: session.account.roles
         },
         relationships: {
           profile: {
