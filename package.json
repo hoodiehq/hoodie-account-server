@@ -1,5 +1,6 @@
 {
   "name": "hoodie-server-account",
+  "version": "0.0.0-semantically-released",
   "description": "Account REST API backed by CouchDB",
   "main": "plugin/index.js",
   "scripts": {
