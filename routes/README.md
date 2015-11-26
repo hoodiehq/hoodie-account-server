@@ -14,12 +14,14 @@ GET /session
 DELETE /session
 
 # sign up, get / update / destroy account
+# non-admins only
 PUT /session/account
 GET /session/account
 PATCH /session/account
 DELETE /session/account
 
 # get / update profile
+# non-admins only
 GET /session/account/profile
 PATCH /session/account/profile
 
@@ -47,3 +49,11 @@ The route groups are implemented as hapi plugins themselves.
 
 The options passed to the routes plugins are the same as the ones passed to the
 [main plugin](../plugin/README.md).
+
+## Notes on CouchDB Admin accounts
+
+CouchDB admins do not require `_users` docs, which that plugin requires, as it
+stores user IDs in a special `id:<userId here>` role. Because of that, the
+`/session/account` & `/session/account/profile` routes are forbidden for admins.
+And even if an admin account has a `_users` doc, it will not be returned by the
+`/accounts` API for consistency reasons.
