@@ -2,8 +2,8 @@
 
 # hapi CouchDB Account Routes
 
-See the shiny docs at http://docs.accountrestapi.apiary.io/.
-Comment / send PRs for [apiary.apib](https://github.com/hoodiehq/account-rest-api/blob/master/apiary.apib).
+See the shiny docs at http://docs.accountjsonapi.apiary.io/.
+Comment / send PRs for [apiary.apib](https://github.com/hoodiehq/account-json-api/blob/master/apiary.apib).
 
 All routes at a glance
 
