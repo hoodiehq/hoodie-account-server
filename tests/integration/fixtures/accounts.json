@@ -1,0 +1,51 @@
+{
+  "links": {
+    "self": "http://localhost:80/accounts",
+    "first": "http://localhost:80/accounts",
+    "last": "http://localhost:80/accounts"
+  },
+  "data": [
+    {
+      "id": "abc4567",
+      "type": "account",
+      "links": {
+        "self": "http://localhost:80/accounts/abc4567"
+      },
+      "attributes": {
+        "username": "pat"
+      },
+      "relationships": {
+        "profile": {
+          "links": {
+            "related": "http://localhost:80/accounts/abc4567/profile"
+          },
+          "data": {
+            "id": "abc4567-profile",
+            "type": "profile"
+          }
+        }
+      }
+    },
+    {
+      "id": "def678",
+      "type": "account",
+      "links": {
+        "self": "http://localhost:80/accounts/def678"
+      },
+      "attributes": {
+        "username": "sam"
+      },
+      "relationships": {
+        "profile": {
+          "links": {
+            "related": "http://localhost:80/accounts/def678/profile"
+          },
+          "data": {
+            "id": "def678-profile",
+            "type": "profile"
+          }
+        }
+      }
+    }
+  ]
+}

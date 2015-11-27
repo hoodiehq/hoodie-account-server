@@ -34,7 +34,7 @@
           },
           "data": {
             "id": "abc1234-profile",
-            "type": "accountProfile"
+            "type": "profile"
           }
         }
       }
