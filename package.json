@@ -43,6 +43,7 @@
   },
   "dependencies": {
     "@gar/hapi-json-api": "^1.0.7",
+    "async": "^1.5.0",
     "boom": "^3.0.0",
     "couchdb-push": "^2.2.2",
     "joi": "^7.0.0",
