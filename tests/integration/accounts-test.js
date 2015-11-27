@@ -17,6 +17,73 @@ getServer(function (error, server) {
 
   var headersWithAuth = lodash.merge({authorization: 'Bearer sessionid123'}, jsonAPIHeaders)
 
+  test('POST /accounts', function (group) {
+    var route = '/_users/org.couchdb.user:pat'
+    var postAccountsRouteOptions = {
+      method: 'POST',
+      url: '/accounts',
+      headers: headersWithAuth,
+      payload: {
+        data: {
+          type: 'account',
+          attributes: {
+            username: 'pat',
+            password: 'secret'
+          }
+        }
+      }
+    }
+
+    function putAccountsResponseMock () {
+      return nock('http://localhost:5984').put(route)
+    }
+
+    group.test('No Authorization header sent', function (t) {
+      server.inject({
+        method: 'POST',
+        url: '/accounts',
+        headers: {}
+      }, function (response) {
+        t.is(response.statusCode, 403, 'returns 403 status')
+        t.end()
+      })
+    })
+
+    group.test('CouchDB Session valid', {only: true}, function (t) {
+      var couchdb = putAccountsResponseMock().reply(201, {
+        ok: true,
+        id: 'org.couchdb.user:pat',
+        rev: '123456'
+      })
+
+      server.inject(postAccountsRouteOptions, function (response) {
+        t.is(couchdb.pendingMocks()[0], undefined, 'all mocks satisfied')
+        delete response.result.meta
+        t.is(response.statusCode, 201, 'returns 201 status')
+        t.is(response.result.data.attributes.username, 'pat', 'returns the right content')
+        t.end()
+      })
+    })
+
+    group.test('with ', {only: true}, function (t) {
+      var couchdb = putAccountsResponseMock().reply(201, {
+        ok: true,
+        id: 'org.couchdb.user:pat',
+        rev: '123456'
+      })
+
+      server.inject(postAccountsRouteOptions, function (response) {
+        t.is(couchdb.pendingMocks()[0], undefined, 'all mocks satisfied')
+        delete response.result.meta
+        t.is(response.statusCode, 201, 'returns 201 status')
+        t.is(response.result.data.attributes.username, 'pat', 'returns the right content')
+        t.end()
+      })
+    })
+
+    group.end()
+  })
+
   test('GET /accounts', function (group) {
     var route = '/_users/_all_docs?include_docs=true&startkey=%22org.couchdb.user%3A%22&enkey=%22org.couchdb.user%3A%E9%A6%99%22'
     var getAccountsRouteOptions = {
