@@ -15,6 +15,47 @@ function accountRoutes (server, options, next) {
   var api = getApi({ url: couchUrl })
   var accounts = api.accounts
 
+  var postAccountsRoute = {
+    method: 'POST',
+    path: prefix + '/accounts',
+    config: {
+      auth: false,
+      validate: {
+        headers: validations.bearerTokenHeader,
+        failAction: joiFailAction
+      }
+    },
+    handler: function (request, reply) {
+      var sessionId = toBearerToken(request)
+      var username = request.payload.data.attributes.username
+      var password = request.payload.data.attributes.password
+      var profile = request.payload.data.attributes.profile
+
+      return accounts.add({
+        username: username,
+        password: password,
+        profile: profile
+      }, {
+        bearerToken: sessionId,
+        include: request.query.include
+      })
+
+      .then(function (account) {
+        return serialise({
+          baseUrl: server.info.uri + prefix,
+          include: request.query.include,
+          admin: true
+        }, account)
+      })
+
+      .then(function (json) {
+        reply(json).code(201)
+      })
+
+      .catch(reply)
+    }
+  }
+
   var getAccountsRoute = {
     method: 'GET',
     path: prefix + '/accounts',
@@ -79,6 +120,7 @@ function accountRoutes (server, options, next) {
   }
 
   server.route([
+    postAccountsRoute,
     getAccountsRoute,
     getAccountRoute
   ])

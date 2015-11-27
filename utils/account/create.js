@@ -22,18 +22,25 @@ function createAccount (state, options, callback) {
       type: 'user',
       roles: [
         'id:' + accountId
-      ],
+      ].concat(options.roles || []),
       name: options.username,
       password: options.password
     }
   }
 
-  if (state.admin) {
-    requestOptions.auth = {
-      user: state.admin.username,
-      pass: state.admin.password
+  if (options.bearerToken) {
+    requestOptions.headers = {
+      cookie: 'AuthSession=' + options.bearerToken
+    }
+  } else {
+    if (state.admin) {
+      requestOptions.auth = {
+        user: state.admin.username,
+        pass: state.admin.password
+      }
     }
   }
+
   request.put(requestOptions, function (error, response, body) {
     if (error) {
       return callback(Boom.wrap(error))

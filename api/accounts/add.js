@@ -2,11 +2,13 @@ module.exports = addAccount
 
 var createAccount = require('../../utils/account/create')
 
-function addAccount (state, options) {
+function addAccount (state, properties, options) {
   return new Promise(function (resolve, reject) {
     createAccount(state, {
-      username: options.username,
-      password: options.password,
+      username: properties.username,
+      password: properties.password,
+      roles: properties.roles,
+      bearerToken: options.bearerToken,
       includeProfile: options.include === 'account.profile'
     }, function (error, session) {
       if (error) {
