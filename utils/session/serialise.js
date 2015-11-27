@@ -46,7 +46,7 @@ function serialiseSession (options, session) {
             },
             data: {
               id: session.account.id + '-profile',
-              type: 'accountProfile'
+              type: 'profile'
             }
           }
         }

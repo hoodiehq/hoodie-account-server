@@ -1,6 +1,12 @@
 module.exports = serialiseAccount
 
-function serialiseAccount (options, account) {
+function serialiseAccount (options, data) {
+  return Array.isArray(data)
+    ? serialiseMany(options, data)
+    : serialiseOne(options, data)
+}
+
+function serialiseOne (options, account) {
   var json = {
     links: {
       self: options.baseUrl + '/session/account'
@@ -18,7 +24,7 @@ function serialiseAccount (options, account) {
           },
           data: {
             id: account.id + '-profile',
-            type: 'accountProfile'
+            type: 'profile'
           }
         }
       }
@@ -31,6 +37,56 @@ function serialiseAccount (options, account) {
       type: 'profile',
       attributes: account.profile || {}
     }
+  }
+
+  return json
+}
+
+function serialiseMany (options, accounts) {
+  var json = {
+    links: {
+      self: options.baseUrl + '/accounts',
+      first: options.baseUrl + '/accounts',
+      last: options.baseUrl + '/accounts'
+    },
+    data: accounts.map(function (account) {
+      var json = {
+        id: account.id,
+        type: 'account',
+        links: {
+          self: options.baseUrl + '/accounts/' + account.id
+        },
+        attributes: {
+          username: account.username
+        },
+        relationships: {
+          profile: {
+            links: {
+              related: options.baseUrl + '/accounts/' + account.id + '/profile'
+            },
+            data: {
+              id: account.id + '-profile',
+              type: 'profile'
+            }
+          }
+        }
+      }
+
+      return json
+    })
+  }
+
+  if (options.include === 'profile') {
+    json.included = accounts.map(function (account) {
+      return {
+        id: account.id + '-profile',
+        type: 'profile',
+        attributes: account.profile || {},
+        links: {
+          self: options.baseUrl + '/accounts/' + account.id + '/profile'
+        }
+      }
+    })
   }
 
   return json

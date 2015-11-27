@@ -1,12 +1,13 @@
-module.exports = findAccount
+module.exports = findAllAccount
 
 var findIdInRoles = require('../../utils/find-id-in-roles')
 var getAllAccounts = require('../../utils/account/get-all')
 
-function findAccount (state, options) {
+function findAllAccount (state, options) {
   return new Promise(function (resolve, reject) {
     getAllAccounts({
-      couchUrl: state.url
+      couchUrl: state.url,
+      bearerToken: options.bearerToken
     }, function (error, response) {
       if (error) {
         return reject(error)

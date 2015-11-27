@@ -10,7 +10,7 @@ function getAllAccounts (options, callback) {
   })
 
   request.get({
-    url: '/_users/_all_docs?startkey=%22org.couchdb.user%3A%22&enkey=%22org.couchdb.user%3A%E9%A6%99%22',
+    url: '/_users/_all_docs?include_docs=true&startkey=%22org.couchdb.user%3A%22&enkey=%22org.couchdb.user%3A%E9%A6%99%22',
     headers: {
       cookie: 'AuthSession=' + options.bearerToken
     }

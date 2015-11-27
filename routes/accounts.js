@@ -5,7 +5,7 @@ module.exports.attributes = {
 
 var getApi = require('../api')
 var joiFailAction = require('../utils/joi-fail-action')
-var serialiseAccount = require('../utils/account/serialise')
+var serialise = require('../utils/account/serialise')
 var toBearerToken = require('../utils/to-bearer-token')
 var validations = require('../utils/validations')
 
@@ -14,9 +14,6 @@ function accountRoutes (server, options, next) {
   var prefix = options.prefix || ''
   var api = getApi({ url: couchUrl })
   var accounts = api.accounts
-  var serialise = serialiseAccount.bind(null, {
-    baseUrl: server.info.uri + prefix
-  })
 
   var getAccountsRoute = {
     method: 'GET',
@@ -37,7 +34,10 @@ function accountRoutes (server, options, next) {
       })
 
       .then(function (accounts) {
-        return accounts.map(serialise)
+        return serialise({
+          baseUrl: server.info.uri + prefix,
+          include: request.query.include
+        }, accounts)
       })
 
       .then(reply)
