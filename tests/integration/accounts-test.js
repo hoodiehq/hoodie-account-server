@@ -65,22 +65,6 @@ getServer(function (error, server) {
       })
     })
 
-    group.test('with ', {only: true}, function (t) {
-      var couchdb = putAccountsResponseMock().reply(201, {
-        ok: true,
-        id: 'org.couchdb.user:pat',
-        rev: '123456'
-      })
-
-      server.inject(postAccountsRouteOptions, function (response) {
-        t.is(couchdb.pendingMocks()[0], undefined, 'all mocks satisfied')
-        delete response.result.meta
-        t.is(response.statusCode, 201, 'returns 201 status')
-        t.is(response.result.data.attributes.username, 'pat', 'returns the right content')
-        t.end()
-      })
-    })
-
     group.end()
   })
 
@@ -288,21 +272,22 @@ getServer(function (error, server) {
         reqheaders: {
           cookie: 'AuthSession=sessionid123'
         }
-      }).get('/_users/_design/byId/_view/byId?key=abc1234&include_docs=true').reply(200, {
-        total_rows: 1,
-        offset: 0,
-        rows: [{
-          doc: {
-            roles: [
-              'id:abc1234'
-            ],
-            name: 'pat',
-            profile: {
-              fullname: 'Dr Pat Hook'
+      }).get('/_users/_design/byId/_view/byId?key=abc1234&include_docs=true')
+        .reply(200, {
+          total_rows: 1,
+          offset: 0,
+          rows: [{
+            doc: {
+              roles: [
+                'id:abc1234'
+              ],
+              name: 'pat',
+              profile: {
+                fullname: 'Dr Pat Hook'
+              }
             }
-          }
-        }]
-      })
+          }]
+        })
 
       var accountWithProfile = require('./fixtures/admin-account-with-profile.json')
 
@@ -315,6 +300,113 @@ getServer(function (error, server) {
         delete response.result.meta
         t.is(response.statusCode, 200, 'returns 200 status')
         t.deepEqual(response.result, accountWithProfile, 'returns the right content')
+        t.end()
+      })
+    })
+
+    group.end()
+  })
+
+  test('PATCH /accounts/abc4567', function (group) {
+    var route = '/_users/org.couchdb.user:pat'
+    var patchAccountsRouteOptionsUsername = {
+      method: 'PATCH',
+      url: '/accounts/abc4567',
+      headers: headersWithAuth,
+      payload: {
+        data: {
+          type: 'account',
+          attributes: {
+            username: 'sam'
+          }
+        }
+      }
+    }
+    var patchAccountsRouteOptionsPassword = {
+      method: 'PATCH',
+      url: '/accounts/abc4567',
+      headers: headersWithAuth,
+      payload: {
+        data: {
+          type: 'account',
+          attributes: {
+            password: 'newsecret'
+          }
+        }
+      }
+    }
+
+    function patchAccountsResponseMock () {
+      return nock('http://localhost:5984')
+        .get('/_users/_design/byId/_view/byId?key=abc4567&include_docs=true')
+        .reply(200, {
+          total_rows: 1,
+          offset: 0,
+          rows: [{
+            doc: {
+              _id: 'org.couchdb.user:pat',
+              _rev: '1-abc',
+              roles: [
+                'id:abc1234'
+              ],
+              name: 'pat',
+              profile: {
+                fullname: 'Dr Pat Hook'
+              }
+            }
+          }]
+        })
+    }
+
+    group.test('No Authorization header sent', function (t) {
+      server.inject({
+        method: 'PATCH',
+        url: '/accounts/abc4567',
+        headers: {}
+      }, function (response) {
+        t.is(response.statusCode, 403, 'returns 403 status')
+        t.end()
+      })
+    })
+
+    group.test('changing password', {only: true}, function (t) {
+      var couchdb = patchAccountsResponseMock()
+        .put('/_users/org.couchdb.user:pat')
+        .reply(201, {
+          ok: true,
+          id: 'org.couchdb.user:pat',
+          rev: '2-3456'
+        })
+
+      server.inject(patchAccountsRouteOptionsPassword, function (response) {
+        t.is(couchdb.pendingMocks()[0], undefined, 'all mocks satisfied')
+        delete response.result.meta
+        t.is(response.statusCode, 201, 'returns 201 status')
+        t.is(response.result.data.attributes.username, 'pat', 'returns the right content')
+        t.end()
+      })
+    })
+
+    group.test('changing username', {only: true}, function (t) {
+      var couchdb = patchAccountsResponseMock()
+        .put('/_users/org.couchdb.user:sam')
+        .reply(201, {
+          ok: true,
+          id: 'org.couchdb.user:pat',
+          rev: '2-3456'
+        })
+        .delete(route + '?rev=1-abc')
+        .reply(200, {
+          ok: true,
+          id: 'org.couchdb.user:foo',
+          rev: '2-3456'
+        })
+
+      server.inject(patchAccountsRouteOptionsUsername, function (response) {
+        t.is(couchdb.pendingMocks()[0], undefined, 'all mocks satisfied')
+        delete response.result.meta
+        t.is(response.statusCode, 201, 'returns 201 status')
+        t.is(response.result.data.attributes.username, 'sam', 'returns the right content')
         t.end()
       })
     })
