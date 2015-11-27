@@ -1,0 +1,23 @@
+{
+  "links": {
+    "self": "http://localhost:80/accounts/abc1234"
+  },
+  "data": {
+    "id": "abc1234",
+    "type": "account",
+    "attributes": {
+      "username": "pat"
+    },
+    "relationships": {
+      "profile": {
+        "links": {
+          "related": "http://localhost:80/accounts/abc1234/profile"
+        },
+        "data": {
+          "id": "abc1234-profile",
+          "type": "profile"
+        }
+      }
+    }
+  }
+}

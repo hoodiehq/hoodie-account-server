@@ -8,7 +8,7 @@ var couchdbErrorTests = require('./utils/couchdb-error-tests')
 
 getServer(function (error, server) {
   if (error) {
-    return test.fail(error)
+    throw error
   }
 
   var jsonAPIHeaders = {

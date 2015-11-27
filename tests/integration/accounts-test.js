@@ -7,7 +7,7 @@ var couchdbErrorTests = require('./utils/couchdb-error-tests')
 
 getServer(function (error, server) {
   if (error) {
-    return test.fail(error)
+    throw error
   }
 
   var jsonAPIHeaders = {
@@ -144,6 +144,113 @@ getServer(function (error, server) {
     })
 
     couchdbErrorTests(server, group, getAccountsResponseMock, getAccountsRouteOptions)
+
+    group.end()
+  })
+
+  test('GET /accounts/abc4567', {only: true}, function (group) {
+    group.test('No Authorization header sent', function (t) {
+      server.inject({
+        method: 'GET',
+        url: '/accounts/abc4567',
+        headers: {}
+      }, function (response) {
+        t.is(response.statusCode, 403, 'returns 403 status')
+        t.end()
+      })
+    })
+
+    group.test('Account found', function (t) {
+      var couchdb = nock('http://localhost:5984', {
+        reqheaders: {
+          cookie: 'AuthSession=sessionid123'
+        }
+      }).get('/_users/_design/byId/_view/byId?key=abc1234&include_docs=true').reply(200, {
+        total_rows: 1,
+        offset: 0,
+        rows: [{
+          doc: {
+            roles: [
+              'id:abc1234'
+            ],
+            name: 'pat',
+            profile: {
+              fullname: 'Dr. Pat Hook'
+            }
+          }
+        }]
+      })
+
+      var account = require('./fixtures/admin-account.json')
+
+      server.inject({
+        method: 'GET',
+        url: '/accounts/abc1234',
+        headers: headersWithAuth
+      }, function (response) {
+        t.is(couchdb.pendingMocks()[0], undefined, 'all mocks satisfied')
+        delete response.result.meta
+        t.is(response.statusCode, 200, 'returns 200 status')
+        t.deepEqual(response.result, account, 'returns the right content')
+        t.end()
+      })
+    })
+
+    group.test('Account not found', function (t) {
+      var couchdb = nock('http://localhost:5984', {
+        reqheaders: {
+          cookie: 'AuthSession=sessionid123'
+        }
+      }).get('/_users/_design/byId/_view/byId?key=abc1234&include_docs=true')
+        .reply(200, {total_rows: 1, offset: 0, rows: []})
+
+      server.inject({
+        method: 'GET',
+        url: '/accounts/abc1234',
+        headers: headersWithAuth
+      }, function (response) {
+        t.is(couchdb.pendingMocks()[0], undefined, 'all mocks satisfied')
+        delete response.result.meta
+        t.is(response.statusCode, 404, 'returns 404 status')
+        t.end()
+      })
+    })
+
+    group.test('Account found with ?include=profile', function (t) {
+      var couchdb = nock('http://localhost:5984', {
+        reqheaders: {
+          cookie: 'AuthSession=sessionid123'
+        }
+      }).get('/_users/_design/byId/_view/byId?key=abc1234&include_docs=true').reply(200, {
+        total_rows: 1,
+        offset: 0,
+        rows: [{
+          doc: {
+            roles: [
+              'id:abc1234'
+            ],
+            name: 'pat',
+            profile: {
+              fullname: 'Dr Pat Hook'
+            }
+          }
+        }]
+      })
+
+      var accountWithProfile = require('./fixtures/admin-account-with-profile.json')
+
+      server.inject({
+        method: 'GET',
+        url: '/accounts/abc1234?include=profile',
+        headers: headersWithAuth
+      }, function (response) {
+        t.is(couchdb.pendingMocks()[0], undefined, 'all mocks satisfied')
+        delete response.result.meta
+        t.is(response.statusCode, 200, 'returns 200 status')
+        t.deepEqual(response.result, accountWithProfile, 'returns the right content')
+        t.end()
+      })
+    })
 
     group.end()
   })
