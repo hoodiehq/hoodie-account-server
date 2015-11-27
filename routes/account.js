@@ -71,7 +71,9 @@ function accountRoutes (server, options, next) {
           throw Boom.forbidden('Admin users have no account')
         }
 
-        return accounts.find(session.account.username, {
+        return accounts.find({
+          username: session.account.username
+        }, {
           bearerToken: sessionId,
           include: request.query.include
         })

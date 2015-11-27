@@ -3,10 +3,19 @@ module.exports = findAccount
 var findIdInRoles = require('../../utils/find-id-in-roles')
 var getAccount = require('../../utils/account/get')
 
-function findAccount (state, username, options) {
+function findAccount (state, idOrObject, options) {
+  var id
+  var username
+  if (typeof idOrObject === 'string') {
+    id = idOrObject
+  } else {
+    id = idOrObject.id
+    username = idOrObject.username
+  }
   return new Promise(function (resolve, reject) {
     getAccount({
       couchUrl: state.url,
+      id: id,
       username: username,
       bearerToken: options.bearerToken
     }, function (error, doc) {
@@ -20,7 +29,7 @@ function findAccount (state, username, options) {
       }
 
       if (options.include === 'profile') {
-        account.profile = account.profile
+        account.profile = doc.profile
       }
 
       resolve(account)

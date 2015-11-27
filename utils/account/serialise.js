@@ -7,9 +7,12 @@ function serialiseAccount (options, data) {
 }
 
 function serialiseOne (options, account) {
+  var accountUrl = options.admin
+    ? options.baseUrl + '/accounts/' + account.id
+    : options.baseUrl + '/session/account'
   var json = {
     links: {
-      self: options.baseUrl + '/session/account'
+      self: accountUrl
     },
     data: {
       id: account.id,
@@ -20,7 +23,7 @@ function serialiseOne (options, account) {
       relationships: {
         profile: {
           links: {
-            related: options.baseUrl + '/session/account/profile'
+            related: accountUrl + '/profile'
           },
           data: {
             id: account.id + '-profile',
@@ -32,11 +35,14 @@ function serialiseOne (options, account) {
   }
 
   if (account.profile) {
-    json.included = {
+    json.included = [{
       id: account.id + '-profile',
       type: 'profile',
-      attributes: account.profile || {}
-    }
+      attributes: account.profile,
+      links: {
+        self: accountUrl + '/profile'
+      }
+    }]
   }
 
   return json

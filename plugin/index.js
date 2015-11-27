@@ -3,6 +3,10 @@ hapiAccount.attributes = {
   name: 'account'
 }
 
+var async = require('async')
+
+var couchdbPush = require('couchdb-push')
+
 var routePlugins = [
   require('../routes/session'),
   require('../routes/account'),
@@ -10,19 +14,25 @@ var routePlugins = [
 ]
 
 function hapiAccount (server, options, next) {
-  server.register({
+  var couchdbUrl = options.couchdb.url + '/_users'
+  if (options.admin) {
+    var username = encodeURIComponent(options.admin.username)
+    var password = encodeURIComponent(options.admin.password)
+    couchdbUrl = couchdbUrl.replace('://', '://' + username + ':' + password + '@')
+  }
+  var usersDesignDoc = require.resolve('./couchdb/users-design-doc.js')
+  var plugins = [{
     register: require('@gar/hapi-json-api'),
     options: {}
-  }, function (error) {
-    if (error) {
-      throw error
-    }
-  })
-
-  server.register(routePlugins.map(function (plugin) {
+  }].concat(routePlugins.map(function (plugin) {
     return {
       register: plugin,
       options: options
     }
-  }), next)
+  }))
+
+  async.parallel([
+    couchdbPush.bind(null, couchdbUrl, usersDesignDoc),
+    server.register.bind(server, plugins)
+  ], next)
 }

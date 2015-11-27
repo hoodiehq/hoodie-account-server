@@ -46,8 +46,41 @@ function accountRoutes (server, options, next) {
     }
   }
 
+  var getAccountRoute = {
+    method: 'GET',
+    path: prefix + '/accounts/{id}',
+    config: {
+      auth: false,
+      validate: {
+        headers: validations.bearerTokenHeader,
+        failAction: joiFailAction
+      }
+    },
+    handler: function (request, reply) {
+      var sessionId = toBearerToken(request)
+
+      return accounts.find(request.params.id, {
+        bearerToken: sessionId,
+        include: request.query.include
+      })
+
+      .then(function (account) {
+        return serialise({
+          baseUrl: server.info.uri + prefix,
+          include: request.query.include,
+          admin: true
+        }, account)
+      })
+
+      .then(reply)
+
+      .catch(reply)
+    }
+  }
+
   server.route([
-    getAccountsRoute
+    getAccountsRoute,
+    getAccountRoute
   ])
 
   next()

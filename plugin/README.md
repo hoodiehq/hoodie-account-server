@@ -2,6 +2,14 @@
 
 # hapi CouchDB Account Plugin
 
+Exposes a [REST API](../routes/README.md) and [JavaScript API](../api/README.md) at
+`server.plugins.account.api`.
+
+This plugin also creates `_users/_design/byId` in your CouchDB, which has one
+map function ([see doc](couchdb/users-design-doc.js)).
+
+## Example
+
 ```js
 var Hapi = require('hapi')
 var hapiAccount = require('hoodie-server-account')
@@ -79,8 +87,7 @@ server.start(function () {
 });
 ```
 
-`hoodie-server-account` also adds a Promise-based API at
-`server.plugins.account.api`. More in the [CouchDB Account API README.md](api/README.md)
+## Options
 
 ### options.couchdb
 
