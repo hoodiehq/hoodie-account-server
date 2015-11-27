@@ -9,12 +9,12 @@ function removeAccount (state, username, options) {
       username: username,
       bearerToken: options.bearerToken,
       includeProfile: options.include === 'account.profile'
-    }, function (error, session) {
+    }, function (error) {
       if (error) {
         return reject(error)
       }
 
-      resolve(session)
+      resolve()
     })
   })
 }

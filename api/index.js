@@ -9,6 +9,7 @@ var removeSession = require('./sessions/remove')
 var addAccount = require('./accounts/add')
 var findAccount = require('./accounts/find')
 var findAllAccounts = require('./accounts/find-all')
+var updateAccount = require('./accounts/update')
 var removeAccount = require('./accounts/remove')
 
 function accountApi (options) {
@@ -24,7 +25,8 @@ function accountApi (options) {
       add: addAccount.bind(null, state),
       find: findAccount.bind(null, state),
       findAll: findAllAccounts.bind(null, state),
-      remove: removeAccount.bind(null, state)
+      remove: removeAccount.bind(null, state),
+      update: updateAccount.bind(null, state)
     }
   }
 }

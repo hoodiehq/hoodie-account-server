@@ -119,10 +119,52 @@ function accountRoutes (server, options, next) {
     }
   }
 
+  var patchAccountRoute = {
+    method: 'PATCH',
+    path: prefix + '/accounts/{id}',
+    config: {
+      auth: false,
+      validate: {
+        headers: validations.bearerTokenHeader,
+        failAction: joiFailAction
+      }
+    },
+    handler: function (request, reply) {
+      var sessionId = toBearerToken(request)
+      var username = request.payload.data.attributes.username
+      var password = request.payload.data.attributes.password
+      var profile = request.payload.data.attributes.profile
+
+      return accounts.update(request.params.id, {
+        username: username,
+        password: password,
+        profile: profile
+      }, {
+        bearerToken: sessionId,
+        include: request.query.include
+      })
+
+      .then(function (account) {
+        return serialise({
+          baseUrl: server.info.uri + prefix,
+          include: request.query.include,
+          admin: true
+        }, account)
+      })
+
+      .then(function (json) {
+        reply(json).code(201)
+      })
+
+      .catch(reply)
+    }
+  }
+
   server.route([
     postAccountsRoute,
     getAccountsRoute,
-    getAccountRoute
+    getAccountRoute,
+    patchAccountRoute
   ])
 
   next()
