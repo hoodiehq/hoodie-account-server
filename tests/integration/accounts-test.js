@@ -413,4 +413,62 @@ getServer(function (error, server) {
 
     group.end()
   })
+
+  test('DELETE /accounts/abc4567', function (group) {
+    var deleteAccountsRouteOptions = {
+      method: 'DELETE',
+      url: '/accounts/abc4567',
+      headers: headersWithAuth,
+      payload: {
+        data: {
+          type: 'account',
+          attributes: {
+            username: 'sam'
+          }
+        }
+      }
+    }
+
+    function deleteAccountsResponseMock () {
+      return nock('http://localhost:5984')
+        .get('/_users/_design/byId/_view/byId?key=abc4567')
+        .reply(200, {
+          total_rows: 1,
+          offset: 0,
+          rows: [{
+            id: 'org.couchdb.user:pat'
+          }]
+        })
+    }
+
+    group.test('No Authorization header sent', function (t) {
+      server.inject({
+        method: 'DELETE',
+        url: '/accounts/abc4567',
+        headers: {}
+      }, function (response) {
+        t.is(response.statusCode, 403, 'returns 403 status')
+        t.end()
+      })
+    })
+
+    group.test('account exists', {only: true}, function (t) {
+      var couchdb = deleteAccountsResponseMock()
+        .delete('/_users/org.couchdb.user:pat')
+        .reply(201, {
+          ok: true,
+          id: 'org.couchdb.user:pat',
+          rev: '2-3456'
+        })
+
+      server.inject(deleteAccountsRouteOptions, function (response) {
+        t.is(couchdb.pendingMocks()[0], undefined, 'all mocks satisfied')
+        t.is(response.statusCode, 204, 'returns 204 status')
+        t.is(response.result, null, 'returns no content')
+        t.end()
+      })
+    })
+
+    group.end()
+  })
 })
