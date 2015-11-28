@@ -160,11 +160,37 @@ function accountRoutes (server, options, next) {
     }
   }
 
+  var deleteAccountRoute = {
+    method: 'DELETE',
+    path: prefix + '/accounts/{id}',
+    config: {
+      auth: false,
+      validate: {
+        headers: validations.bearerTokenHeader,
+        failAction: joiFailAction
+      }
+    },
+    handler: function (request, reply) {
+      var sessionId = toBearerToken(request)
+
+      return accounts.remove(request.params.id, {
+        bearerToken: sessionId
+      })
+
+      .then(function (/* json */) {
+        reply().code(204)
+      })
+
+      .catch(reply)
+    }
+  }
+
   server.route([
     postAccountsRoute,
     getAccountsRoute,
     getAccountRoute,
-    patchAccountRoute
+    patchAccountRoute,
+    deleteAccountRoute
   ])
 
   next()

@@ -101,7 +101,9 @@ function accountRoutes (server, options, next) {
       })
 
       .then(function (session) {
-        return accounts.remove(session.account.username, {
+        return accounts.remove({
+          username: session.account.username
+        }, {
           bearerToken: sessionId,
           include: request.query.include
         })
