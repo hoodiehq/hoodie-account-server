@@ -27,12 +27,12 @@ requirements:
    "derived_key": "94266b18ecec62aa78cbe15cb27e98d7689ded5c",
    "salt": "ae995d9d359cb88105d120a0a8c498a2",
    // roles must be an array of strings. Roles can be used to give access
-   // to databases
-   "roles": [],
+   // to databases. It must include an "id:..." role, see below
+   "roles": ["id:abc4567"],
 }
 ```
 
-### The "id role" – because usernames can change.
+### <a name="id-role"></a>The "id role" – because usernames can change.
 
 Access permissions can be set in CouchDB on a database level, by using usernames
 or roles. As usernames are prone to change, `hoodie-server-account` adds an
