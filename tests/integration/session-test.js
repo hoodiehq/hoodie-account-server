@@ -105,6 +105,28 @@ getServer(function (error, server) {
       })
     })
 
+    group.test('Session was created, but user has no id:... role', function (t) {
+      postSessionResponseMock().reply(201, {
+        ok: true,
+        // name is null when user is also a CouchDB admin, so we work around it
+        // https://issues.apache.org/jira/browse/COUCHDB-1356
+        name: null,
+        roles: ['']
+      }, {
+        'Set-Cookie': ['AuthSession=sessionid123; Version=1; Expires=Tue, 08-Sep-2015 00:35:52 GMT; Max-Age=1209600; Path=/; HttpOnly']
+      })
+
+      server.inject(putSessionRouteOptions, function (response) {
+        delete response.result.meta
+
+        t.is(response.statusCode, 403, 'returns 403 status')
+        t.is(response.result.errors.length, 1, 'returns one error')
+        t.is(response.result.errors[0].title, 'Forbidden', 'returns "Forbidden" error')
+        t.is(response.result.errors[0].detail, '"id:..." role missing (https://github.com/hoodiehq/hoodie-server-account/blob/master/how-it-works.md#id-role)')
+        t.end()
+      })
+    })
+
     couchdbErrorTests(server, group, postSessionResponseMock, putSessionRouteOptions)
 
     group.end()
