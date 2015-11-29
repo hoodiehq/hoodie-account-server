@@ -39,6 +39,11 @@ function createSession (options, callback) {
 
     var accountId = findIdInRoles(body.roles)
     var isAdmin = hasAdminRole(body.roles)
+
+    if (!isAdmin && !accountId) {
+      return callback(Boom.forbidden(('"id:..." role missing (https://github.com/hoodiehq/hoodie-server-account/blob/master/how-it-works.md#id-role)')))
+    }
+
     var session = {
       id: bearerToken,
       account: {
