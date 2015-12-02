@@ -1,4 +1,4 @@
-[back to hoodie-standalone-account](../README.md)
+[back to hoodie-server-account](../README.md)
 
 # CouchDB Account API
 

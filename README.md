@@ -43,7 +43,7 @@ server.start(function () {
 - [Routes](routes/README.md)
 - [API](api/README.md)
 - [How it works](how-it-works.md)
-- [Testing](routes/README.md)
+- [Testing](tests/README.md)
 
 
 ## License

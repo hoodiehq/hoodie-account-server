@@ -1,4 +1,4 @@
-[back to hoodie-standalone-account](README.md)
+[back to hoodie-server-account](README.md)
 
 # How it works
 
@@ -16,10 +16,10 @@ requirements:
    // _rev is required by CouchDB for every document
    "_rev": "1-c7eb42781549d144e6a42814376686e0",
    // name MUST be the username
-   "name": "test",
+   "name": "pat",
    // type MUST be set to "user"
    "type": "user",
-   // iterations, password_scheme, derived_key & salt is automatically created
+   // iterations, password_scheme, derived_key & salt are automatically created
    // by CouchDB to hash the password. The original password does not get stored
    // and cannot be retrieved
    "iterations": 10,
@@ -85,7 +85,7 @@ property of the `_users` doc. The properties can be accessed / changed using the
 ### Tokens
 
 Tokens are stored for flexible usage in the `tokens` property. It's an array
-of objects, in which all objects have an id, timestamps, expiration date and
+of objects, in which all objects have an id, timestamp, expiration date and
 a name. More meta properties can be added as needed.
 
 ```js

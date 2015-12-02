@@ -1,4 +1,4 @@
-[back to hoodie-standalone-account](../README.md)
+[back to hoodie-server-account](../README.md)
 
 # hapi CouchDB Account Plugin
 
@@ -131,7 +131,7 @@ by the server.
 
 ### options.schema
 
-A JSON schema to validate account properties against.
+A [JSON schema](http://json-schema.org/) to validate account properties against.
 
 ### options.requests
 
