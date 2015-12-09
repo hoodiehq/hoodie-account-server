@@ -1,5 +1,5 @@
 {
-  "name": "hoodie-server-account",
+  "name": "@hoodie/server-account-node-sessions",
   "version": "0.0.0-semantically-released",
   "description": "Account REST API backed by CouchDB",
   "main": "plugin/index.js",
@@ -15,6 +15,12 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/hoodiehq/hoodie-server-account.git"
+  },
+  "release": {
+    "branch": "node-sessions"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "keywords": [
     "hapi",
