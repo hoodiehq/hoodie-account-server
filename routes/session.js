@@ -8,6 +8,7 @@ var joiFailAction = require('../utils/joi-fail-action')
 var serialiseSession = require('../utils/session/serialise')
 var toBearerToken = require('../utils/to-bearer-token')
 var validations = require('../utils/validations')
+var Boom = require('boom')
 
 function sessionRoutes (server, options, next) {
   var couchUrl = options.couchdb.url
@@ -29,9 +30,14 @@ function sessionRoutes (server, options, next) {
       }
     },
     handler: function (request, reply) {
+      var type = request.payload.data.type
       var username = request.payload.data.attributes.username
       var password = request.payload.data.attributes.password
       var query = request.query
+
+      if (type !== 'session') {
+        return reply(Boom.conflict("Invalid type provided, only supported type is 'session'"))
+      }
 
       sessions.add({
         username: username,
