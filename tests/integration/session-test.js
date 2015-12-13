@@ -5,6 +5,7 @@ var lodash = require('lodash')
 var getServer = require('./utils/get-server')
 var couchdbErrorTests = require('./utils/couchdb-error-tests')
 var authorizationHeaderNotAllowedErrorTest = require('./utils/authorization-header-not-allowed-error')
+var invalidTypeErrors = require('./utils/invalid-type-errors')
 
 getServer(function (error, server) {
   if (error) {
@@ -40,7 +41,9 @@ getServer(function (error, server) {
       })
     }
 
+    invalidTypeErrors(server, group, putSessionRouteOptions)
     authorizationHeaderNotAllowedErrorTest(server, group, putSessionRouteOptions, headersWithAuth)
+    couchdbErrorTests(server, group, postSessionResponseMock, putSessionRouteOptions)
 
     group.test('Invalid credentials', function (t) {
       var couchdb = postSessionResponseMock()
@@ -58,8 +61,6 @@ getServer(function (error, server) {
         t.end()
       })
     })
-
-    couchdbErrorTests(server, group, postSessionResponseMock, putSessionRouteOptions)
 
     group.test('Session was created', {only: true}, function (t) {
       postSessionResponseMock().reply(201, {
