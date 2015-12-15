@@ -1,4 +1,5 @@
 var Hapi = require('hapi')
+var lolex = require('lolex')
 var nock = require('nock')
 var PouchDB = require('pouchdb')
 var test = require('tap').test
@@ -51,7 +52,7 @@ getServer(function (error, server) {
         data: {
           type: 'session',
           attributes: {
-            username: 'pat',
+            username: 'pat-doe',
             password: 'secret'
           }
         }
@@ -59,23 +60,24 @@ getServer(function (error, server) {
     }
 
     group.test('Session was created', {only: true}, function (t) {
+      var clock = lolex.install(0, ['Date'])
       nock('http://localhost:5984')
         // PouchDB sends a request to see if db exists
         .get('/_users/')
         .reply(200, {})
         // GET users doc
-        .get('/_users/org.couchdb.user%3Apat')
+        .get('/_users/org.couchdb.user%3Apat-doe')
         .query(true)
         .reply(200, {
-          _id: 'org.couchdb.user:pat',
-          _rev: '1-259fa583b678c400537fd577a1cb09be',
+          _id: 'org.couchdb.user:pat-doe',
+          _rev: '1-234',
           password_scheme: 'pbkdf2',
           iterations: 10,
           type: 'user',
-          name: 'pat',
-          roles: ['id:userid123'],
-          derived_key: 'e2d9816e4785e0d8d9b4f56fd33b313f76e758cc',
-          salt: '2cca0b4cc89bdedf714a3651ab90b6ad'
+          name: 'pat-doe',
+          roles: ['id:userid123', 'mycustomrole'],
+          derived_key: 'derived123',
+          salt: 'salt123'
         })
 
       var sessionResponse = require('./fixtures/session-response.json')
@@ -83,8 +85,9 @@ getServer(function (error, server) {
       server.inject(putSessionRouteOptions, function (response) {
         delete response.result.meta
         t.is(response.statusCode, 201, 'returns 201 status')
-        t.deepEqual(response.result, sessionResponse, 'returns the right content')
+        t.deepEqual(response.result.data.id, sessionResponse.data.id, 'returns the right content')
         t.end()
+        clock.uninstall()
       })
     })
 

@@ -9,7 +9,6 @@ var findIdInRoles = require('../find-id-in-roles')
 var hasAdminRole = require('../has-admin-role')
 
 function createSession (options, callback) {
-
   options.db.get('org.couchdb.user:' + options.username)
   .then(function (response) {
     // TODO: compare password: options.password
