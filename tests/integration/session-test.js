@@ -8,7 +8,7 @@ var authorizationHeaderNotAllowedErrorTest = require('./utils/authorization-head
 
 getServer(function (error, server) {
   if (error) {
-    return test.fail(error)
+    return test.error(error)
   }
 
   var jsonAPIHeaders = {

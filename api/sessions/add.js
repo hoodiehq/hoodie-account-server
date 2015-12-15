@@ -5,7 +5,7 @@ var createSession = require('../../utils/session/create')
 function addSession (state, options) {
   return new Promise(function (resolve, reject) {
     createSession({
-      couchUrl: state.url,
+      db: state.db,
       username: options.username,
       password: options.password,
       includeProfile: options.include === 'account.profile'

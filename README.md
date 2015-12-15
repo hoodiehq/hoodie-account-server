@@ -16,42 +16,12 @@ used just as before in addition to the node layer
 See https://github.com/hoodiehq/discussion/issues/86 for context.
 
 Instead of using [request](https://www.npmjs.com/package/request) to manage
-user accounts, sesions, etc, we want to use PouchDB + a custom plugin that
-exposes APIs for all these things, and decides internally what to do with it
-based on wether the backend is CouchDB, levelDB, or whatever.
+user accounts, sesions, etc, we want to use PouchDB + [pouchdb-auth](https://github.com/pouchdb/pouchdb-auth)
 
-The custom PouchDB plugin needs to expose APIs for these use cases
+Run test for signup, which is using PouchDB already
 
-- Create session id for username
-- Get a users doc for username & password (we’ll use that for session validation, too)
-- create users doc with username, password, roles
-- update a users doc, either as admin, or by passing in session id
-- delete a users doc, either as admin, or by passing in a session id
-- add / change security for existing database
-
-Dreamcode (assuming `db` is a PouchDB instance with our plugin applied)
-
-```js
-// Create session id for username
-db.auth.createSession({name: 'pat', auth: 'admin'})
-db.auth.createSession({name: 'pat', auth: {password: 'secret'}})
-// Get a users doc for username & password
-db.auth.getAccount({name: 'pat'}, { auth: 'admin'})
-db.auth.getAccount({name: 'pat'}, { auth: {session: 'sessionId123'}})
-db.auth.getAccount({name: 'pat'}, { auth: {password: 'secret'}})
-// update a users doc (delta change, not relace)
-db.auth.updateAccount({name: 'pat', newProperty: 'newValue'}, {auth: 'admin'})
-db.auth.updateAccount({name: 'pat', newProperty: 'newValue'}, {auth: { session: 'sessionId123'}})
-// delete a users doc
-db.auth.updateAccount({name: 'pat', _deleted: true}, { auth: 'admin'})
-db.auth.updateAccount({name: 'pat', _deleted: true}, { auth: { session: 'sessionId123'}})
-// add / change security for existing database
-db.auth.setSecurity({
-  db: 'dbname',
-  members: {
-    roles: ["myuserrole"]
-  }
-})
+```
+node tests/integration/session-with-pouchdb-test.js
 ```
 
 ## Usage
@@ -61,32 +31,27 @@ var Hapi = require('hapi')
 var PouchDB = require('PouchDB')
 var hapiAccount = require('hoodie-server-account')
 
-PouchDB.plugin(require('pouchdb-hoodie-auth')({
-  secret: 'supersecret123usedforsessionids',
-  admin: {
-    username: 'admin',
-    password: 'secret'
-  }
-}))
+PouchDB.plugin(require('pouchdb-auth')
 
-var db = new PouchDB('http://localhost:5984')
-
-var options = {
-  db: db,
-  notifications: {
-    service: 'gmail',
-    auth: {
-      user: 'gmail.user@gmail.com',
-      pass: 'userpass'
+var db = new PouchDB('http://localhost:5984/_users')
+db.useAsAuthenticationDB().then(function () {
+  var options = {
+    db: db,
+    notifications: {
+      service: 'gmail',
+      auth: {
+        user: 'gmail.user@gmail.com',
+        pass: 'userpass'
+      }
     }
-  }
-})
+  })
 
-server.register({register: hapiAccount}, options, function (error) {});
-server.connection({ port: 8000 });
-server.start(function () {
-  console.log('Server running at %s', server.info.uri);
-});
+  server.register({register: hapiAccount, options: options}, function (error) {});
+  server.connection({ port: 8000 });
+  server.start(function () {
+    console.log('Server running at %s', server.info.uri);
+  });
+})
 ```
 
 ## More
