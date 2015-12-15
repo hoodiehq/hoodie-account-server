@@ -44,7 +44,7 @@
     "nock": "^3.0.0",
     "nyc": "^4.0.1",
     "pouchdb": "^5.1.0",
-    "pouchdb-users": "^1.0.0",
+    "pouchdb-users": "^1.0.1",
     "semantic-release": "^6.0.3",
     "standard": "^5.4.0",
     "tap": "^2.2.1",

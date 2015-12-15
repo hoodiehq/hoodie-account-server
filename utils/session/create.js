@@ -1,6 +1,7 @@
 module.exports = createSession
 
 var Boom = require('boom')
+var calculateSessionId = require('couchdb-calculate-session-id')
 
 var findcustomRoles = require('../find-custom-roles')
 var findIdInRoles = require('../find-id-in-roles')
@@ -8,28 +9,18 @@ var findIdInRoles = require('../find-id-in-roles')
 var hasAdminRole = require('../has-admin-role')
 
 function createSession (options, callback) {
-  // options.db.get(options.username)
-  options.db.get('test')
-  .catch(function (error) {
-    console.log("error")
-    console.log(error)
 
-  })
+  options.db.get('org.couchdb.user:' + options.username)
   .then(function (response) {
     // TODO: compare password: options.password
-
-    console.log("response")
-    console.log(response)
-    throw new Error('BLOCKER: response does not expose session id')
-    process.exit()
-
-    var bearerToken = response.headers['set-cookie'][0].match(/AuthSession=([^;]+)/)
-
-    if (!bearerToken) {
-      return callback(Boom.badImplementation())
-    }
-
-    bearerToken = bearerToken.pop()
+    // TODO: calculate real cookie
+    var sessionTimeout = 1209600 // 14 days
+    var bearerToken = calculateSessionId(
+      response.name,
+      response.salt,
+      options.secret,
+      Math.floor(Date.now() / 1000) + sessionTimeout
+    )
 
     var accountId = findIdInRoles(response.roles)
     var isAdmin = hasAdminRole(response.roles)
@@ -55,5 +46,10 @@ function createSession (options, callback) {
     if (!options.includeProfile) {
       return callback(null, session)
     }
+  })
+  .catch(function (error) {
+    console.log("error")
+    console.log(error)
+    callback(reror)
   })
 }

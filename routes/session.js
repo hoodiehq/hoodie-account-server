@@ -11,7 +11,7 @@ var validations = require('../utils/validations')
 
 function sessionRoutes (server, options, next) {
   var prefix = options.prefix || ''
-  var sessions = getApi({db: options.db}).sessions
+  var sessions = getApi({db: options.db, secret: options.secret}).sessions
   var serialise = serialiseSession.bind(null, {
     baseUrl: server.info.uri + prefix
   })
