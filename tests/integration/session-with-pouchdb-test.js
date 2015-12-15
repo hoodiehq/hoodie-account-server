@@ -6,7 +6,7 @@ var test = require('tap').test
 // var hapiAccount = require('../../plugin')
 
 test('PouchDB foo', function (t) {
-  nock.recorder.rec()
+  // nock.recorder.rec()
   nock('http://localhost:5984')
     .get('/mydb/')
     .reply(200, {
@@ -29,7 +29,8 @@ test('PouchDB foo', function (t) {
       'cache-control': 'must-revalidate'
     })
     .get('/mydb/mydoc')
-    .query({})
+    // https://github.com/pgte/nock/issues/426#issuecomment-164819712
+    .query(true)
     .reply(200, {
       _id: 'mydoc',
       _rev: '1-967a00dff5e02add41819138abb3284d'
