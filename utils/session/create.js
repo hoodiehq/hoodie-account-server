@@ -2,6 +2,7 @@ module.exports = createSession
 
 var Boom = require('boom')
 var calculateSessionId = require('couchdb-calculate-session-id')
+var Promise = require('lie')
 
 var findcustomRoles = require('../find-custom-roles')
 var findIdInRoles = require('../find-id-in-roles')
@@ -11,8 +12,27 @@ var hasAdminRole = require('../has-admin-role')
 function createSession (options, callback) {
   options.db.get('org.couchdb.user:' + options.username)
   .then(function (response) {
-    // TODO: compare password: options.password
-    // TODO: calculate real cookie
+    return new Promise(function (resolve, reject) {
+      checkPassword(
+        options.password,
+        response.salt,
+        response.iterations,
+        response.derived_key,
+        function (error, isCorrectPassword) {
+          if (error) {
+            return reject(error)
+          }
+
+          if (!isCorrectPassword) {
+            return reject(Boom.unauthorized('Invalid password'))
+          }
+
+          resolve(response)
+        }
+      )
+    })
+  })
+  .then(function (response) {
     var sessionTimeout = 1209600 // 14 days
     var bearerToken = calculateSessionId(
       response.name,
@@ -25,7 +45,7 @@ function createSession (options, callback) {
     var isAdmin = hasAdminRole(response.roles)
 
     if (!isAdmin && !accountId) {
-      return callback(Boom.forbidden(('"id:..." role missing (https://github.com/hoodiehq/hoodie-server-account/blob/master/how-it-works.md#id-role)')))
+      return callback(Boom.forbidden('"id:..." role missing (https://github.com/hoodiehq/hoodie-server-account/blob/master/how-it-works.md#id-role)'))
     }
 
     var session = {
@@ -46,9 +66,16 @@ function createSession (options, callback) {
       return callback(null, session)
     }
   })
-  .catch(function (error) {
-    console.log("error")
-    console.log(error)
-    callback(reror)
+  .catch(callback)
+}
+
+var crypto = require('crypto')
+function checkPassword (password, salt, iterations, derivedKey, callback) {
+  crypto.pbkdf2(password, salt, iterations, 20, function (error, derivedKeyCheck) {
+    if (error) {
+      return callback(error)
+    }
+
+    callback(null, derivedKeyCheck.toString('hex') === derivedKey)
   })
 }

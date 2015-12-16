@@ -10,8 +10,11 @@ function getServer (callback) {
   var server = new Hapi.Server()
   server.connection({ host: 'localhost', port: 80 })
 
-  // mocks for bootstrapping design dock
   nock('http://localhost:5984')
+    // PouchDB sends a request to see if db exists
+    .get('/_users/')
+    .reply(200, {})
+    // mocks for bootstrapping design dock
     .put('/_users')
     .reply(201, {})
     .put('/_users/_design/byId')
@@ -59,36 +62,60 @@ getServer(function (error, server) {
       }
     }
 
-    group.test('Session was created', {only: true}, function (t) {
-      var clock = lolex.install(0, ['Date'])
-      nock('http://localhost:5984')
-        // PouchDB sends a request to see if db exists
-        .get('/_users/')
-        .reply(200, {})
-        // GET users doc
-        .get('/_users/org.couchdb.user%3Apat-doe')
-        .query(true)
-        .reply(200, {
-          _id: 'org.couchdb.user:pat-doe',
-          _rev: '1-234',
-          password_scheme: 'pbkdf2',
-          iterations: 10,
-          type: 'user',
-          name: 'pat-doe',
-          roles: ['id:userid123', 'mycustomrole'],
-          derived_key: 'derived123',
-          salt: 'salt123'
-        })
+    group.test('User Found', {only: true}, function (subGroup) {
+      function mockUserFound () {
+        return nock('http://localhost:5984')
+          // GET users doc
+          .get('/_users/org.couchdb.user%3Apat-doe')
+          .query(true)
+          .reply(200, {
+            _id: 'org.couchdb.user:pat-doe',
+            _rev: '1-234',
+            password_scheme: 'pbkdf2',
+            iterations: 10,
+            type: 'user',
+            name: 'pat-doe',
+            roles: ['id:userid123', 'mycustomrole'],
+            derived_key: '4b5c9721ab77dd2faf06a36785fd0a30f0bf0d27',
+            salt: 'salt123'
+          })
+      }
 
       var sessionResponse = require('./fixtures/session-response.json')
 
-      server.inject(putSessionRouteOptions, function (response) {
-        delete response.result.meta
-        t.is(response.statusCode, 201, 'returns 201 status')
-        t.deepEqual(response.result.data.id, sessionResponse.data.id, 'returns the right content')
-        t.end()
-        clock.uninstall()
+      subGroup.test('Valid password', function (t) {
+        var clock = lolex.install(0, ['Date'])
+        mockUserFound()
+
+        server.inject(putSessionRouteOptions, function (response) {
+          delete response.result.meta
+          t.is(response.statusCode, 201, 'returns 201 status')
+          t.deepEqual(response.result.data.id, sessionResponse.data.id, 'returns the right content')
+          t.end()
+
+          clock.uninstall()
+          t.end()
+        })
       })
+
+      subGroup.test('Invalid password', function (t) {
+        var clock = lolex.install(0, ['Date'])
+        var couchdb = mockUserFound()
+        putSessionRouteOptions.payload.data.attributes.password = 'invalidsecret'
+
+        server.inject(putSessionRouteOptions, function (response) {
+          t.doesNotThrow(couchdb.done, 'CouchDB received request')
+          t.is(response.statusCode, 401, 'returns 401 status')
+          t.is(response.result.errors.length, 1, 'returns one error')
+          t.is(response.result.errors[0].title, 'Unauthorized', 'returns "Unauthorized" error')
+          t.is(response.result.errors[0].detail, 'Invalid password', 'returns "Invalid password" message')
+
+          clock.uninstall()
+          t.end()
+        })
+      })
+
+      subGroup.end()
     })
 
     group.end()
