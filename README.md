@@ -16,7 +16,8 @@ used just as before in addition to the node layer
 See https://github.com/hoodiehq/discussion/issues/86 for context.
 
 Instead of using [request](https://www.npmjs.com/package/request) to manage
-user accounts, sesions, etc, we want to use PouchDB + [pouchdb-auth](https://github.com/pouchdb/pouchdb-auth)
+user accounts, sesions, etc, we want to use PouchDB + [pouchdb-users](https://github.com/hoodiehq/pouchdb-users) and create / validate
+sessions directly with node.
 
 Run test for signup, which is using PouchDB already
 
@@ -37,6 +38,9 @@ var db = new PouchDB('http://localhost:5984/_users')
 db.useAsAuthenticationDB().then(function () {
   var options = {
     db: db,
+    admins: {
+      admin: '-pbkdf2-a2ca9d3ee921c26d2e9d61e03a0801b11b8725c6,1081b31861bd1e91611341da16c11c16a12c13718d1f712e,10'
+    }
     notifications: {
       service: 'gmail',
       auth: {

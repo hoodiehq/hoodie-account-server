@@ -14,14 +14,15 @@ map function ([see doc](couchdb/users-design-doc.js)).
 var Hapi = require('hapi')
 var hapiAccount = require('hoodie-server-account')
 
+var PouchDB = require('pouchdb')
+PouchDB.plugin(require('pouchdb-users'))
+var db = new PouchDB('http://localhost:5984/_users')
+
 var options = {
-  couchdb: {
-    url: 'http://localhost:5984',
-    admin: {
-      username: 'admin',
-      password: 'secret'
-    }
-  },
+  db: db,
+  admins: {
+    admin: '-pbkdf2-a2ca9d3ee921c26d2e9d61e03a0801b11b8725c6,1081b31861bd1e91611341da16c11c16a12c13718d1f712e,10'
+  }
   confirmation: 'auto',
   notifications: {
     service: 'gmail',
@@ -89,27 +90,14 @@ server.start(function () {
 
 ## Options
 
-### options.couchdb
+### options.db
 
-Location & admin credentials for CouchDB, either set as object or as string.
+PouchDB instance with the [pouchdb-users](https://github.com/hoodiehq/pouchdb-users)
+plugin.
 
-#### Example 1
+### options.admins
 
-```js
-couchdb: {
-  url: 'http://localhost:5984',
-  admin: {
-    username: 'admin',
-    password: 'secret'
-  }
-}
-```
-
-#### Example 2
-
-```js
-couchdb: 'http://admin:secret@localhost:5984'
-```
+Map of admin usernames to secrets, as it’s defined in CouchDb config
 
 ### options.confirmation
 
