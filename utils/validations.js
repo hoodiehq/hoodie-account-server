@@ -3,7 +3,7 @@ var Joi = require('joi')
 var validations = module.exports = {}
 
 validations.bearerTokenHeader = Joi.object({
-  authorization: Joi.string().required().regex(/^Bearer [a-z0-9\-]+$/).meta({
+  authorization: Joi.string().required().regex(/^Bearer [a-zA-Z0-9_\-]+$/).meta({
     statusCode: 403
   })
 }).unknown().required()

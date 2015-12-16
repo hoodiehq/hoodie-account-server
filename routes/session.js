@@ -6,7 +6,7 @@ module.exports.attributes = {
 var getApi = require('../api')
 var joiFailAction = require('../utils/joi-fail-action')
 var serialiseSession = require('../utils/session/serialise')
-// var toBearerToken = require('../utils/to-bearer-token')
+var toBearerToken = require('../utils/to-bearer-token')
 var validations = require('../utils/validations')
 
 function sessionRoutes (server, options, next) {
@@ -52,63 +52,63 @@ function sessionRoutes (server, options, next) {
     }
   }
 
-  // var getSessionRoute = {
-  //   method: 'GET',
-  //   path: prefix + '/session',
-  //   config: {
-  //     auth: false,
-  //     validate: {
-  //       headers: validations.bearerTokenHeader,
-  //       query: validations.sessionQuery,
-  //       failAction: joiFailAction
-  //     }
-  //   },
-  //   handler: function (request, reply) {
-  //     var id = toBearerToken(request)
-  //
-  //     sessions.find(id, {
-  //       include: request.query.include
-  //     })
-  //
-  //     .then(serialise)
-  //
-  //     .then(reply)
-  //
-  //     .catch(reply)
-  //   }
-  // }
-  //
-  // var deleteSessionRoute = {
-  //   method: 'DELETE',
-  //   path: prefix + '/session',
-  //   config: {
-  //     auth: false,
-  //     validate: {
-  //       headers: validations.bearerTokenHeader,
-  //       query: validations.sessionQuery,
-  //       failAction: joiFailAction
-  //     }
-  //   },
-  //   handler: function (request, reply) {
-  //     var id = toBearerToken(request)
-  //
-  //     sessions.remove(id, {
-  //       include: request.query.include
-  //     })
-  //
-  //     .then(function (json) {
-  //       if (!json) {
-  //         return reply().code(204)
-  //       }
-  //       reply(serialise(json)).code(200)
-  //     })
-  //
-  //     .catch(reply)
-  //   }
-  // }
+  var getSessionRoute = {
+    method: 'GET',
+    path: prefix + '/session',
+    config: {
+      auth: false,
+      validate: {
+        headers: validations.bearerTokenHeader,
+        query: validations.sessionQuery,
+        failAction: joiFailAction
+      }
+    },
+    handler: function (request, reply) {
+      var id = toBearerToken(request)
+
+      sessions.find(id, {
+        include: request.query.include
+      })
+
+      .then(serialise)
+
+      .then(reply)
+
+      .catch(reply)
+    }
+  }
+
+  var deleteSessionRoute = {
+    method: 'DELETE',
+    path: prefix + '/session',
+    config: {
+      auth: false,
+      validate: {
+        headers: validations.bearerTokenHeader,
+        query: validations.sessionQuery,
+        failAction: joiFailAction
+      }
+    },
+    handler: function (request, reply) {
+      var id = toBearerToken(request)
+
+      sessions.remove(id, {
+        include: request.query.include
+      })
+
+      .then(function (json) {
+        if (!json) {
+          return reply().code(204)
+        }
+        reply(serialise(json)).code(200)
+      })
+
+      .catch(reply)
+    }
+  }
 
   server.route([
-    // getSessionRoute,
+    getSessionRoute,
     createSessionRoute
     // deleteSessionRoute
   ])

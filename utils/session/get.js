@@ -1,47 +1,46 @@
 module.exports = getSession
 
 var Boom = require('boom')
+var base64url = require("base64url")
+var calculateSessionId = require('couchdb-calculate-session-id')
 
-var findcustomRoles = require('../find-custom-roles')
+var findCustomRoles = require('../find-custom-roles')
 var findIdInRoles = require('../find-id-in-roles')
 var getAccount = require('../account/get')
 var hasAdminRole = require('../has-admin-role')
 
 function getSession (options, callback) {
-  var request = require('request').defaults({
-    json: true,
-    baseUrl: options.couchUrl,
-    timeout: 10000 // 10 seconds
-  })
+  // fetch user doc
+  //   calcualte session id with user salt & bearer-time & server secret
+  //   compare calculated session id with bearer token
+  var username = getUserNameFromSessionId(options.sessionId);
 
-  request.get({
-    url: '/_session',
-    headers: {
-      cookie: 'AuthSession=' + options.bearerToken
-    }
-  }, function (error, response, body) {
-    if (error) {
-      return callback(Boom.wrap(error))
-    }
+  options.db.get('org.couchdb.user:' + username)
+  .then(function (response) {
+    return new Promise(function (resolve, reject) {
+      validateSessionId(options, response, function(error, isValidSession) {
+        if (error) {
+          return reject(error)
+        }
 
-    if (response.statusCode >= 400) {
-      return callback(Boom.create(response.statusCode, body.reason))
-    }
-
-    if (body.userCtx.name === null) {
-      return callback(Boom.notFound())
-    }
-
-    var username = body.userCtx.name
-    var accountId = findIdInRoles(body.userCtx.roles)
-    var isAdmin = hasAdminRole(body.userCtx.roles)
+        if (!isValidSession) {
+          return reject(Boom.unauthorized('Invalid password'))
+        }
+        resolve(response)
+      })
+    })
+  }).then(function(user) {
+    var username = user.userCtx.name
+    var roles = user.userCtx.roles
+    var accountId = findIdInRoles(roles)
+    var isAdmin = hasAdminRole(roles)
     var session = {
-      id: options.bearerToken,
+      id: options.sessionId,
       account: {
         id: accountId,
         username: username,
         isAdmin: isAdmin,
-        roles: findcustomRoles(body.userCtx.roles)
+        roles: findCustomRoles(roles)
       }
     }
 
@@ -53,18 +52,44 @@ function getSession (options, callback) {
       return callback(null, session)
     }
 
-    getAccount({
-      couchUrl: options.couchUrl,
-      bearerToken: options.bearerToken,
-      username: session.account.username
-    }, function (error, account) {
-      if (error) {
-        return callback(error)
-      }
-
-      session.account.profile = account.profile || {}
-
-      callback(null, session)
-    })
+    return callback(null, session)
   })
+  .catch(function (error) {
+    // TODO MAYBE
+    // if (error) {
+    //   return callback(Boom.wrap(error))
+    // }
+    //
+    // if (response.statusCode >= 400) {
+    //   return callback(Boom.create(response.statusCode, body.reason))
+    // }
+    //
+    // if (body.userCtx.name === null) {
+    //   return callback(Boom.notFound())
+    // }
+    callback(Boom.wrap(error, error.status))
+  })
+}
+
+function decodeSessionId(id) {
+  var parts = base64url.decode(id).split(':')
+  return {
+    name: parts[0],
+    time: parts[1],
+    token: parts[2]
+  }
+}
+
+function getUserNameFromSessionId(id) {
+  return decodeSessionId(id).name
+}
+
+function validateSessionId(options, user, callback) {
+  var session = decodeSessionId(options.sessionId)
+  var salt = user.userCtx.salt
+  var name = session.name
+  var time = parseInt(session.time, 10)
+  var secret = options.secret
+  var isValidSession = calculateSessionId(name, salt, secret, time)
+  callback(null, isValidSession)
 }

@@ -16,8 +16,21 @@ var hapiAccount = require('../../plugin')
 var authorizationHeaderNotAllowedErrorTest = require('./utils/authorization-header-not-allowed-error')
 var couchdbErrorTests = require('./utils/couchdb-error-tests')
 
+var jsonAPIHeaders = {
+  accept: 'application/vnd.api+json',
+  'content-type': 'application/vnd.api+json'
+}
+
+var headersWithAuth = merge({authorization: 'Bearer cGF0LWRvZToxMjc1MDA6nIp2130Iq41NBWNVDo_8ezbTR0M'}, jsonAPIHeaders)
+
 function getServer (callback) {
-  var server = new Hapi.Server()
+  var server = new Hapi.Server({
+    // easy debug!
+    // debug: {
+    //   request: ['error'],
+    //   log: ['error']
+    // }
+  })
   server.connection({ host: 'localhost', port: 80 })
 
   nock('http://localhost:5984')
@@ -290,6 +303,62 @@ getServer(function (error, server) {
 
       subGroup.end()
     })
+
+    group.end()
+  })
+
+  test('GET /session', function (group) {
+    var getSessionRouteOptions = {
+      method: 'GET',
+      url: '/session',
+      headers: headersWithAuth
+    }
+
+    group.test('No Authorization header sent', function (t) {
+      server.inject({
+        method: 'GET',
+        url: '/session',
+        headers: {}
+      }, function (response) {
+        t.is(response.statusCode, 403, 'returns 403 status')
+        t.end()
+      })
+    })
+
+    group.test('CouchDB Session does not exist', function (t) {
+      var couchdb = couchdbGetUserMock.reply(404, {error: 'Not Found'})
+
+        server.inject(getSessionRouteOptions, function (response) {
+        t.is(response.statusCode, 404, 'returns 404 status')
+        t.is(response.result.errors.length, 1, 'returns one error')
+        t.is(response.result.errors[0].title, 'Not Found', 'returns "Not Found" error')
+        t.doesNotThrow(couchdb.done, 'CouchDB received request')
+        t.end()
+      })
+    })
+
+    group.test('CouchDB Session does exist', function (t) {
+      couchdbGetUserMock.reply(200, {
+        userCtx: {
+          name: 'pat-doe',
+          roles: [
+            'id:userid123', 'mycustomrole'
+          ],
+          salt: 'salt123'
+        }
+      })
+
+      var sessionResponse = require('./fixtures/session-response.json')
+
+      server.inject(getSessionRouteOptions, function (response) {
+        delete response.result.meta
+        t.is(response.statusCode, 200, 'returns 200 status')
+        t.deepEqual(response.result, sessionResponse, 'returns the right content')
+        t.end()
+      })
+    })
+
+    couchdbErrorTests(server, group, couchdbGetUserMock, getSessionRouteOptions)
 
     group.end()
   })
