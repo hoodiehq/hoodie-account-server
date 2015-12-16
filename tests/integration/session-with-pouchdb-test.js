@@ -81,6 +81,18 @@ var putSessionRouteOptions = {
   }
 }
 
+var getSessionRouteOptions = {
+  method: 'GET',
+  url: '/session',
+  headers: headersWithAuth
+}
+
+var deleteSessionRouteOptions = {
+  method: 'DELETE',
+  url: '/session',
+  headers: headersWithAuth
+}
+
 getServer(function (error, server) {
   if (error) {
     return test.error(error)
@@ -308,12 +320,6 @@ getServer(function (error, server) {
   })
 
   test('GET /session', function (group) {
-    var getSessionRouteOptions = {
-      method: 'GET',
-      url: '/session',
-      headers: headersWithAuth
-    }
-
     group.test('No Authorization header sent', function (t) {
       server.inject({
         method: 'GET',
@@ -385,6 +391,186 @@ getServer(function (error, server) {
     })
 
     couchdbErrorTests(server, group, couchdbGetUserMock, getSessionRouteOptions)
+
+    group.end()
+  })
+
+  test('GET /session?include=account.profile', {todo: true}, function (group) {
+    group.test('User found & Session valid', function (t) {
+      couchdbGetUserMock.reply(200, {
+        name: 'pat-doe',
+        roles: [
+          'id:userid123', 'mycustomrole'
+        ],
+        salt: 'salt123'
+      })
+
+      var routeOptions = merge({}, getSessionRouteOptions, {
+        url: '/session?include=account.profile'
+      })
+
+      var sessionWithProfileResponse = require('./fixtures/session-with-profile-response.json')
+
+      server.inject(routeOptions, function (response) {
+        delete response.result.meta
+        t.is(response.statusCode, 200, 'returns 200 status')
+        t.deepEqual(response.result, sessionWithProfileResponse, 'returns the right content')
+        t.end()
+      })
+    })
+
+    group.end()
+  })
+
+  test('GET /session?include=foobar', function (t) {
+    t.plan(1)
+
+    var routeOptions = merge({}, getSessionRouteOptions, {
+      url: '/session?include=foobar'
+    })
+
+    server.inject(routeOptions, function (response) {
+      t.is(response.statusCode, 403, 'returns 403 status')
+    })
+  })
+
+  test('DELETE /session', {todo: true}, function (group) {
+    group.test('No Authorization header sent', function (t) {
+      var requestOptions = merge({}, deleteSessionRouteOptions)
+      delete requestOptions.headers.authorization
+
+      server.inject(requestOptions, function (response) {
+        t.is(response.statusCode, 403, 'returns 403 status')
+        t.end()
+      })
+    })
+
+    group.test('User not found', function (t) {
+      var couchdb = couchdbGetUserMock.reply(404, {error: 'Not Found'})
+
+      server.inject(deleteSessionRouteOptions, function (response) {
+        t.is(response.statusCode, 404, 'returns 404 status')
+        t.is(response.result.errors.length, 1, 'returns one error')
+        t.is(response.result.errors[0].title, 'Not Found', 'returns "Not Found" error')
+        t.doesNotThrow(couchdb.done, 'CouchDB received request')
+        t.end()
+      })
+    })
+
+    group.test('User found', function (subGroup) {
+      function couchdbUserFoundMock () {
+        return couchdbGetUserMock.reply(200, {
+          name: 'pat-doe',
+          roles: [
+            'id:userid123', 'mycustomrole'
+          ],
+          salt: 'salt123'
+        })
+      }
+      subGroup.test('Session valid', function (t) {
+        var couchdb = couchdbUserFoundMock()
+
+        server.inject(deleteSessionRouteOptions, function (response) {
+          t.is(response.statusCode, 204, 'returns 204 status')
+          t.doesNotThrow(couchdb.done, 'CouchDB received request')
+          t.end()
+        })
+      })
+
+      subGroup.test('Session invalid', function (t) {
+        var couchdb = couchdbUserFoundMock()
+
+        var requestOptions = merge({}, deleteSessionRouteOptions, {
+          headers: {
+            // Token calculated with invalid salt (salt456)
+            authorization: 'Bearer cGF0LWRvZToxMjc1MDA6YMtzOJDSC7iTA4cB2kjfjqbfk1Y'
+          }
+        })
+
+        server.inject(requestOptions, function (response) {
+          t.is(response.statusCode, 404, 'returns 404 status')
+          t.is(response.result.errors.length, 1, 'returns one error')
+          t.is(response.result.errors[0].title, 'Not Found', 'returns "Not Found" error')
+          t.doesNotThrow(couchdb.done, 'CouchDB received request')
+          t.end()
+        })
+      })
+
+      subGroup.end()
+    })
+
+    couchdbErrorTests(server, group, couchdbGetUserMock, deleteSessionRouteOptions)
+
+    group.end()
+  })
+
+  test('DELETE /session?include=account', {todo: true}, function (group) {
+    var routeOptions = merge({}, deleteSessionRouteOptions, {
+      url: '/session?include=account'
+    })
+
+    group.test('User found', function (subGroup) {
+      function couchdbUserFoundMock () {
+        return couchdbGetUserMock.reply(200, {
+          name: 'pat-doe',
+          roles: [
+            'id:userid123', 'mycustomrole'
+          ],
+          salt: 'salt123'
+        })
+      }
+      subGroup.test('Session valid', function (t) {
+        var couchdb = couchdbUserFoundMock()
+
+        var sessionResponse = require('./fixtures/session-response.json')
+
+        server.inject(routeOptions, function (response) {
+          delete response.result.meta
+          t.is(response.statusCode, 200, 'returns 200 status')
+          t.deepEqual(response.result, sessionResponse, 'returns the right content')
+          t.doesNotThrow(couchdb.done, 'CouchDB received request')
+          t.end()
+        })
+      })
+
+      subGroup.end()
+    })
+
+    group.end()
+  })
+
+  test('DELETE /session?include=account.profile', {todo: true}, function (group) {
+    var routeOptions = merge({}, deleteSessionRouteOptions, {
+      url: '/session?include=account.profile'
+    })
+
+    group.test('User found', function (subGroup) {
+      function couchdbUserFoundMock () {
+        return couchdbGetUserMock.reply(200, {
+          name: 'pat-doe',
+          roles: [
+            'id:userid123', 'mycustomrole'
+          ],
+          salt: 'salt123'
+        })
+      }
+
+      subGroup.test('Session valid', function (t) {
+        var couchdb = couchdbUserFoundMock()
+
+        var sessionWithProfileResponse = require('./fixtures/session-with-profile-response.json')
+
+        server.inject(routeOptions, function (response) {
+          delete response.result.meta
+          t.is(response.statusCode, 200, 'returns 200 status')
+          t.deepEqual(response.result, sessionWithProfileResponse, 'returns the right content')
+          t.doesNotThrow(couchdb.done, 'CouchDB received request')
+          t.end()
+        })
+      })
+
+      subGroup.end()
+    })
 
     group.end()
   })
