@@ -1,7 +1,7 @@
 module.exports = serialiseSession
 
 function serialiseSession (options, session) {
-  if (session.account.isAdmin) {
+  if (!session.account) {
     return {
       links: {
         self: options.baseUrl + '/session'

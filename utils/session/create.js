@@ -8,12 +8,13 @@ var findcustomRoles = require('../find-custom-roles')
 var findIdInRoles = require('../find-id-in-roles')
 // var getAccount = require('../account/get')
 var hasAdminRole = require('../has-admin-role')
+var validatePassword = require('../validate-password')
 
 function createSession (options, callback) {
   options.db.get('org.couchdb.user:' + options.username)
   .then(function (response) {
     return new Promise(function (resolve, reject) {
-      checkPassword(
+      validatePassword(
         options.password,
         response.salt,
         response.iterations,
@@ -67,15 +68,4 @@ function createSession (options, callback) {
     }
   })
   .catch(callback)
-}
-
-var crypto = require('crypto')
-function checkPassword (password, salt, iterations, derivedKey, callback) {
-  crypto.pbkdf2(password, salt, iterations, 20, function (error, derivedKeyCheck) {
-    if (error) {
-      return callback(error)
-    }
-
-    callback(null, derivedKeyCheck.toString('hex') === derivedKey)
-  })
 }
