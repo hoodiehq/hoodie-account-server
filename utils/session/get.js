@@ -17,6 +17,7 @@ function getSession (options, callback) {
 
   options.db.get('org.couchdb.user:' + username)
   .then(function (response) {
+
     return new Promise(function (resolve, reject) {
       validateSessionId(options, response, function (error, isValidSession) {
         if (error) {
@@ -30,8 +31,8 @@ function getSession (options, callback) {
       })
     })
   }).then(function (user) {
-    var username = user.userCtx.name
-    var roles = user.userCtx.roles
+    var username = user.name
+    var roles = user.roles
     var accountId = findIdInRoles(roles)
     var isAdmin = hasAdminRole(roles)
     var session = {
@@ -64,7 +65,7 @@ function getSession (options, callback) {
     //   return callback(Boom.create(response.statusCode, body.reason))
     // }
     //
-    // if (body.userCtx.name === null) {
+    // if (body.name === null) {
     //   return callback(Boom.notFound())
     // }
     callback(Boom.wrap(error, error.status))
@@ -75,7 +76,7 @@ function decodeSessionId (id) {
   var parts = base64url.decode(id).split(':')
   return {
     name: parts[0],
-    time: parts[1],
+    time: parseInt(parts[1], 16),
     token: parts[2]
   }
 }
@@ -87,9 +88,9 @@ function getUserNameFromSessionId (id) {
 function validateSessionId (options, user, callback) {
   var session = decodeSessionId(options.sessionId)
 
-  var salt = user.userCtx.salt
+  var salt = user.salt
   var name = session.name
-  var time = parseInt(session.time, 10)
+  var time = session.time
   var secret = options.secret
 
   var sessionIdCheck = calculateSessionId(name, salt, secret, time)

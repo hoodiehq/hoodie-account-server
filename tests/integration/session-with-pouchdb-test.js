@@ -338,17 +338,15 @@ getServer(function (error, server) {
     })
 
     group.test('User found', function (subGroup) {
-      couchdbGetUserMock.reply(200, {
-        userCtx: {
+      subGroup.test('Session valid', function (t) {
+        couchdbGetUserMock.reply(200, {
           name: 'pat-doe',
           roles: [
             'id:userid123', 'mycustomrole'
           ],
           salt: 'salt123'
-        }
-      })
+        })
 
-      subGroup.test('Session valid', function (t) {
         var sessionResponse = require('./fixtures/session-response.json')
 
         server.inject(getSessionRouteOptions, function (response) {
@@ -360,10 +358,18 @@ getServer(function (error, server) {
       })
 
       subGroup.test('Session invalid', function (t) {
+        couchdbGetUserMock.reply(200, {
+          name: 'pat-doe',
+          roles: [
+            'id:userid123', 'mycustomrole'
+          ],
+          salt: 'salt123'
+        })
+
         var requestOptions = merge({}, getSessionRouteOptions, {
           headers: {
             // Token calculated with invalid salt (salt456)
-            Authorization: 'Bearer cGF0LWRvZToxRjIwQzrKWAtbxVcq4S4ssCMuhv-CVa7B4w'
+            authorization: 'Bearer cGF0LWRvZToxMjc1MDA6YMtzOJDSC7iTA4cB2kjfjqbfk1Y'
           }
         })
 
