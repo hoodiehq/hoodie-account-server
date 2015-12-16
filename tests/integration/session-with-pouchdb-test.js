@@ -325,10 +325,10 @@ getServer(function (error, server) {
       })
     })
 
-    group.test('CouchDB Session does not exist', function (t) {
+    group.test('User not found', function (t) {
       var couchdb = couchdbGetUserMock.reply(404, {error: 'Not Found'})
 
-        server.inject(getSessionRouteOptions, function (response) {
+      server.inject(getSessionRouteOptions, function (response) {
         t.is(response.statusCode, 404, 'returns 404 status')
         t.is(response.result.errors.length, 1, 'returns one error')
         t.is(response.result.errors[0].title, 'Not Found', 'returns "Not Found" error')
@@ -337,7 +337,7 @@ getServer(function (error, server) {
       })
     })
 
-    group.test('CouchDB Session does exist', function (t) {
+    group.test('User found', function (subGroup) {
       couchdbGetUserMock.reply(200, {
         userCtx: {
           name: 'pat-doe',
@@ -348,14 +348,34 @@ getServer(function (error, server) {
         }
       })
 
-      var sessionResponse = require('./fixtures/session-response.json')
+      subGroup.test('Session valid', function (t) {
+        var sessionResponse = require('./fixtures/session-response.json')
 
-      server.inject(getSessionRouteOptions, function (response) {
-        delete response.result.meta
-        t.is(response.statusCode, 200, 'returns 200 status')
-        t.deepEqual(response.result, sessionResponse, 'returns the right content')
-        t.end()
+        server.inject(getSessionRouteOptions, function (response) {
+          delete response.result.meta
+          t.is(response.statusCode, 200, 'returns 200 status')
+          t.deepEqual(response.result, sessionResponse, 'returns the right content')
+          t.end()
+        })
       })
+
+      subGroup.test('Session invalid', function (t) {
+        var requestOptions = merge({}, getSessionRouteOptions, {
+          headers: {
+            // Token calculated with invalid salt (salt456)
+            Authorization: 'Bearer cGF0LWRvZToxRjIwQzrKWAtbxVcq4S4ssCMuhv-CVa7B4w'
+          }
+        })
+
+        server.inject(requestOptions, function (response) {
+          t.is(response.statusCode, 404, 'returns 404 status')
+          t.is(response.result.errors.length, 1, 'returns one error')
+          t.is(response.result.errors[0].title, 'Not Found', 'returns "Not Found" error')
+          t.end()
+        })
+      })
+
+      subGroup.end()
     })
 
     couchdbErrorTests(server, group, couchdbGetUserMock, getSessionRouteOptions)

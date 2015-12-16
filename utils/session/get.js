@@ -1,7 +1,7 @@
 module.exports = getSession
 
 var Boom = require('boom')
-var base64url = require("base64url")
+var base64url = require('base64url')
 var calculateSessionId = require('couchdb-calculate-session-id')
 
 var findCustomRoles = require('../find-custom-roles')
@@ -13,23 +13,23 @@ function getSession (options, callback) {
   // fetch user doc
   //   calcualte session id with user salt & bearer-time & server secret
   //   compare calculated session id with bearer token
-  var username = getUserNameFromSessionId(options.sessionId);
+  var username = getUserNameFromSessionId(options.sessionId)
 
   options.db.get('org.couchdb.user:' + username)
   .then(function (response) {
     return new Promise(function (resolve, reject) {
-      validateSessionId(options, response, function(error, isValidSession) {
+      validateSessionId(options, response, function (error, isValidSession) {
         if (error) {
           return reject(error)
         }
 
         if (!isValidSession) {
-          return reject(Boom.unauthorized('Invalid password'))
+          return reject(Boom.notFound('Session invalid'))
         }
         resolve(response)
       })
     })
-  }).then(function(user) {
+  }).then(function (user) {
     var username = user.userCtx.name
     var roles = user.userCtx.roles
     var accountId = findIdInRoles(roles)
@@ -71,7 +71,7 @@ function getSession (options, callback) {
   })
 }
 
-function decodeSessionId(id) {
+function decodeSessionId (id) {
   var parts = base64url.decode(id).split(':')
   return {
     name: parts[0],
@@ -80,16 +80,19 @@ function decodeSessionId(id) {
   }
 }
 
-function getUserNameFromSessionId(id) {
+function getUserNameFromSessionId (id) {
   return decodeSessionId(id).name
 }
 
-function validateSessionId(options, user, callback) {
+function validateSessionId (options, user, callback) {
   var session = decodeSessionId(options.sessionId)
+
   var salt = user.userCtx.salt
   var name = session.name
   var time = parseInt(session.time, 10)
   var secret = options.secret
-  var isValidSession = calculateSessionId(name, salt, secret, time)
-  callback(null, isValidSession)
+
+  var sessionIdCheck = calculateSessionId(name, salt, secret, time)
+
+  callback(null, sessionIdCheck === options.sessionId)
 }
