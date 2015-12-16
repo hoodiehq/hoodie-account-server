@@ -3,7 +3,7 @@
     "self": "http://localhost:80/session"
   },
   "data": {
-    "id": "sessionid123",
+    "id": "cGF0LWRvZToxMjc1MDA6nIp2130Iq41NBWNVDo_8ezbTR0M",
     "type": "session",
     "relationships": {
       "account": {
@@ -11,7 +11,7 @@
           "related": "http://localhost:80/session/account"
         },
         "data": {
-          "id": "abc1234",
+          "id": "userid123",
           "type": "account"
         }
       }
@@ -19,7 +19,7 @@
   },
   "included": [
     {
-      "id": "abc1234",
+      "id": "userid123",
       "type": "account",
       "attributes": {
         "username": "pat-doe",
@@ -33,14 +33,14 @@
             "related": "http://localhost:80/session/account/profile"
           },
           "data": {
-            "id": "abc1234-profile",
+            "id": "userid123-profile",
             "type": "profile"
           }
         }
       }
     },
     {
-      "id": "abc1234-profile",
+      "id": "userid123-profile",
       "type": "profile",
       "attributes": {
         "fullName": "pat Doe",

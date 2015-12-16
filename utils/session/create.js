@@ -7,7 +7,6 @@ var Promise = require('lie')
 var findcustomRoles = require('../find-custom-roles')
 var findIdInRoles = require('../find-id-in-roles')
 // var getAccount = require('../account/get')
-var hasAdminRole = require('../has-admin-role')
 var validatePassword = require('../validate-password')
 
 function createSession (options, callback) {
@@ -43,9 +42,8 @@ function createSession (options, callback) {
     )
 
     var accountId = findIdInRoles(response.roles)
-    var isAdmin = hasAdminRole(response.roles)
 
-    if (!isAdmin && !accountId) {
+    if (!accountId) {
       return callback(Boom.forbidden('"id:..." role missing (https://github.com/hoodiehq/hoodie-server-account/blob/master/how-it-works.md#id-role)'))
     }
 
@@ -54,18 +52,15 @@ function createSession (options, callback) {
       account: {
         id: accountId,
         username: options.username,
-        isAdmin: isAdmin,
         roles: findcustomRoles(response.roles)
       }
     }
 
-    if (isAdmin && options.includeProfile) {
-      return callback(Boom.forbidden('Admin accounts have no profile'))
+    if (options.includeProfile) {
+      session.account.profile = response.profile
     }
 
-    if (!options.includeProfile) {
-      return callback(null, session)
-    }
+    return callback(null, session)
   })
   .catch(callback)
 }

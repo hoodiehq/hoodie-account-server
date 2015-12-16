@@ -4,7 +4,6 @@
 //
 // uncomment "delete target[method];" in src/lolex.js
 
-var clone = require('lodash.clone')
 var Hapi = require('hapi')
 var lolex = require('lolex')
 var merge = require('lodash.merge')
@@ -37,10 +36,6 @@ function getServer (callback) {
       options: {
         db: db,
         secret: 'secret',
-        admin: {
-          username: 'admin',
-          password: 'secret'
-        },
         admins: {
           // -<password scheme>-<derived key>,<salt>,<iterations>
           admin: '-pbkdf2-a2ca9d3ee921c26d2e9d61e03a0801b11b8725c6,1081b31861bd1e91611341da16c11c16a12c13718d1f712e,10'
@@ -52,9 +47,22 @@ function getServer (callback) {
   })
 }
 
-var jsonAPIHeaders = {
-  accept: 'application/vnd.api+json',
-  'content-type': 'application/vnd.api+json'
+var putSessionRouteOptions = {
+  method: 'PUT',
+  url: '/session',
+  headers: {
+    accept: 'application/vnd.api+json',
+    'content-type': 'application/vnd.api+json'
+  },
+  payload: {
+    data: {
+      type: 'session',
+      attributes: {
+        username: 'pat-doe',
+        password: 'secret'
+      }
+    }
+  }
 }
 
 getServer(function (error, server) {
@@ -63,21 +71,6 @@ getServer(function (error, server) {
   }
 
   test('PUT /session', function (group) {
-    var putSessionRouteOptions = {
-      method: 'PUT',
-      url: '/session',
-      headers: jsonAPIHeaders,
-      payload: {
-        data: {
-          type: 'session',
-          attributes: {
-            username: 'pat-doe',
-            password: 'secret'
-          }
-        }
-      }
-    }
-
     group.test('User Found', function (subGroup) {
       function mockUserFound (docChange) {
         return nock('http://localhost:5984')
@@ -117,8 +110,15 @@ getServer(function (error, server) {
       subGroup.test('Invalid password', function (t) {
         var clock = lolex.install(0, ['Date'])
         var couchdb = mockUserFound()
-        var options = clone(putSessionRouteOptions, true)
-        options.payload.data.attributes.password = 'invalidsecret'
+        var options = merge({}, putSessionRouteOptions, {
+          payload: {
+            data: {
+              attributes: {
+                password: 'invalidsecret'
+              }
+            }
+          }
+        })
 
         server.inject(options, function (response) {
           t.doesNotThrow(couchdb.done, 'CouchDB received request')
@@ -156,9 +156,16 @@ getServer(function (error, server) {
       subGroup.test('Valid password', function (t) {
         var clock = lolex.install(0, ['Date'])
 
-        var options = clone(putSessionRouteOptions, true)
-        options.payload.data.attributes.username = 'admin'
-        options.payload.data.attributes.password = 'secret'
+        var options = merge({}, putSessionRouteOptions, {
+          payload: {
+            data: {
+              attributes: {
+                username: 'admin',
+                password: 'secret'
+              }
+            }
+          }
+        })
 
         var adminSessionResponse = require('./fixtures/session-admin-response.json')
 
@@ -175,15 +182,102 @@ getServer(function (error, server) {
       subGroup.test('Invalid password', function (t) {
         var clock = lolex.install(0, ['Date'])
 
-        var options = clone(putSessionRouteOptions, true)
-        options.payload.data.attributes.username = 'admin'
-        options.payload.data.attributes.password = 'invalidsecret'
+        var options = merge({}, putSessionRouteOptions, {
+          payload: {
+            data: {
+              attributes: {
+                username: 'admin',
+                password: 'invalidsecret'
+              }
+            }
+          }
+        })
 
         server.inject(options, function (response) {
           t.is(response.statusCode, 401, 'returns 401 status')
           t.is(response.result.errors.length, 1, 'returns one error')
           t.is(response.result.errors[0].title, 'Unauthorized', 'returns "Unauthorized" error')
           t.is(response.result.errors[0].detail, 'Invalid password', 'returns "Invalid password" message')
+
+          clock.uninstall()
+          t.end()
+        })
+      })
+
+      subGroup.end()
+    })
+
+    group.end()
+  })
+
+  test('PUT /session?include=account.profile', function (group) {
+    var putSessionRouteWithProfileOptions = merge({}, putSessionRouteOptions, {
+      url: '/session?include=account.profile'
+    })
+
+    group.test('User Found', function (subGroup) {
+      function mockUserFound (docChange) {
+        return nock('http://localhost:5984')
+          // GET users doc
+          .get('/_users/org.couchdb.user%3Apat-doe')
+          .query(true)
+          .reply(200, merge({
+            _id: 'org.couchdb.user:pat-doe',
+            _rev: '1-234',
+            password_scheme: 'pbkdf2',
+            iterations: 10,
+            type: 'user',
+            name: 'pat-doe',
+            roles: ['id:userid123', 'mycustomrole'],
+            derived_key: '4b5c9721ab77dd2faf06a36785fd0a30f0bf0d27',
+            salt: 'salt123'
+          }, docChange))
+      }
+
+      var sessionWithProfileResponse = require('./fixtures/session-with-profile-response.json')
+
+      subGroup.test('Valid password', function (t) {
+        var clock = lolex.install(0, ['Date'])
+        mockUserFound({
+          profile: {
+            fullName: 'pat Doe',
+            email: 'pat@example.com'
+          }
+        })
+
+        server.inject(putSessionRouteWithProfileOptions, function (response) {
+          delete response.result.meta
+          t.is(response.statusCode, 201, 'returns 201 status')
+          t.deepEqual(response.result.included, sessionWithProfileResponse.included, 'returns the right content')
+
+          clock.uninstall()
+          t.end()
+        })
+      })
+
+      subGroup.end()
+    })
+
+    group.test('User Is admin', function (subGroup) {
+      subGroup.test('Valid password', function (t) {
+        var clock = lolex.install(0, ['Date'])
+
+        var options = merge({}, putSessionRouteWithProfileOptions, {
+          payload: {
+            data: {
+              attributes: {
+                username: 'admin',
+                password: 'secret'
+              }
+            }
+          }
+        })
+
+        server.inject(options, function (response) {
+          t.is(response.statusCode, 403, 'returns 403 status')
+          t.is(response.result.errors.length, 1, 'returns one error')
+          t.is(response.result.errors[0].title, 'Forbidden', 'returns "Forbidden" error')
+          t.end()
 
           clock.uninstall()
           t.end()

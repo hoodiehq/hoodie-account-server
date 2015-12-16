@@ -29,6 +29,10 @@ function addSession (state, options) {
             return reject(Boom.unauthorized('Invalid password'))
           }
 
+          if (options.include === 'account.profile') {
+            return reject(Boom.forbidden('Admin accounts have no profile'))
+          }
+
           var sessionTimeout = 1209600 // 14 days
           var bearerToken = calculateSessionId(
             adminDoc.name,
