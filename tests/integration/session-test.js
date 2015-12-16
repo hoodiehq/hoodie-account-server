@@ -127,8 +127,6 @@ getServer(function (error, server) {
       })
     })
 
-    couchdbErrorTests(server, group, postSessionResponseMock, putSessionRouteOptions)
-
     group.end()
   })
 

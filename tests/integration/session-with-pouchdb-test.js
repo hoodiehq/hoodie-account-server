@@ -13,6 +13,9 @@ var test = require('tap').test
 
 var hapiAccount = require('../../plugin')
 
+var authorizationHeaderNotAllowedErrorTest = require('./utils/authorization-header-not-allowed-error')
+var couchdbErrorTests = require('./utils/couchdb-error-tests')
+
 function getServer (callback) {
   var server = new Hapi.Server()
   server.connection({ host: 'localhost', port: 80 })
@@ -70,13 +73,17 @@ getServer(function (error, server) {
     return test.error(error)
   }
 
+  var couchdbGetUserMock = nock('http://localhost:5984')
+    .get('/_users/org.couchdb.user%3Apat-doe')
+    .query(true)
+
   test('PUT /session', function (group) {
+    authorizationHeaderNotAllowedErrorTest(server, group, putSessionRouteOptions)
+    couchdbErrorTests(server, group, couchdbGetUserMock, putSessionRouteOptions)
+
     group.test('User Found', function (subGroup) {
       function mockUserFound (docChange) {
-        return nock('http://localhost:5984')
-          // GET users doc
-          .get('/_users/org.couchdb.user%3Apat-doe')
-          .query(true)
+        return couchdbGetUserMock
           .reply(200, merge({
             _id: 'org.couchdb.user:pat-doe',
             _rev: '1-234',
@@ -217,10 +224,7 @@ getServer(function (error, server) {
 
     group.test('User Found', function (subGroup) {
       function mockUserFound (docChange) {
-        return nock('http://localhost:5984')
-          // GET users doc
-          .get('/_users/org.couchdb.user%3Apat-doe')
-          .query(true)
+        return couchdbGetUserMock
           .reply(200, merge({
             _id: 'org.couchdb.user:pat-doe',
             _rev: '1-234',

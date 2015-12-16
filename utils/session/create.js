@@ -62,5 +62,8 @@ function createSession (options, callback) {
 
     return callback(null, session)
   })
-  .catch(callback)
+
+  .catch(function (error) {
+    callback(Boom.wrap(error, error.status))
+  })
 }
