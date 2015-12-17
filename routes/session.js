@@ -109,8 +109,8 @@ function sessionRoutes (server, options, next) {
 
   server.route([
     getSessionRoute,
-    createSessionRoute
-    // deleteSessionRoute
+    createSessionRoute,
+    deleteSessionRoute
   ])
 
   next()

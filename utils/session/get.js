@@ -6,7 +6,6 @@ var calculateSessionId = require('couchdb-calculate-session-id')
 
 var findCustomRoles = require('../find-custom-roles')
 var findIdInRoles = require('../find-id-in-roles')
-var getAccount = require('../account/get')
 var hasAdminRole = require('../has-admin-role')
 
 function getSession (options, callback) {
@@ -17,7 +16,6 @@ function getSession (options, callback) {
 
   options.db.get('org.couchdb.user:' + username)
   .then(function (response) {
-
     return new Promise(function (resolve, reject) {
       validateSessionId(options, response, function (error, isValidSession) {
         if (error) {
@@ -49,8 +47,8 @@ function getSession (options, callback) {
       return callback(Boom.frobidden('Admin accounts have no profile'))
     }
 
-    if (!options.includeProfile) {
-      return callback(null, session)
+    if (options.includeProfile) {
+      session.account.profile = user.profile
     }
 
     return callback(null, session)

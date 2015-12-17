@@ -6,7 +6,6 @@ var Promise = require('lie')
 
 var findcustomRoles = require('../find-custom-roles')
 var findIdInRoles = require('../find-id-in-roles')
-// var getAccount = require('../account/get')
 var validatePassword = require('../validate-password')
 
 function createSession (options, callback) {

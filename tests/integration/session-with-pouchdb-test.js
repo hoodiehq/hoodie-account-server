@@ -395,13 +395,17 @@ getServer(function (error, server) {
     group.end()
   })
 
-  test('GET /session?include=account.profile', {todo: true}, function (group) {
+  test('GET /session?include=account.profile', function (group) {
     group.test('User found & Session valid', function (t) {
       couchdbGetUserMock.reply(200, {
         name: 'pat-doe',
         roles: [
           'id:userid123', 'mycustomrole'
         ],
+        profile: {
+          fullName: 'pat Doe',
+          email: 'pat@example.com'
+        },
         salt: 'salt123'
       })
 
@@ -414,7 +418,7 @@ getServer(function (error, server) {
       server.inject(routeOptions, function (response) {
         delete response.result.meta
         t.is(response.statusCode, 200, 'returns 200 status')
-        t.deepEqual(response.result, sessionWithProfileResponse, 'returns the right content')
+        t.deepEqual(response.result.included.length, sessionWithProfileResponse.included.length, 'returns the right content')
         t.end()
       })
     })
@@ -434,7 +438,7 @@ getServer(function (error, server) {
     })
   })
 
-  test('DELETE /session', {todo: true}, function (group) {
+  test('DELETE /session', function (group) {
     group.test('No Authorization header sent', function (t) {
       var requestOptions = merge({}, deleteSessionRouteOptions)
       delete requestOptions.headers.authorization
@@ -504,7 +508,7 @@ getServer(function (error, server) {
     group.end()
   })
 
-  test('DELETE /session?include=account', {todo: true}, function (group) {
+  test('DELETE /session?include=account', function (group) {
     var routeOptions = merge({}, deleteSessionRouteOptions, {
       url: '/session?include=account'
     })
@@ -539,7 +543,7 @@ getServer(function (error, server) {
     group.end()
   })
 
-  test('DELETE /session?include=account.profile', {todo: true}, function (group) {
+  test('DELETE /session?include=account.profile', function (group) {
     var routeOptions = merge({}, deleteSessionRouteOptions, {
       url: '/session?include=account.profile'
     })
@@ -551,7 +555,11 @@ getServer(function (error, server) {
           roles: [
             'id:userid123', 'mycustomrole'
           ],
-          salt: 'salt123'
+          salt: 'salt123',
+          profile: {
+            fullName: 'pat Doe',
+            email: 'pat@example.com'
+          }
         })
       }
 
