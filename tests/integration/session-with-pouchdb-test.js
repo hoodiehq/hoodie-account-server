@@ -61,6 +61,7 @@ function getServer (callback) {
       callback(error, server)
     })
   })
+  .catch(callback)
 }
 
 var putSessionRouteOptions = {

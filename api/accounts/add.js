@@ -8,6 +8,7 @@ function addAccount (state, properties, options) {
   }
   return new Promise(function (resolve, reject) {
     createAccount(state, {
+      db: state.db,
       username: properties.username,
       password: properties.password,
       roles: properties.roles,

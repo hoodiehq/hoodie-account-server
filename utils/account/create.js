@@ -1,60 +1,38 @@
 module.exports = createAccount
 
-var Boom = require('boom')
 var randomstring = require('randomstring')
 
 function createAccount (state, options, callback) {
-  var request = require('request').defaults({
-    json: true,
-    baseUrl: state.url,
-    timeout: 10000 // 10 seconds
-  })
-
   var accountKey = 'org.couchdb.user:' + encodeURIComponent(options.username)
   var accountId = randomstring.generate({
     length: 12,
     charset: 'hex'
   })
 
-  var requestOptions = {
-    url: '/_users/' + accountKey,
-    body: {
-      type: 'user',
-      roles: [
-        'id:' + accountId
-      ].concat(options.roles || []),
-      name: options.username,
-      password: options.password
-    }
-  }
+  // TODO generate salt, calculate derived key for password
+  var salt = 'salt123'
+  var derivedKey = 'derivedKey123'
 
-  if (options.bearerToken) {
-    requestOptions.headers = {
-      cookie: 'AuthSession=' + options.bearerToken
-    }
-  } else {
-    if (state.admin) {
-      requestOptions.auth = {
-        user: state.admin.username,
-        pass: state.admin.password
-      }
-    }
-  }
+  options.db.put({
+    _id: accountKey,
+    type: 'user',
+    name: options.username,
+    roles: [
+      'id:' + accountId
+    ].concat(options.roles || []),
+    salt: salt,
+    derived_key: derivedKey,
+    iterations: 10,
+    password_scheme: 'pbkdf2'
+  })
 
-  request.put(requestOptions, function (error, response, body) {
-    if (error) {
-      return callback(Boom.wrap(error))
-    }
-
-    if (response.statusCode >= 400) {
-      return callback(Boom.create(response.statusCode, body.reason))
-    }
-
+  .then(function () {
     var account = {
       id: accountId,
       username: options.username
     }
-
-    callback(null, account)
+    callback(account)
   })
+
+  .catch(callback)
 }

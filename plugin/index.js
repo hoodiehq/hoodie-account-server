@@ -8,8 +8,8 @@ var async = require('async')
 // var couchdbPush = require('couchdb-push')
 
 var routePlugins = [
-  require('../routes/session')
-  // require('../routes/account'),
+  require('../routes/session'),
+  require('../routes/account')
   // require('../routes/accounts')
 ]
 
