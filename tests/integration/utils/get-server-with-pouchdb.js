@@ -9,10 +9,10 @@ var hapiAccount = require('../../../plugin')
 function getServer (callback) {
   var server = new Hapi.Server({
     // easy debug!
-    // debug: {
-    //   request: ['error'],
-    //   log: ['error']
-    // }
+    debug: {
+      request: ['error'],
+      log: ['error']
+    }
   })
   server.connection({ host: 'localhost', port: 80 })
 

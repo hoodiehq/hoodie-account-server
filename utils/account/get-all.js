@@ -3,26 +3,28 @@ module.exports = getAllAccounts
 var Boom = require('boom')
 
 function getAllAccounts (options, callback) {
-  var request = require('request').defaults({
-    json: true,
-    baseUrl: options.couchUrl,
-    timeout: 10000 // 10 seconds
+  // request.get({
+  //   url: '/_users/_all_docs?include_docs=true&startkey=%22org.couchdb.user%3A%22&enkey=%22org.couchdb.user%3A%E9%A6%99%22',
+  //   headers: {
+  //     cookie: 'AuthSession=' + options.bearerToken
+  //   }
+  options.db.allDocs({
+    include_docs: true,
+    startkey: 'org.couchdb.user:',
+    // https://wiki.apache.org/couchdb/View_collation#String_Ranges
+    endkey: 'org.couchdb.user:\ufff0'
   })
-
-  request.get({
-    url: '/_users/_all_docs?include_docs=true&startkey=%22org.couchdb.user%3A%22&enkey=%22org.couchdb.user%3A%E9%A6%99%22',
-    headers: {
-      cookie: 'AuthSession=' + options.bearerToken
-    }
-  }, function (error, response, body) {
+  .then(function (response) {
+    callback(null, response)
+  })
+  .catch(function(error) {
     if (error) {
-      return callback(Boom.wrap(error))
+      return callback(Boom.wrap(fixErrorMessage(error)))
     }
 
-    if (response.statusCode >= 400) {
-      return callback(Boom.create(response.statusCode, fixErrorMessage(body.reason)))
-    }
-    callback(null, body)
+    // if (response.statusCode >= 400) {
+    //   return callback(Boom.create(response.statusCode, fixErrorMessage(body.reason)))
+    // }
   })
 }
 

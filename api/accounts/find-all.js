@@ -6,7 +6,7 @@ var getAllAccounts = require('../../utils/account/get-all')
 function findAllAccount (state, options) {
   return new Promise(function (resolve, reject) {
     getAllAccounts({
-      couchUrl: state.url,
+      db: options.db,
       bearerToken: options.bearerToken
     }, function (error, response) {
       if (error) {

@@ -73,6 +73,7 @@ function accountRoutes (server, options, next) {
       var sessionId = toBearerToken(request)
 
       return accounts.findAll({
+        db: options.db,
         bearerToken: sessionId,
         include: request.query.include
       })
