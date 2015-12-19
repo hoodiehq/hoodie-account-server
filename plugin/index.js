@@ -9,8 +9,8 @@ var async = require('async')
 
 var routePlugins = [
   require('../routes/session'),
-  require('../routes/account')
-  // require('../routes/accounts')
+  require('../routes/account'),
+  require('../routes/accounts')
 ]
 
 function hapiAccount (server, options, next) {
