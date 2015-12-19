@@ -10,9 +10,12 @@ var toBearerToken = require('../utils/to-bearer-token')
 var validations = require('../utils/validations')
 
 function accountRoutes (server, options, next) {
-  var couchUrl = options.couchdb.url
   var prefix = options.prefix || ''
-  var api = getApi({ url: couchUrl })
+  var api = getApi({
+    db: options.db,
+    secret: options.secret,
+    admins: options.admins
+  })
   var accounts = api.accounts
 
   var postAccountsRoute = {
