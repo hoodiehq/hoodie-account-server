@@ -31,7 +31,7 @@ function createAccount (state, options, callback) {
       id: accountId,
       username: options.username
     }
-    callback(account)
+    callback(null, account)
   })
 
   .catch(callback)

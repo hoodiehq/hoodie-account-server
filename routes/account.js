@@ -51,7 +51,6 @@ function accountRoutes (server, options, next) {
       .then(function (json) {
         reply(json).code(201)
       })
-
       .catch(reply)
     }
   }

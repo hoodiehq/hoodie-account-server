@@ -8,7 +8,8 @@ var Hapi = require('hapi')
 var Joi = require('joi')
 var nock = require('nock')
 var PouchDB = require('pouchdb')
-var test = require('tap').test
+// var test = require('tap').test
+var test = require('tape') // using tape for development becaues it has test.only
 
 // nock.recorder.rec()
 
@@ -117,8 +118,9 @@ getServer(function (error, server) {
       server.inject(putAccountRouteOptions, function (response) {
         t.doesNotThrow(couchdb.done, 'CouchDB received request')
         delete response.result.meta
+
         t.is(response.statusCode, 201, 'returns 201 status')
-        t.match(response.result.data.id, /^[0-9a-f]{12}$/, 'sets id')
+        t.ok(/^[0-9a-f]{12}$/.test(response.result.data.id), 'sets id')
         response.result.data.id = 'abc1234'
         response.result.data.relationships.profile.data.id = 'abc1234-profile'
         t.deepEqual(response.result, accountFixture, 'returns account in right format')
