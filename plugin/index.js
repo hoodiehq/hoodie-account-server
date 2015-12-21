@@ -18,6 +18,8 @@ function hapiAccount (server, options, next) {
   var routeOptions = merge({}, options)
   routeOptions.sessionTimeout = options.sessionTimeout || TIMEOUT_14_DAYS
 
+  options.usersDb.constructor.plugin(require('pouchdb-admins'))
+
   var users = getApi({
     db: options.usersDb,
     secret: options.secret,
