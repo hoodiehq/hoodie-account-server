@@ -72,12 +72,6 @@ If you see any inconsistencies, please [create an issue](https://github.com/hood
 
 ### Constructor
 
----
-
-🐕 **TO BE DONE**: _create issue and link it here_
-
----
-
 ```js
 new AccountApi(options)
 ```
@@ -131,12 +125,6 @@ db.useAsAuthenticationDB().then(function () {
 ```
 
 ### api.sessions.add()
-
----
-
-🐕 **TO BE DONE**: [#26](https://github.com/hoodiehq/hoodie-server-account/issues/26)
-
----
 
 Admins can create a session for any user.
 
@@ -469,7 +457,7 @@ is kept, and sessions are hash based
 
 ---
 
-🐕 **TO BE DONE**: _create issue and link it here_
+🐕 **TO BE DONE**: [#27](https://github.com/hoodiehq/hoodie-server-account/issues/27)
 
 ---
 
