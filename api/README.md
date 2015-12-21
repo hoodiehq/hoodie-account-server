@@ -24,6 +24,8 @@ var PouchDB = require('pouchdb')
 PouchDB.plugin(require('pouchdb-users'))
 PouchDB.plugin(require('pouchdb-admins'))
 
+var db = new PouchDB('http://localhost:5984/_users')
+
 var api = new AccountApi({
   db: db,
   secret: 'secret123'
