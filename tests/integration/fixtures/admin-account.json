@@ -6,7 +6,7 @@
     "id": "abc1234",
     "type": "account",
     "attributes": {
-      "username": "pat"
+      "username": "pat-doe"
     },
     "relationships": {
       "profile": {

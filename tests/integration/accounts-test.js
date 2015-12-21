@@ -1,24 +1,44 @@
+var Joi = require('joi')
+var merge = require('lodash.merge')
 var nock = require('nock')
 var test = require('tap').test
-var lodash = require('lodash')
 
 var getServer = require('./utils/get-server')
 var couchdbErrorTests = require('./utils/couchdb-error-tests')
+var invalidTypeErrors = require('./utils/invalid-type-errors.js')
 
 getServer(function (error, server) {
   if (error) {
-    throw error
+    return test('test setup', function (t) {
+      t.error(error)
+      t.end()
+    })
   }
-
   var jsonAPIHeaders = {
     accept: 'application/vnd.api+json',
     'content-type': 'application/vnd.api+json'
   }
+  var headersWithAuth = merge({
+    // calculateSessionId('admin', '1081b31861bd1e91611341da16c11c16a12c13718d1f712e', 'secret', 1209600)
+    authorization: 'Bearer YWRtaW46MTI3NTAwOu1EdmipcvGcFiiftXsT7PJea7BN'
+  }, jsonAPIHeaders)
 
-  var headersWithAuth = lodash.merge({authorization: 'Bearer sessionid123'}, jsonAPIHeaders)
+  var couchdbPutUserMock = nock('http://localhost:5984')
+    .post('/_users/_bulk_docs', function (body) {
+      return Joi.object({
+        _id: Joi.any().only('org.couchdb.user:pat-doe').required(),
+        name: Joi.any().only('pat-doe').required(),
+        type: Joi.any().only('user').required(),
+        salt: Joi.string().required(),
+        derived_key: Joi.string().required(),
+        iterations: Joi.any().only(10).required(),
+        password_scheme: Joi.any().only('pbkdf2').required(),
+        roles: Joi.array().items(Joi.string().regex(/^id:[0-9a-f]{12}$/)).max(1).min(1)
+      }).validate(body.docs[0]).error === null
+    })
+    .query(true)
 
   test('POST /accounts', function (group) {
-    var route = '/_users/org.couchdb.user:pat'
     var postAccountsRouteOptions = {
       method: 'POST',
       url: '/accounts',
@@ -27,15 +47,11 @@ getServer(function (error, server) {
         data: {
           type: 'account',
           attributes: {
-            username: 'pat',
+            username: 'pat-doe',
             password: 'secret'
           }
         }
       }
-    }
-
-    function putAccountsResponseMock () {
-      return nock('http://localhost:5984').put(route)
     }
 
     group.test('No Authorization header sent', function (t) {
@@ -49,27 +65,34 @@ getServer(function (error, server) {
       })
     })
 
-    group.test('CouchDB Session valid', {only: true}, function (t) {
-      var couchdb = putAccountsResponseMock().reply(201, {
-        ok: true,
-        id: 'org.couchdb.user:pat',
-        rev: '123456'
-      })
+    group.test('Not an admin', {todo: true}, function (t) {
+      t.end()
+    })
+
+    group.test('CouchDB Session valid', function (t) {
+      var couchdb = couchdbPutUserMock
+        .reply(201, [{
+          id: 'org.couchdb.user:pat-doe',
+          rev: '1-234'
+        }])
 
       server.inject(postAccountsRouteOptions, function (response) {
         t.is(couchdb.pendingMocks()[0], undefined, 'all mocks satisfied')
         delete response.result.meta
+
         t.is(response.statusCode, 201, 'returns 201 status')
-        t.is(response.result.data.attributes.username, 'pat', 'returns the right content')
+        t.is(response.result.data.attributes.username, 'pat-doe', 'returns the right content')
         t.end()
       })
     })
+
+    couchdbErrorTests(server, group, couchdbPutUserMock, postAccountsRouteOptions)
+    invalidTypeErrors(server, group, postAccountsRouteOptions)
 
     group.end()
   })
 
   test('GET /accounts', function (group) {
-    var route = '/_users/_all_docs?include_docs=true&startkey=%22org.couchdb.user%3A%22&enkey=%22org.couchdb.user%3A%E9%A6%99%22'
     var getAccountsRouteOptions = {
       method: 'GET',
       url: '/accounts',
@@ -78,10 +101,14 @@ getServer(function (error, server) {
 
     function getAccountsResponseMock () {
       return nock('http://localhost:5984', {
-        reqheaders: {
-          cookie: 'AuthSession=sessionid123'
-        }
-      }).get(route)
+        encodedQueryParams: true
+      })
+      .get('/_users/_all_docs')
+      .query({
+        include_docs: true,
+        startkey: '%22org.couchdb.user%3A%22',
+        endkey: '%22org.couchdb.user%3A%EF%BF%B0%22'
+      })
     }
 
     group.test('No Authorization header sent', function (t) {
@@ -95,33 +122,24 @@ getServer(function (error, server) {
       })
     })
 
-    group.test('CouchDB Session invalid', function (t) {
-      var couchdb = getAccountsResponseMock()
-        .reply(403, {
-          error: 'forbidden',
-          reason: 'Only admins can access _all_docs of system databases.'
-        })
+    group.test('CouchDB Session invalid', {todo: true}, function (t) {
+      t.end()
+    })
 
-      server.inject(getAccountsRouteOptions, function (response) {
-        t.is(couchdb.pendingMocks()[0], undefined, 'all mocks satisfied')
-        t.is(response.statusCode, 403, 'returns 403 status')
-        t.is(response.result.errors.length, 1, 'returns one error')
-        t.is(response.result.errors[0].title, 'Forbidden', 'returns "Forbidden" error')
-        t.is(response.result.errors[0].detail, 'Only admins can access /users', 'returns "Forbidden" detail message')
-        t.end()
-      })
+    group.test('Not an admin', {todo: true}, function (t) {
+      t.end()
     })
 
     group.test('CouchDB Session valid', function (t) {
       var couchdb = getAccountsResponseMock().reply(200, {
         rows: [{
-          id: 'org.couchdb.user:pat',
-          key: 'org.couchdb.user:pat',
+          id: 'org.couchdb.user:pat-doe',
+          key: 'org.couchdb.user:pat-doe',
           value: { rev: '1-234' },
           doc: {
-            _id: 'org.couchdb.user:pat',
+            _id: 'org.couchdb.user:pat-doe',
             _rev: '1-234',
-            name: 'pat',
+            name: 'pat-doe',
             roles: ['id:abc4567']
           }
         }, {
@@ -143,7 +161,8 @@ getServer(function (error, server) {
         t.is(couchdb.pendingMocks()[0], undefined, 'all mocks satisfied')
         delete response.result.meta
         t.is(response.statusCode, 200, 'returns 200 status')
-        t.deepEqual(response.result, accounts, 'returns the right content')
+
+        t.deepEqual(response.result.data, accounts.data, 'returns the right content')
         t.end()
       })
     })
@@ -151,13 +170,13 @@ getServer(function (error, server) {
     group.test('with ?include=profile', function (t) {
       var couchdb = getAccountsResponseMock().reply(200, {
         rows: [{
-          id: 'org.couchdb.user:pat',
-          key: 'org.couchdb.user:pat',
+          id: 'org.couchdb.user:pat-doe',
+          key: 'org.couchdb.user:pat-doe',
           value: { rev: '1-234' },
           doc: {
-            _id: 'org.couchdb.user:pat',
+            _id: 'org.couchdb.user:pat-doe',
             _rev: '1-234',
-            name: 'pat',
+            name: 'pat-doe',
             roles: ['id:abc4567'],
             profile: {
               fullname: 'Dr Pat Hook'
@@ -212,25 +231,27 @@ getServer(function (error, server) {
     })
 
     group.test('Account found', function (t) {
-      var couchdb = nock('http://localhost:5984', {
-        reqheaders: {
-          cookie: 'AuthSession=sessionid123'
-        }
-      }).get('/_users/_design/byId/_view/byId?key=abc1234&include_docs=true').reply(200, {
-        total_rows: 1,
-        offset: 0,
-        rows: [{
-          doc: {
-            roles: [
-              'id:abc1234'
-            ],
-            name: 'pat',
-            profile: {
-              fullname: 'Dr. Pat Hook'
+      var couchdb = nock('http://localhost:5984')
+        .get('/_users/_design/byId/_view/byId')
+        .query({
+          key: '"abc1234"',
+          include_docs: true
+        })
+        .reply(200, {
+          total_rows: 1,
+          offset: 0,
+          rows: [{
+            doc: {
+              roles: [
+                'id:abc1234'
+              ],
+              name: 'pat-doe',
+              profile: {
+                fullname: 'Dr. Pat Hook'
+              }
             }
-          }
-        }]
-      })
+          }]
+        })
 
       var account = require('./fixtures/admin-account.json')
 
@@ -240,6 +261,7 @@ getServer(function (error, server) {
         headers: headersWithAuth
       }, function (response) {
         t.is(couchdb.pendingMocks()[0], undefined, 'all mocks satisfied')
+
         delete response.result.meta
         t.is(response.statusCode, 200, 'returns 200 status')
         t.deepEqual(response.result, account, 'returns the right content')
@@ -248,11 +270,12 @@ getServer(function (error, server) {
     })
 
     group.test('Account not found', function (t) {
-      var couchdb = nock('http://localhost:5984', {
-        reqheaders: {
-          cookie: 'AuthSession=sessionid123'
-        }
-      }).get('/_users/_design/byId/_view/byId?key=abc1234&include_docs=true')
+      var couchdb = nock('http://localhost:5984')
+        .get('/_users/_design/byId/_view/byId')
+        .query({
+          key: '"abc1234"',
+          include_docs: true
+        })
         .reply(200, {total_rows: 1, offset: 0, rows: []})
 
       server.inject({
@@ -263,16 +286,22 @@ getServer(function (error, server) {
         t.is(couchdb.pendingMocks()[0], undefined, 'all mocks satisfied')
         delete response.result.meta
         t.is(response.statusCode, 404, 'returns 404 status')
+
         t.end()
       })
     })
 
-    group.test('Account found with ?include=profile', function (t) {
-      var couchdb = nock('http://localhost:5984', {
-        reqheaders: {
-          cookie: 'AuthSession=sessionid123'
-        }
-      }).get('/_users/_design/byId/_view/byId?key=abc1234&include_docs=true')
+    group.end()
+  })
+
+  test('GET /accounts/abc4567?include=profile', {only: true}, function (group) {
+    group.test('Account found', function (t) {
+      var couchdb = nock('http://localhost:5984')
+        .get('/_users/_design/byId/_view/byId')
+        .query({
+          key: '"abc1234"',
+          include_docs: true
+        })
         .reply(200, {
           total_rows: 1,
           offset: 0,
@@ -281,7 +310,7 @@ getServer(function (error, server) {
               roles: [
                 'id:abc1234'
               ],
-              name: 'pat',
+              name: 'pat-doe',
               profile: {
                 fullname: 'Dr Pat Hook'
               }
@@ -308,20 +337,6 @@ getServer(function (error, server) {
   })
 
   test('PATCH /accounts/abc4567', function (group) {
-    var route = '/_users/org.couchdb.user:pat'
-    var patchAccountsRouteOptionsUsername = {
-      method: 'PATCH',
-      url: '/accounts/abc4567',
-      headers: headersWithAuth,
-      payload: {
-        data: {
-          type: 'account',
-          attributes: {
-            username: 'sam'
-          }
-        }
-      }
-    }
     var patchAccountsRouteOptionsPassword = {
       method: 'PATCH',
       url: '/accounts/abc4567',
@@ -338,24 +353,42 @@ getServer(function (error, server) {
 
     function patchAccountsResponseMock () {
       return nock('http://localhost:5984')
-        .get('/_users/_design/byId/_view/byId?key=abc4567&include_docs=true')
+        .get('/_users/_design/byId/_view/byId')
+        .query({
+          key: '"abc4567"',
+          include_docs: true
+        })
         .reply(200, {
           total_rows: 1,
           offset: 0,
           rows: [{
             doc: {
-              _id: 'org.couchdb.user:pat',
-              _rev: '1-abc',
-              roles: [
-                'id:abc1234'
-              ],
-              name: 'pat',
-              profile: {
-                fullname: 'Dr Pat Hook'
-              }
+              _id: 'org.couchdb.user:pat-doe',
+              _rev: '1-234',
+              password_scheme: 'pbkdf2',
+              iterations: 10,
+              type: 'user',
+              name: 'pat-doe',
+              roles: ['id:userid123', 'mycustomrole'],
+              derived_key: '4b5c9721ab77dd2faf06a36785fd0a30f0bf0d27',
+              salt: 'salt123'
             }
           }]
         })
+        .post('/_users/_bulk_docs', function (body) {
+          return Joi.object({
+            _id: Joi.any().only('org.couchdb.user:pat-doe').required(),
+            _rev: Joi.any().only('1-234').required(),
+            name: Joi.any().only('pat-doe').required(),
+            type: Joi.any().only('user').required(),
+            salt: Joi.string().required(),
+            derived_key: Joi.string().required(),
+            iterations: Joi.any().only(10).required(),
+            password_scheme: Joi.any().only('pbkdf2').required(),
+            roles: Joi.array().items(Joi.string())
+          }).validate(body.docs[0]).error === null
+        })
+        .query(true)
     }
 
     group.test('No Authorization header sent', function (t) {
@@ -371,45 +404,27 @@ getServer(function (error, server) {
 
     group.test('changing password', {only: true}, function (t) {
       var couchdb = patchAccountsResponseMock()
-        .put('/_users/org.couchdb.user:pat')
-        .reply(201, {
-          ok: true,
-          id: 'org.couchdb.user:pat',
+        .reply(201, [{
+          id: 'org.couchdb.user:pat-doe',
           rev: '2-3456'
-        })
+        }])
 
       server.inject(patchAccountsRouteOptionsPassword, function (response) {
         t.is(couchdb.pendingMocks()[0], undefined, 'all mocks satisfied')
         delete response.result.meta
         t.is(response.statusCode, 201, 'returns 201 status')
-        t.is(response.result.data.attributes.username, 'pat', 'returns the right content')
+        t.is(response.result.data.attributes.username, 'pat-doe', 'returns the right content')
         t.end()
       })
     })
 
-    group.test('changing username', {only: true}, function (t) {
-      var couchdb = patchAccountsResponseMock()
-        .put('/_users/org.couchdb.user:sam')
-        .reply(201, {
-          ok: true,
-          id: 'org.couchdb.user:pat',
-          rev: '2-3456'
-        })
-        .delete(route + '?rev=1-abc')
-        .reply(200, {
-          ok: true,
-          id: 'org.couchdb.user:foo',
-          rev: '2-3456'
-        })
-
-      server.inject(patchAccountsRouteOptionsUsername, function (response) {
-        t.is(couchdb.pendingMocks()[0], undefined, 'all mocks satisfied')
-        delete response.result.meta
-        t.is(response.statusCode, 201, 'returns 201 status')
-        t.is(response.result.data.attributes.username, 'sam', 'returns the right content')
-        t.end()
-      })
+    group.test('changing username', {todo: true}, function (t) {
+      t.end()
     })
+
+    // TOOD: test server error handling
+    // couchdbErrorTests(server, group, patchAccountsResponseMock(), patchAccountsRouteOptionsPassword)
+    invalidTypeErrors(server, group, patchAccountsRouteOptionsPassword)
 
     group.end()
   })
@@ -431,14 +446,43 @@ getServer(function (error, server) {
 
     function deleteAccountsResponseMock () {
       return nock('http://localhost:5984')
-        .get('/_users/_design/byId/_view/byId?key=abc4567')
+        .get('/_users/_design/byId/_view/byId')
+        .query({
+          key: '"abc4567"',
+          include_docs: true
+        })
         .reply(200, {
           total_rows: 1,
           offset: 0,
           rows: [{
-            id: 'org.couchdb.user:pat'
+            doc: {
+              _id: 'org.couchdb.user:pat-doe',
+              _rev: '1-234',
+              password_scheme: 'pbkdf2',
+              iterations: 10,
+              type: 'user',
+              name: 'pat-doe',
+              roles: ['id:userid123', 'mycustomrole'],
+              derived_key: '4b5c9721ab77dd2faf06a36785fd0a30f0bf0d27',
+              salt: 'salt123'
+            }
           }]
         })
+        .post('/_users/_bulk_docs', function (body) {
+          return Joi.object({
+            _id: Joi.any().only('org.couchdb.user:pat-doe').required(),
+            _rev: Joi.any().only('1-234').required(),
+            _deleted: Joi.any().only(true).required(),
+            name: Joi.any().only('pat-doe').required(),
+            type: Joi.any().only('user').required(),
+            salt: Joi.string().required(),
+            derived_key: Joi.string().required(),
+            iterations: Joi.any().only(10).required(),
+            password_scheme: Joi.any().only('pbkdf2').required(),
+            roles: Joi.array().items(Joi.string())
+          }).validate(body.docs[0]).error === null
+        })
+        .query(true)
     }
 
     group.test('No Authorization header sent', function (t) {
@@ -452,14 +496,20 @@ getServer(function (error, server) {
       })
     })
 
+    group.test('CouchDB Session invalid', {todo: true}, function (t) {
+      t.end()
+    })
+
+    group.test('Not an admin', {todo: true}, function (t) {
+      t.end()
+    })
+
     group.test('account exists', {only: true}, function (t) {
       var couchdb = deleteAccountsResponseMock()
-        .delete('/_users/org.couchdb.user:pat')
-        .reply(201, {
-          ok: true,
-          id: 'org.couchdb.user:pat',
+        .reply(201, [{
+          id: 'org.couchdb.user:pat-doe',
           rev: '2-3456'
-        })
+        }])
 
       server.inject(deleteAccountsRouteOptions, function (response) {
         t.is(couchdb.pendingMocks()[0], undefined, 'all mocks satisfied')

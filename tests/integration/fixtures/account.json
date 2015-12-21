@@ -3,10 +3,10 @@
     "self": "http://localhost:80/session/account"
   },
   "data": {
-    "id": "abc1234",
+    "id": "userid123",
     "type": "account",
     "attributes": {
-      "username": "pat"
+      "username": "pat-doe"
     },
     "relationships": {
       "profile": {
@@ -14,7 +14,7 @@
           "related": "http://localhost:80/session/account/profile"
         },
         "data": {
-          "id": "abc1234-profile",
+          "id": "userid123-profile",
           "type": "profile"
         }
       }

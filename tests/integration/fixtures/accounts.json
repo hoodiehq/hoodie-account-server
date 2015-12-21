@@ -12,7 +12,7 @@
         "self": "http://localhost:80/accounts/abc4567"
       },
       "attributes": {
-        "username": "pat"
+        "username": "pat-doe"
       },
       "relationships": {
         "profile": {

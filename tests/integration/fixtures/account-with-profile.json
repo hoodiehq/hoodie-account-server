@@ -1,9 +1,9 @@
 {
   "links": {
-    "self": "http://localhost:80/accounts/abc1234"
+    "self": "http://localhost:80/session/account"
   },
   "data": {
-    "id": "abc1234",
+    "id": "userid123",
     "type": "account",
     "attributes": {
       "username": "pat-doe"
@@ -11,10 +11,10 @@
     "relationships": {
       "profile": {
         "links": {
-          "related": "http://localhost:80/accounts/abc1234/profile"
+          "related": "http://localhost:80/session/account/profile"
         },
         "data": {
-          "id": "abc1234-profile",
+          "id": "userid123-profile",
           "type": "profile"
         }
       }
@@ -22,13 +22,14 @@
   },
   "included": [
     {
-      "id": "abc1234-profile",
+      "id": "userid123-profile",
       "type": "profile",
       "attributes": {
-        "fullname": "Dr Pat Hook"
+        "fullName": "pat Doe",
+        "email": "pat@example.com"
       },
       "links": {
-        "self": "http://localhost:80/accounts/abc1234/profile"
+        "self": "http://localhost:80/session/account/profile"
       }
     }
   ]
