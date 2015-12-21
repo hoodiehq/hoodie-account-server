@@ -1,24 +1,34 @@
 module.exports = addAccount
 
-var createAccount = require('../../utils/account/create')
+var randomstring = require('randomstring')
+
+var toAccount = require('../utils/doc-to-account')
 
 function addAccount (state, properties, options) {
   if (!options) {
     options = {}
   }
-  return new Promise(function (resolve, reject) {
-    createAccount(state, {
-      username: properties.username,
-      password: properties.password,
-      roles: properties.roles,
-      bearerToken: options.bearerToken,
-      includeProfile: options.include === 'account.profile'
-    }, function (error, session) {
-      if (error) {
-        return reject(error)
-      }
+  var accountKey = 'org.couchdb.user:' + encodeURIComponent(properties.username)
+  var accountId = randomstring.generate({
+    length: 12,
+    charset: 'hex'
+  })
 
-      resolve(session)
+  var doc = {
+    _id: accountKey,
+    type: 'user',
+    name: properties.username,
+    password: properties.password,
+    roles: [
+      'id:' + accountId
+    ].concat(properties.roles || [])
+  }
+
+  return state.db.put(doc)
+
+  .then(function () {
+    return toAccount(doc, {
+      includeProfile: options.include === 'profile'
     })
   })
 }

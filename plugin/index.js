@@ -4,8 +4,8 @@ hapiAccount.attributes = {
 }
 
 var async = require('async')
-
-var couchdbPush = require('couchdb-push')
+var getApi = require('../api')
+var merge = require('lodash.merge')
 
 var routePlugins = [
   require('../routes/session'),
@@ -13,26 +13,40 @@ var routePlugins = [
   require('../routes/accounts')
 ]
 
+var TIMEOUT_14_DAYS = 1209600
 function hapiAccount (server, options, next) {
-  var couchdbUrl = options.couchdb.url + '/_users'
-  if (options.admin) {
-    var username = encodeURIComponent(options.admin.username)
-    var password = encodeURIComponent(options.admin.password)
-    couchdbUrl = couchdbUrl.replace('://', '://' + username + ':' + password + '@')
-  }
-  var usersDesignDoc = require.resolve('./couchdb/users-design-doc.js')
+  var routeOptions = merge({}, options)
+  routeOptions.sessionTimeout = options.sessionTimeout || TIMEOUT_14_DAYS
+
+  var users = getApi({
+    db: options.usersDb,
+    secret: options.secret,
+    sessionTimeout: routeOptions.sessionTimeout
+  })
+  routeOptions.admins = options.usersDb.admins({
+    secret: options.secret,
+    admins: options.admins,
+    sessionTimeout: routeOptions.sessionTimeout
+  })
+  delete routeOptions.secret
+
+  server.expose({
+    api: users
+  })
+
+  var usersDesignDoc = require('./couchdb/users-design-doc.js')
   var plugins = [{
     register: require('@gar/hapi-json-api'),
     options: {}
   }].concat(routePlugins.map(function (plugin) {
     return {
       register: plugin,
-      options: options
+      options: routeOptions
     }
   }))
 
   async.parallel([
-    couchdbPush.bind(null, couchdbUrl, usersDesignDoc),
+    options.usersDb.put.bind(options.usersDb, usersDesignDoc),
     server.register.bind(server, plugins)
   ], next)
 }

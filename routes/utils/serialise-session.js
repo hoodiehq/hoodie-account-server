@@ -1,7 +1,7 @@
 module.exports = serialiseSession
 
 function serialiseSession (options, session) {
-  if (session.account.isAdmin) {
+  if (!session.account) {
     return {
       links: {
         self: options.baseUrl + '/session'
@@ -18,20 +18,24 @@ function serialiseSession (options, session) {
     },
     data: {
       id: session.id,
-      type: 'session',
-      relationships: {
-        account: {
-          links: {
-            related: options.baseUrl + '/session/account'
-          },
-          data: {
-            id: session.account.id,
-            type: 'account'
-          }
+      type: 'session'
+    }
+  }
+
+  if (session.account) {
+    json.data.relationships = {
+      account: {
+        links: {
+          related: options.baseUrl + '/session/account'
+        },
+        data: {
+          id: session.account.id,
+          type: 'account'
         }
       }
-    },
-    included: [
+    }
+
+    json.included = [
       {
         id: session.account.id,
         type: 'account',
@@ -52,14 +56,14 @@ function serialiseSession (options, session) {
         }
       }
     ]
-  }
 
-  if (session.account.profile) {
-    json.included.push({
-      id: session.account.id + '-profile',
-      type: 'profile',
-      attributes: session.account.profile || {}
-    })
+    if (session.account.profile) {
+      json.included.push({
+        id: session.account.id + '-profile',
+        type: 'profile',
+        attributes: session.account.profile || {}
+      })
+    }
   }
 
   return json

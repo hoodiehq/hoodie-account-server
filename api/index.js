@@ -1,7 +1,5 @@
 module.exports = accountApi
 
-var _ = require('lodash')
-
 var addSession = require('./sessions/add')
 var findSession = require('./sessions/find')
 var removeSession = require('./sessions/remove')
@@ -13,7 +11,10 @@ var updateAccount = require('./accounts/update')
 var removeAccount = require('./accounts/remove')
 
 function accountApi (options) {
-  var state = _.clone(options)
+  var state = {
+    db: options.db,
+    secret: options.secret
+  }
 
   return {
     sessions: {

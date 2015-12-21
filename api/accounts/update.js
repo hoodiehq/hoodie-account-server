@@ -1,40 +1,29 @@
 module.exports = updateAccount
 
-var changeAccount = require('../../utils/account/change')
-var findIdInRoles = require('../../utils/find-id-in-roles')
+var merge = require('lodash.merge')
 
-function updateAccount (state, idOrObject, changedProperties, options) {
-  var id
-  var username
-  if (typeof idOrObject === 'string') {
-    id = idOrObject
-  } else {
-    id = idOrObject.id
-    username = idOrObject.username
-  }
-  return new Promise(function (resolve, reject) {
-    changeAccount({
-      id: id,
-      couchUrl: state.url,
-      username: username,
-      change: changedProperties,
-      bearerToken: options.bearerToken,
-      includeProfile: options.include === 'account.profile'
-    }, function (error, doc) {
-      if (error) {
-        return reject(error)
-      }
+var findUserDoc = require('../utils/find-user-by-username-or-id')
+var toAccount = require('../utils/doc-to-account')
 
-      var account = {
-        username: doc.name,
-        id: findIdInRoles(doc.roles)
-      }
+function updateAccount (state, idOrObject, change, options) {
+  return findUserDoc(state.db, idOrObject)
 
-      if (options.include === 'profile') {
-        account.profile = doc.profile
-      }
+  .then(function (doc) {
+    return state.db.put(merge(doc, change))
 
-      resolve(account)
+    .then(function (response) {
+      doc._rev = response.rev
+      return doc
+    })
+
+    .catch(function (error) {
+      throw error
+    })
+  })
+
+  .then(function (doc) {
+    return toAccount(doc, {
+      includeProfile: options.include === 'profile'
     })
   })
 }

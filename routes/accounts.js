@@ -3,48 +3,47 @@ module.exports.attributes = {
   name: 'account-routes-accounts'
 }
 
-var getApi = require('../api')
-var joiFailAction = require('../utils/joi-fail-action')
-var serialise = require('../utils/account/serialise')
-var toBearerToken = require('../utils/to-bearer-token')
-var validations = require('../utils/validations')
+var Boom = require('boom')
+
+var errors = require('./utils/errors')
+var joiFailAction = require('./utils/joi-fail-action')
+var serialise = require('./utils/serialise-account')
+var toBearerToken = require('./utils/request-to-bearer-token')
+var validations = require('./utils/validations')
 
 function accountRoutes (server, options, next) {
-  var couchUrl = options.couchdb.url
-  var prefix = options.prefix || ''
-  var api = getApi({ url: couchUrl })
-  var accounts = api.accounts
+  var accounts = server.plugins.account.api.accounts
 
   var postAccountsRoute = {
     method: 'POST',
-    path: prefix + '/accounts',
+    path: '/accounts',
     config: {
       auth: false,
       validate: {
         headers: validations.bearerTokenHeader,
+        payload: validations.accountPayload,
         failAction: joiFailAction
       }
     },
     handler: function (request, reply) {
-      var sessionId = toBearerToken(request)
       var username = request.payload.data.attributes.username
       var password = request.payload.data.attributes.password
-      var profile = request.payload.data.attributes.profile
+      var query = request.query
 
-      return accounts.add({
+      accounts.add({
         username: username,
         password: password,
-        profile: profile
-      }, {
-        bearerToken: sessionId,
-        include: request.query.include
+        include: query.include
+      })
+
+      .then(function (account) {
+        return account
       })
 
       .then(function (account) {
         return serialise({
-          baseUrl: server.info.uri + prefix,
-          include: request.query.include,
-          admin: true
+          baseUrl: server.info.uri,
+          include: request.query.include
         }, account)
       })
 
@@ -52,13 +51,16 @@ function accountRoutes (server, options, next) {
         reply(json).code(201)
       })
 
-      .catch(reply)
+      .catch(function (error) {
+        error = errors.parse(error)
+        reply(Boom.create(error.status, error.message))
+      })
     }
   }
 
   var getAccountsRoute = {
     method: 'GET',
-    path: prefix + '/accounts',
+    path: '/accounts',
     config: {
       auth: false,
       validate: {
@@ -70,26 +72,30 @@ function accountRoutes (server, options, next) {
       var sessionId = toBearerToken(request)
 
       return accounts.findAll({
+        db: options.db,
         bearerToken: sessionId,
         include: request.query.include
       })
 
       .then(function (accounts) {
         return serialise({
-          baseUrl: server.info.uri + prefix,
+          baseUrl: server.info.uri,
           include: request.query.include
         }, accounts)
       })
 
       .then(reply)
 
-      .catch(reply)
+      .catch(function (error) {
+        error = errors.parse(error)
+        reply(Boom.create(error.status, error.message))
+      })
     }
   }
 
   var getAccountRoute = {
     method: 'GET',
-    path: prefix + '/accounts/{id}',
+    path: '/accounts/{id}',
     config: {
       auth: false,
       validate: {
@@ -107,7 +113,7 @@ function accountRoutes (server, options, next) {
 
       .then(function (account) {
         return serialise({
-          baseUrl: server.info.uri + prefix,
+          baseUrl: server.info.uri,
           include: request.query.include,
           admin: true
         }, account)
@@ -115,17 +121,20 @@ function accountRoutes (server, options, next) {
 
       .then(reply)
 
-      .catch(reply)
+      .catch(function (error) {
+        reply(Boom.wrap(error, error.status))
+      })
     }
   }
 
   var patchAccountRoute = {
     method: 'PATCH',
-    path: prefix + '/accounts/{id}',
+    path: '/accounts/{id}',
     config: {
       auth: false,
       validate: {
         headers: validations.bearerTokenHeader,
+        payload: validations.accountPayload,
         failAction: joiFailAction
       }
     },
@@ -146,7 +155,7 @@ function accountRoutes (server, options, next) {
 
       .then(function (account) {
         return serialise({
-          baseUrl: server.info.uri + prefix,
+          baseUrl: server.info.uri,
           include: request.query.include,
           admin: true
         }, account)
@@ -162,7 +171,7 @@ function accountRoutes (server, options, next) {
 
   var deleteAccountRoute = {
     method: 'DELETE',
-    path: prefix + '/accounts/{id}',
+    path: '/accounts/{id}',
     config: {
       auth: false,
       validate: {

@@ -5,30 +5,29 @@ module.exports.attributes = {
 
 var Boom = require('boom')
 
-var getApi = require('../api')
-var joiFailAction = require('../utils/joi-fail-action')
-var serialiseAccount = require('../utils/account/serialise')
-var toBearerToken = require('../utils/to-bearer-token')
-var validations = require('../utils/validations')
+var errors = require('./utils/errors')
+var joiFailAction = require('./utils/joi-fail-action')
+var serialiseAccount = require('./utils/serialise-account')
+var toBearerToken = require('./utils/request-to-bearer-token')
+var validations = require('./utils/validations')
 
 function accountRoutes (server, options, next) {
-  var couchUrl = options.couchdb.url
-  var prefix = options.prefix || ''
-  var api = getApi({ url: couchUrl, admin: options.admin })
-  var sessions = api.sessions
-  var accounts = api.accounts
   var serialise = serialiseAccount.bind(null, {
-    baseUrl: server.info.uri + prefix
+    baseUrl: server.info.uri
   })
+  var admins = options.admins
+  var sessions = server.plugins.account.api.sessions
+  var accounts = server.plugins.account.api.accounts
 
   var signUpRoute = {
     method: 'PUT',
-    path: prefix + '/session/account',
+    path: '/session/account',
     config: {
       auth: false,
       validate: {
         headers: validations.bearerTokenHeaderForbidden,
         query: validations.accountQuery,
+        payload: validations.accountPayload,
         failAction: joiFailAction
       }
     },
@@ -49,71 +48,103 @@ function accountRoutes (server, options, next) {
         reply(json).code(201)
       })
 
-      .catch(reply)
+      .catch(function (error) {
+        error = errors.parse(error)
+        reply(Boom.create(error.status, error.message))
+      })
     }
   }
 
   var getAccountRoute = {
     method: 'GET',
-    path: prefix + '/session/account',
+    path: '/session/account',
     config: {
-      auth: false
+      auth: false,
+      validate: {
+        headers: validations.bearerTokenHeader,
+        query: validations.accountQuery,
+        failAction: joiFailAction
+      }
     },
     handler: function (request, reply) {
       var sessionId = toBearerToken(request)
 
-      sessions.find(sessionId, {
-        include: request.query.include
+      // check for admin. If not found, check for user
+      admins.validateSession(sessionId)
+
+      .then(function (doc) {
+        throw errors.FORBIDDEN_ADMIN_ACCOUNT
+      })
+
+      .catch(function (error) {
+        if (error.name === 'not_found') {
+          return sessions.find(sessionId, {
+            include: request.query.include === 'profile' ? 'account.profile' : undefined
+          })
+        }
+
+        throw error
       })
 
       .then(function (session) {
-        if (session.account.isAdmin) {
-          throw Boom.forbidden('Admin users have no account')
-        }
-
-        return accounts.find({
-          username: session.account.username
-        }, {
-          bearerToken: sessionId,
-          include: request.query.include
-        })
+        return session.account
       })
 
       .then(serialise)
 
       .then(reply)
 
-      .catch(reply)
+      .catch(function (error) {
+        error = errors.parse(error)
+        reply(Boom.create(error.status, error.message))
+      })
     }
   }
 
   var destroyAccountRoute = {
     method: 'DELETE',
-    path: prefix + '/session/account',
+    path: '/session/account',
     config: {
       auth: false
     },
     handler: function (request, reply) {
       var sessionId = toBearerToken(request)
 
-      sessions.find(sessionId, {
-        include: request.query.include
+      // check for admin. If not found, check for user
+      admins.validateSession(sessionId)
+
+      .then(function (doc) {
+        throw errors.FORBIDDEN_ADMIN_ACCOUNT
+      })
+
+      .catch(function (error) {
+        if (error.name === 'not_found') {
+          return sessions.find(sessionId, {
+            include: request.query.include === 'profile' ? 'account.profile' : undefined
+          })
+        }
+
+        throw error
       })
 
       .then(function (session) {
-        return accounts.remove({
-          username: session.account.username
-        }, {
-          bearerToken: sessionId,
+        return accounts.remove(session.account, {
           include: request.query.include
         })
       })
 
-      .then(function () {
+      .then(function (account) {
+        if (request.query.include) {
+          return reply(serialise(account)).code(200)
+        }
+
         reply().code(204)
       })
 
-      .catch(reply)
+      .catch(function (error) {
+        error = errors.parse(error)
+        reply(Boom.create(error.status, error.message))
+      })
     }
   }
 

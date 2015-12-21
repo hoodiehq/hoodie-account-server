@@ -1,32 +1,20 @@
 module.exports = findAllAccount
 
-var findIdInRoles = require('../../utils/find-id-in-roles')
-var getAllAccounts = require('../../utils/account/get-all')
+var toAccount = require('../utils/doc-to-account')
 
 function findAllAccount (state, options) {
-  return new Promise(function (resolve, reject) {
-    getAllAccounts({
-      couchUrl: state.url,
-      bearerToken: options.bearerToken
-    }, function (error, response) {
-      if (error) {
-        return reject(error)
-      }
+  return state.db.allDocs({
+    include_docs: true,
+    startkey: 'org.couchdb.user:',
+    // https://wiki.apache.org/couchdb/View_collation#String_Ranges
+    endkey: 'org.couchdb.user:\ufff0'
+  })
 
-      resolve(response.rows.map(toAccount.bind(null, options)))
+  .then(function (response) {
+    return response.rows.map(function (row) {
+      return toAccount(row.doc, {
+        includeProfile: options.include === 'profile'
+      })
     })
   })
-}
-
-function toAccount (options, row) {
-  var account = {
-    username: row.doc.name,
-    id: findIdInRoles(row.doc.roles)
-  }
-
-  if (options.include === 'profile') {
-    account.profile = row.doc.profile
-  }
-
-  return account
 }
