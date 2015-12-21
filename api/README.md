@@ -109,15 +109,6 @@ new AccountApi(options)
     </td>
     <td>Yes</td>
   </tr>
-  <tr>
-    <th align="left"><code>options.admins</code></th>
-    <td>Object</td>
-    <td>
-      Map of admin accounts, same format as CouchDB’s <code>admins</code>
-      configuration
-    </td>
-    <td>No</td>
-  </tr>
 </table>
 
 Returns an `api` instance.
