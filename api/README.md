@@ -19,7 +19,15 @@ var api = require ('hoodie-server-account/api')({
 
 ```js
 var AccountApi = require('hoodie-server-account/api')
-var api = new AccountApi('https://localhost:5984')
+var PouchDB = require('pouchdb')
+
+PouchDB.plugin(require('pouchdb-users'))
+PouchDB.plugin(require('pouchdb-admins'))
+
+var api = new AccountApi({
+  db: db,
+  secret: 'secret123'
+})
 
 api.accounts.findAll().then(logAccountStats)
 api.accounts.on('change', logAccountChange)
@@ -82,16 +90,31 @@ new AccountApi(options)
     </tr>
   </thead>
   <tr>
-    <th align="left"><code>options.username</code></th>
-    <td>String</td>
-    <td>-</td>
+    <th align="left"><code>options.db</code></th>
+    <td>Object</td>
+    <td>
+      PouchDB instance with
+      <a href="https://github.com/hoodiehq/pouchdb-users">pouchdb-users</a>
+      plugin
+    </td>
     <td>Yes</td>
   </tr>
   <tr>
-    <th align="left"><code>options.password</code></th>
+    <th align="left"><code>options.secret</code></th>
     <td>String</td>
-    <td>-</td>
+    <td>
+      Server secret, like CouchDB’s <code>couch_httpd_auth.secret</code>
+    </td>
     <td>Yes</td>
+  </tr>
+  <tr>
+    <th align="left"><code>options.admins</code></th>
+    <td>Object</td>
+    <td>
+      Map of admin accounts, same format as CouchDB’s <code>admins</code>
+      configuration
+    </td>
+    <td>No</td>
   </tr>
 </table>
 
@@ -100,19 +123,17 @@ Returns an `api` instance.
 Examples
 
 ```js
-new AccountApi('https://localhost:5984')
-new AccountApi({
-  url: 'https://localhost:5984',
-  auth: {
-    username: 'admin',
-    password: 'secret'
-  }
-})
-new AccountApi({
-  url: 'https://localhost:5984',
-  auth: {
-    session: 'sessionId123'
-  }
+var PouchDB = require('pouchdb')
+PouchDB.plugin(require('pouchdb-users'))
+var db = new PouchDB('http://localhost:5984/_users')
+db.useAsAuthenticationDB().then(function () {
+  var api = new AccountApi({
+    db: db,
+    secret: 'secret123',
+    admins: {
+      kim: '-pbkdf2-e079757b4cb58ae17467c8befe725778ce97e422,0aef36ccafa33f3e81ae897baf23f85c,10'
+    }
+  })
 })
 ```
 

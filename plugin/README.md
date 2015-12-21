@@ -14,14 +14,17 @@ map function ([see doc](couchdb/users-design-doc.js)).
 var Hapi = require('hapi')
 var hapiAccount = require('hoodie-server-account')
 
+var PouchDB = require('pouchdb')
+PouchDB.plugin(require('pouchdb-users'))
+PouchDB.plugin(require('pouchdb-admins'))
+
+var db = new PouchDB('http://localhost:5984/_users')
 var options = {
-  couchdb: {
-    url: 'http://localhost:5984',
-    admin: {
-      username: 'admin',
-      password: 'secret'
-    }
+  admins: {
+    admin: '-pbkdf2-a2ca9d3ee921c26d2e9d61e03a0801b11b8725c6,1081b31861bd1e91611341da16c11c16a12c13718d1f712e,10'
   },
+  secret: 'secret123',
+  sessionTimeout: 1209600,
   confirmation: 'auto',
   notifications: {
     service: 'gmail',
@@ -66,50 +69,45 @@ var options = {
   }
 })
 
-server.register({
-  register: hapiAccount,
-  options: options
-}, function (error) {
-  if (error) {
-    throw error
-  }
+db.useAsAuthenticationDB().then(function () {
+  options.usersDb = db
 
-  // plugin account api, see below
+  server.register({
+    register: hapiAccount,
+    options: options
+  }, function (error) {
+    if (error) {
+      throw error
+    }
 
-});
+    // plugin account api, see below
+  });
 
-server.connection({
-  port: 8000
-});
+  server.connection({
+    port: 8000
+  });
 
-server.start(function () {
-  console.log('Server running at %s', server.info.uri);
-});
+  server.start(function () {
+    console.log('Server running at %s', server.info.uri);
+  });
+})
 ```
 
 ## Options
 
-### options.couchdb
+### options.usersDb
 
-Location & admin credentials for CouchDB, either set as object or as string.
+PouchDB instance with the
+[pouchdb-users](https://github.com/hoodiehq/pouchdb-users) and
+[pouchdb-admins](https://github.com/hoodiehq/pouchdb-admins) plugin.
 
-#### Example 1
+### options.admins
 
-```js
-couchdb: {
-  url: 'http://localhost:5984',
-  admin: {
-    username: 'admin',
-    password: 'secret'
-  }
-}
-```
+Map of admin usernames to secrets, as it’s defined in CouchDb config
 
-#### Example 2
+### options.sessionTimeout
 
-```js
-couchdb: 'http://admin:secret@localhost:5984'
-```
+Timeout for session in milliseconds.
 
 ### options.confirmation
 
