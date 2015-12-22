@@ -22,7 +22,8 @@ var AccountApi = require('hoodie-server-account/api')
 var PouchDB = require('pouchdb')
 
 PouchDB.plugin(require('pouchdb-users'))
-PouchDB.plugin(require('pouchdb-admins'))
+
+var db = new PouchDB('http://localhost:5984/_users')
 
 var api = new AccountApi({
   db: db,
@@ -70,12 +71,6 @@ If you see any inconsistencies, please [create an issue](https://github.com/hood
 
 ### Constructor
 
----
-
-🐕 **TO BE DONE**: _create issue and link it here_
-
----
-
 ```js
 new AccountApi(options)
 ```
@@ -107,15 +102,6 @@ new AccountApi(options)
     </td>
     <td>Yes</td>
   </tr>
-  <tr>
-    <th align="left"><code>options.admins</code></th>
-    <td>Object</td>
-    <td>
-      Map of admin accounts, same format as CouchDB’s <code>admins</code>
-      configuration
-    </td>
-    <td>No</td>
-  </tr>
 </table>
 
 Returns an `api` instance.
@@ -138,12 +124,6 @@ db.useAsAuthenticationDB().then(function () {
 ```
 
 ### api.sessions.add()
-
----
-
-🐕 **TO BE DONE**: [#26](https://github.com/hoodiehq/hoodie-server-account/issues/26)
-
----
 
 Admins can create a session for any user.
 
@@ -476,7 +456,7 @@ is kept, and sessions are hash based
 
 ---
 
-🐕 **TO BE DONE**: _create issue and link it here_
+🐕 **TO BE DONE**: [#27](https://github.com/hoodiehq/hoodie-server-account/issues/27)
 
 ---
 

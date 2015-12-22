@@ -32,7 +32,6 @@ function getServer (callback) {
     }])
 
   PouchDB.plugin(require('pouchdb-users'))
-  PouchDB.plugin(require('pouchdb-admins'))
 
   var usersDb = new PouchDB('http://localhost:5984/_users')
   usersDb.installUsersBehavior()

@@ -15,7 +15,6 @@ var PouchDB = require('PouchDB')
 var hapiAccount = require('hoodie-server-account')
 
 PouchDB.plugin(require('pouchdb-users'))
-PouchDB.plugin(require('pouchdb-admins'))
 
 var db = new PouchDB('http://localhost:5984/_users')
 db.useAsAuthenticationDB().then(function () {

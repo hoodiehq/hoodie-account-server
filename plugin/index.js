@@ -18,6 +18,8 @@ function hapiAccount (server, options, next) {
   var routeOptions = merge({}, options)
   routeOptions.sessionTimeout = options.sessionTimeout || TIMEOUT_14_DAYS
 
+  options.usersDb.constructor.plugin(require('pouchdb-admins'))
+
   var users = getApi({
     db: options.usersDb,
     secret: options.secret,
@@ -46,7 +48,19 @@ function hapiAccount (server, options, next) {
   }))
 
   async.parallel([
-    options.usersDb.put.bind(options.usersDb, usersDesignDoc),
+    putUsersDesignDoc.bind(null, options.usersDb, usersDesignDoc),
     server.register.bind(server, plugins)
   ], next)
+}
+
+function putUsersDesignDoc (db, designDoc, callback) {
+  db.put(designDoc)
+
+  .catch(function (error) {
+    if (error.name !== 'conflict') {
+      throw error
+    }
+  })
+
+  .then(callback.bind(null, null), callback)
 }
