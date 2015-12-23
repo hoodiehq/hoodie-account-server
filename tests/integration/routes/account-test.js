@@ -3,10 +3,10 @@ var merge = require('lodash.merge')
 var nock = require('nock')
 var test = require('tap').test
 
-var authorizationHeaderNotAllowedErrorTest = require('./utils/authorization-header-not-allowed-error')
-var couchdbErrorTests = require('./utils/couchdb-error-tests')
-var getServer = require('./utils/get-server')
-var invalidTypeErrors = require('./utils/invalid-type-errors.js')
+var authorizationHeaderNotAllowedErrorTest = require('../utils/authorization-header-not-allowed-error')
+var couchdbErrorTests = require('../utils/couchdb-error-tests')
+var getServer = require('../utils/get-server')
+var invalidTypeErrors = require('../utils/invalid-type-errors.js')
 
 var jsonAPIHeaders = {
   accept: 'application/vnd.api+json',
@@ -94,7 +94,7 @@ getServer(function (error, server) {
           rev: '1-234'
         }])
 
-      var accountFixture = require('./fixtures/account.json')
+      var accountFixture = require('../fixtures/account.json')
 
       server.inject(putAccountRouteOptions, function (response) {
         t.is(couchdb.pendingMocks()[0], undefined, 'CouchDB received request')
@@ -137,7 +137,7 @@ getServer(function (error, server) {
 
     group.test('Session does exist', function (t) {
       var couch = mockUserFound()
-      var accountFixture = require('./fixtures/account.json')
+      var accountFixture = require('../fixtures/account.json')
 
       server.inject(getAccountRouteOptions, function (response) {
         t.is(couch.pendingMocks()[0], undefined, 'all mocks satisfied')
@@ -191,7 +191,7 @@ getServer(function (error, server) {
           email: 'pat@example.com'
         }
       })
-      var accountWithProfileFixture = require('./fixtures/account-with-profile.json')
+      var accountWithProfileFixture = require('../fixtures/account-with-profile.json')
       var requestOptions = merge({}, getAccountRouteOptions, {
         url: '/session/account?include=profile'
       })

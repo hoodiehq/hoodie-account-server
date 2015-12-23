@@ -3,9 +3,9 @@ var merge = require('lodash.merge')
 var nock = require('nock')
 var test = require('tap').test
 
-var getServer = require('./utils/get-server')
-var couchdbErrorTests = require('./utils/couchdb-error-tests')
-var invalidTypeErrors = require('./utils/invalid-type-errors.js')
+var getServer = require('../utils/get-server')
+var couchdbErrorTests = require('../utils/couchdb-error-tests')
+var invalidTypeErrors = require('../utils/invalid-type-errors.js')
 
 getServer(function (error, server) {
   if (error) {
@@ -155,7 +155,7 @@ getServer(function (error, server) {
         }]
       })
 
-      var accounts = require('./fixtures/accounts.json')
+      var accounts = require('../fixtures/accounts.json')
 
       server.inject(getAccountsRouteOptions, function (response) {
         t.is(couchdb.pendingMocks()[0], undefined, 'all mocks satisfied')
@@ -198,7 +198,7 @@ getServer(function (error, server) {
         }]
       })
 
-      var accounts = require('./fixtures/accounts-with-profile.json')
+      var accounts = require('../fixtures/accounts-with-profile.json')
 
       server.inject({
         method: 'GET',
@@ -253,7 +253,7 @@ getServer(function (error, server) {
           }]
         })
 
-      var account = require('./fixtures/admin-account.json')
+      var account = require('../fixtures/admin-account.json')
 
       server.inject({
         method: 'GET',
@@ -318,7 +318,7 @@ getServer(function (error, server) {
           }]
         })
 
-      var accountWithProfile = require('./fixtures/admin-account-with-profile.json')
+      var accountWithProfile = require('../fixtures/admin-account-with-profile.json')
 
       server.inject({
         method: 'GET',

@@ -3,11 +3,11 @@ var merge = require('lodash.merge')
 var nock = require('nock')
 var test = require('tap').test
 
-var getServer = require('./utils/get-server')
+var getServer = require('../utils/get-server')
 
-var authorizationHeaderNotAllowedErrorTest = require('./utils/authorization-header-not-allowed-error')
-var couchdbErrorTests = require('./utils/couchdb-error-tests')
-var invalidTypeErrors = require('./utils/invalid-type-errors.js')
+var authorizationHeaderNotAllowedErrorTest = require('../utils/authorization-header-not-allowed-error')
+var couchdbErrorTests = require('../utils/couchdb-error-tests')
+var invalidTypeErrors = require('../utils/invalid-type-errors.js')
 
 var jsonAPIHeaders = {
   accept: 'application/vnd.api+json',
@@ -79,7 +79,7 @@ getServer(function (error, server) {
           }, docChange))
       }
 
-      var sessionResponse = require('./fixtures/session-response.json')
+      var sessionResponse = require('../fixtures/session-response.json')
 
       subGroup.test('Valid password', function (t) {
         var clock = lolex.install(0, ['Date'])
@@ -155,7 +155,7 @@ getServer(function (error, server) {
           }
         })
 
-        var adminSessionResponse = require('./fixtures/session-admin-response.json')
+        var adminSessionResponse = require('../fixtures/session-admin-response.json')
 
         server.inject(options, function (response) {
           delete response.result.meta
@@ -219,7 +219,7 @@ getServer(function (error, server) {
           }, docChange))
       }
 
-      var sessionWithProfileResponse = require('./fixtures/session-with-profile-response.json')
+      var sessionWithProfileResponse = require('../fixtures/session-with-profile-response.json')
 
       subGroup.test('Valid password', function (t) {
         var clock = lolex.install(0, ['Date'])
@@ -310,7 +310,7 @@ getServer(function (error, server) {
           salt: 'salt123'
         })
 
-        var sessionResponse = require('./fixtures/session-response.json')
+        var sessionResponse = require('../fixtures/session-response.json')
 
         server.inject(getSessionRouteOptions, function (response) {
           delete response.result.meta
@@ -355,7 +355,7 @@ getServer(function (error, server) {
         }
       })
 
-      var sessionAdminResponse = require('./fixtures/session-admin-response.json')
+      var sessionAdminResponse = require('../fixtures/session-admin-response.json')
 
       server.inject(requestOptions, function (response) {
         delete response.result.meta
@@ -386,7 +386,7 @@ getServer(function (error, server) {
         url: '/session?include=account.profile'
       })
 
-      var sessionWithProfileResponse = require('./fixtures/session-with-profile-response.json')
+      var sessionWithProfileResponse = require('../fixtures/session-with-profile-response.json')
 
       server.inject(routeOptions, function (response) {
         delete response.result.meta
@@ -500,7 +500,7 @@ getServer(function (error, server) {
       subGroup.test('Session valid', function (t) {
         var couchdb = couchdbUserFoundMock()
 
-        var sessionResponse = require('./fixtures/session-response.json')
+        var sessionResponse = require('../fixtures/session-response.json')
 
         server.inject(routeOptions, function (response) {
           delete response.result.meta
@@ -540,7 +540,7 @@ getServer(function (error, server) {
       subGroup.test('Session valid', function (t) {
         var couchdb = couchdbUserFoundMock()
 
-        var sessionWithProfileResponse = require('./fixtures/session-with-profile-response.json')
+        var sessionWithProfileResponse = require('../fixtures/session-with-profile-response.json')
 
         server.inject(routeOptions, function (response) {
           delete response.result.meta
