@@ -9,7 +9,7 @@ function addAccount (state, properties, options) {
     options = {}
   }
   var accountKey = 'org.couchdb.user:' + encodeURIComponent(properties.username)
-  var accountId = randomstring.generate({
+  var accountId = properties.id || randomstring.generate({
     length: 12,
     charset: 'hex'
   })

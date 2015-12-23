@@ -13,7 +13,7 @@ module.exports = {
             return emit(doc.roles[i].substr(3), null)
           }
         }
-      }
+      }.toString()
     }
   }
 }

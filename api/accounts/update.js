@@ -6,6 +6,9 @@ var findUserDoc = require('../utils/find-user-by-username-or-id')
 var toAccount = require('../utils/doc-to-account')
 
 function updateAccount (state, idOrObject, change, options) {
+  if (!options) {
+    options = {}
+  }
   return findUserDoc(state.db, idOrObject)
 
   .then(function (doc) {
