@@ -4,13 +4,11 @@
   "description": "Account REST API backed by CouchDB",
   "main": "plugin/index.js",
   "scripts": {
-    "coverage": "nyc report --reporter=text-lcov | coveralls",
     "start": "bin/server",
     "pretest": "standard",
-    "test": "nyc tap --no-cov tests/{unit,integration}/{**,**/**}/*-test.js",
+    "test": "tap tests/{unit,integration}/{**,**/**}/*-test.js",
     "test:watch": "gaze 'bin/watch-and-test.sh $path' 'tests/**/*.js' '*.js' 'api/**/*.js' 'plugin/**/*.js' 'routes/**/*.js' 'utils/**/*.js'",
-    "semantic-release": "semantic-release pre && npm publish && semantic-release post",
-    "postsemantic-release": "npm run coverage"
+    "semantic-release": "semantic-release pre && npm publish && semantic-release post"
   },
   "repository": {
     "type": "git",
@@ -36,7 +34,6 @@
     "lodash": "^3.10.1",
     "memdown": "^1.1.0",
     "nock": "^3.4.1",
-    "nyc": "^5.0.0",
     "lolex": "^1.3.2",
     "pouchdb": "^5.1.0",
     "pouchdb-users": "^1.0.3",
