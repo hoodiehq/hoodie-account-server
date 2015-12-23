@@ -1474,7 +1474,7 @@ admin.account({username: 'pat'}).roles.remove('mycustomrole')
 
 ---
 
-🐕 **TO BE DONE**: _create issue and link it here_
+🐕 **TO BE DONE**: [#35](https://github.com/hoodiehq/hoodie-server-account/issues/35)
 
 ---
 
