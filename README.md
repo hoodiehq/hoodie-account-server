@@ -3,9 +3,11 @@
 > Account REST API backed by CouchDB
 
 [![Build Status](https://travis-ci.org/hoodiehq/hoodie-server-account.svg?branch=master)](https://travis-ci.org/hoodiehq/hoodie-server-account)
-[![Coverage Status](https://coveralls.io/repos/hoodiehq/hoodie-server-account/badge.svg?branch=master)](https://coveralls.io/r/hoodiehq/hoodie-server-account?branch=master)
 [![Dependency Status](https://david-dm.org/hoodiehq/hoodie-server-account.svg)](https://david-dm.org/hoodiehq/hoodie-server-account)
 [![devDependency Status](https://david-dm.org/hoodiehq/hoodie-server-account/dev-status.svg)](https://david-dm.org/hoodiehq/hoodie-server-account#info=devDependencies)
+✷
+
+✷ coverage is currently disabled: [#37](https://github.com/hoodiehq/hoodie-server-account/issues/37)
 
 ## Usage
 
