@@ -25,13 +25,15 @@ PouchDB.plugin(require('pouchdb-users'))
 
 var db = new PouchDB('http://localhost:5984/_users')
 
-var api = new AccountApi({
-  db: db,
-  secret: 'secret123'
-})
+db.installUsersBehavior().then(function () {
+  var api = new AccountApi({
+    db: db,
+    secret: 'secret123'
+  })
 
-api.accounts.findAll().then(logAccountStats)
-api.accounts.on('change', logAccountChange)
+  api.accounts.findAll().then(logAccountStats)
+  api.accounts.on('change', logAccountChange)
+})
 ```
 
 ## API
