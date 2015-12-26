@@ -2,7 +2,6 @@ var Joi = require('joi')
 var merge = require('lodash.merge')
 var nock = require('nock')
 var test = require('tap').test
-// test = require('tape')
 
 var authorizationHeaderNotAllowedErrorTest = require('../utils/authorization-header-not-allowed-error')
 var couchdbErrorTests = require('../utils/couchdb-error-tests')

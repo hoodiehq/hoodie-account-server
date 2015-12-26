@@ -2,7 +2,6 @@ var lolex = require('lolex')
 var merge = require('lodash.merge')
 var nock = require('nock')
 var test = require('tap').test
-test = require('tape')
 
 var getServer = require('../utils/get-server')
 
