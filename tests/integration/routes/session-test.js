@@ -2,6 +2,7 @@ var lolex = require('lolex')
 var merge = require('lodash.merge')
 var nock = require('nock')
 var test = require('tap').test
+test = require('tape')
 
 var getServer = require('../utils/get-server')
 
@@ -14,7 +15,7 @@ var jsonAPIHeaders = {
   'content-type': 'application/vnd.api+json'
 }
 
-var headersWithAuth = merge({authorization: 'Bearer cGF0LWRvZToxMjc1MDA6nIp2130Iq41NBWNVDo_8ezbTR0M'}, jsonAPIHeaders)
+var headersWithAuth = merge({authorization: 'Bearer cGF0LWRvZToxMjc1MDA6zEZsQ1BuO-W8SthDSrg8KXQ8OlQ'}, jsonAPIHeaders)
 
 var putSessionRouteOptions = {
   method: 'PUT',
@@ -58,7 +59,7 @@ getServer(function (error, server) {
     .get('/_users/org.couchdb.user%3Apat-doe')
     .query(true)
 
-  test('PUT /session', function (group) {
+  test.only('PUT /session', function (group) {
     authorizationHeaderNotAllowedErrorTest(server, group, putSessionRouteOptions)
     couchdbErrorTests(server, group, couchdbGetUserMock, putSessionRouteOptions)
     invalidTypeErrors(server, group, putSessionRouteOptions)
@@ -351,7 +352,7 @@ getServer(function (error, server) {
       var requestOptions = merge({}, getSessionRouteOptions, {
         headers: {
           // calculateSessionId('admin', '1081b31861bd1e91611341da16c11c16a12c13718d1f712e', 'secret', 1209600)
-          authorization: 'Bearer YWRtaW46MTI3NTAwOu1EdmipcvGcFiiftXsT7PJea7BN'
+          authorization: 'Bearer YWRtaW46MTI3NTAwOh08V1EljPqAPAnv8mtxWNF87zdW'
         }
       })
 

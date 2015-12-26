@@ -20,7 +20,7 @@ getServer(function (error, server) {
   }
   var headersWithAuth = merge({
     // calculateSessionId('admin', '1081b31861bd1e91611341da16c11c16a12c13718d1f712e', 'secret', 1209600)
-    authorization: 'Bearer YWRtaW46MTI3NTAwOu1EdmipcvGcFiiftXsT7PJea7BN'
+    authorization: 'Bearer YWRtaW46MTI3NTAwOh08V1EljPqAPAnv8mtxWNF87zdW'
   }, jsonAPIHeaders)
 
   var couchdbPutUserMock = nock('http://localhost:5984')

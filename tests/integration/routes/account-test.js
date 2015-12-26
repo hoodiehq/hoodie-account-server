@@ -2,6 +2,7 @@ var Joi = require('joi')
 var merge = require('lodash.merge')
 var nock = require('nock')
 var test = require('tap').test
+// test = require('tape')
 
 var authorizationHeaderNotAllowedErrorTest = require('../utils/authorization-header-not-allowed-error')
 var couchdbErrorTests = require('../utils/couchdb-error-tests')
@@ -12,7 +13,7 @@ var jsonAPIHeaders = {
   accept: 'application/vnd.api+json',
   'content-type': 'application/vnd.api+json'
 }
-var headersWithAuth = merge({authorization: 'Bearer cGF0LWRvZToxMjc1MDA6nIp2130Iq41NBWNVDo_8ezbTR0M'}, jsonAPIHeaders)
+var headersWithAuth = merge({authorization: 'Bearer cGF0LWRvZToxMjc1MDA6zEZsQ1BuO-W8SthDSrg8KXQ8OlQ'}, jsonAPIHeaders)
 
 var putAccountRouteOptions = {
   method: 'PUT',
@@ -167,7 +168,7 @@ getServer(function (error, server) {
       var requestOptions = merge({}, getAccountRouteOptions, {
         headers: {
           // calculateSessionId('admin', '1081b31861bd1e91611341da16c11c16a12c13718d1f712e', 'secret', 1209600)
-          authorization: 'Bearer YWRtaW46MTI3NTAwOu1EdmipcvGcFiiftXsT7PJea7BN'
+          authorization: 'Bearer YWRtaW46MTI3NTAwOh08V1EljPqAPAnv8mtxWNF87zdW'
         }
       })
 
