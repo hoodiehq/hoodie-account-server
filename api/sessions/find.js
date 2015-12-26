@@ -6,6 +6,9 @@ var isValidSessionId = require('../utils/couchdb-is-valid-session-id')
 var toAccount = require('../utils/doc-to-account')
 
 function findSession (state, id, options) {
+  if (!options) {
+    options = {}
+  }
   var username = decodeSessionId(id).name
 
   return state.db.get('org.couchdb.user:' + username)
