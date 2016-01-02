@@ -43,7 +43,7 @@
     "tap-min": "^1.0.0"
   },
   "dependencies": {
-    "@gar/hapi-json-api": "^1.0.7",
+    "@gar/hapi-json-api": "^2.0.1",
     "async": "^1.5.0",
     "base64url": "^1.0.5",
     "boom": "^3.0.0",
