@@ -1,12 +1,17 @@
 module.exports = getServer
 
+var defaults = require('lodash/object/defaultsDeep')
 var Hapi = require('hapi')
 var nock = require('nock')
 var PouchDB = require('pouchdb')
 
 var hapiAccount = require('../../../plugin')
 
-function getServer (callback) {
+function getServer (options, callback) {
+  if (!callback) {
+    callback = options
+    options = {}
+  }
   var server = new Hapi.Server({
     // easy debug!
     // debug: {
@@ -38,15 +43,16 @@ function getServer (callback) {
   .then(function () {
     server.register({
       register: hapiAccount,
-      options: {
+      options: defaults({
         usersDb: usersDb,
         secret: 'secret',
         admins: {
           // -<password scheme>-<derived key>,<salt>,<iterations>
           // password is "secret"
           admin: '-pbkdf2-a2ca9d3ee921c26d2e9d61e03a0801b11b8725c6,1081b31861bd1e91611341da16c11c16a12c13718d1f712e,10'
-        }
-      }
+        },
+        notifications: {}
+      }, options)
     }, function (error) {
       callback(error, server)
     })
