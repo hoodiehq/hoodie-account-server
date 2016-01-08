@@ -40,3 +40,15 @@ validations.sessionPayload = Joi.object({
 }).unknown().required().meta({
   statusCode: 409
 })
+
+validations.requestPayload = Joi.object({
+  data: Joi.object({
+    type: Joi.any().required().only(['request']),
+    attributes: Joi.object({
+      type: Joi.any().required().only(['passwordreset']),
+      username: Joi.string().required().email()
+    })
+  })
+}).unknown().required().meta({
+  statusCode: 409
+})

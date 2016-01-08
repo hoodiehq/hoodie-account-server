@@ -51,7 +51,7 @@ function accountRoutes (server, options, next) {
 
       .catch(function (error) {
         error = errors.parse(error)
-        reply(Boom.create(error.status, error.message))
+        reply(Boom.create(error.status || 400, error.message))
       })
     }
   }

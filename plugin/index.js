@@ -8,9 +8,10 @@ var getApi = require('../api')
 var merge = require('lodash.merge')
 
 var routePlugins = [
-  require('../routes/session'),
   require('../routes/account'),
-  require('../routes/accounts')
+  require('../routes/accounts'),
+  require('../routes/requests'),
+  require('../routes/session')
 ]
 
 var TIMEOUT_14_DAYS = 1209600
@@ -31,6 +32,8 @@ function hapiAccount (server, options, next) {
     sessionTimeout: routeOptions.sessionTimeout
   })
   delete routeOptions.secret
+
+  routeOptions.notifications = options.notifications
 
   server.expose({
     api: users
