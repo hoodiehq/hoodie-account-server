@@ -27,10 +27,12 @@ var options = {
   sessionTimeout: 1209600,
   confirmation: 'auto',
   notifications: {
-    service: 'gmail',
-    auth: {
-      user: 'gmail.user@gmail.com',
-      pass: 'userpass'
+    transport: {
+      service: 'gmail',
+      auth: {
+        user: 'gmail.user@gmail.com',
+        pass: 'userpass'
+      }
     },
     templates: {
       passwordreset: 'Dear {account.username},\n\nyou can reset your password at:\n{server.info.uri}/#resetPassword/{request.token}',
