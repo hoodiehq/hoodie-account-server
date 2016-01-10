@@ -58,7 +58,7 @@ getServer(function (error, server) {
     .get('/_users/org.couchdb.user%3Apat-doe')
     .query(true)
 
-  test.only('PUT /session', function (group) {
+  test('PUT /session', function (group) {
     authorizationHeaderNotAllowedErrorTest(server, group, putSessionRouteOptions)
     couchdbErrorTests(server, group, couchdbGetUserMock, putSessionRouteOptions)
     invalidTypeErrors(server, group, putSessionRouteOptions)
