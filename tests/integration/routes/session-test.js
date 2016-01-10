@@ -140,6 +140,21 @@ getServer(function (error, server) {
       subGroup.end()
     })
 
+    // failing test for: https://github.com/hoodiehq/hoodie-server-account/issues/52
+    // group.test('User not found', function (t) {
+    //   var couchdb = couchdbGetUserMock.reply(404, {error: 'Not Found'})
+    //
+    //   server.inject(putSessionRouteOptions, function (response) {
+    //     t.doesNotThrow(couchdb.done, 'CouchDB received request')
+    //     t.is(response.statusCode, 401, 'returns 401 status')
+    //     t.is(response.result.errors.length, 1, 'returns one error')
+    //     t.is(response.result.errors[0].title, 'Unauthorized', 'returns "Unauthorized" error')
+    //     t.is(response.result.errors[0].detail, 'Invalid password', 'returns "Invalid password" message')
+    //
+    //     t.end()
+    //   })
+    // })
+
     group.test('User Is admin', function (subGroup) {
       subGroup.test('Valid password', function (t) {
         var clock = lolex.install(0, ['Date'])
