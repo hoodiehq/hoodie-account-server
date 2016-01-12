@@ -51,7 +51,7 @@
     "couchdb-calculate-session-id": "^1.1.0",
     "joi": "^7.1.0",
     "lodash.merge": "^3.3.2",
-    "nodemailer": "^1.11.0",
+    "nodemailer": "^2.0.0",
     "nyc": "^5.3.0",
     "pouchdb-admins": "^1.0.0",
     "randomstring": "^1.1.3",
