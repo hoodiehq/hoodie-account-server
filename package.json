@@ -50,7 +50,7 @@
     "boom": "^3.1.1",
     "couchdb-calculate-session-id": "^1.1.0",
     "joi": "^7.1.0",
-    "lodash.merge": "^3.3.2",
+    "lodash.merge": "^4.0.0",
     "nodemailer": "^1.11.0",
     "nyc": "^5.3.0",
     "pouchdb-admins": "^1.0.0",
