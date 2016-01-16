@@ -1,6 +1,6 @@
 module.exports = updateAccount
 
-var merge = require('lodash.merge')
+var merge = require('lodash/merge')
 
 var findUserDoc = require('../utils/find-user-by-username-or-id')
 var toAccount = require('../utils/doc-to-account')

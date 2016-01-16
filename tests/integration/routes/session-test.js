@@ -1,5 +1,7 @@
+var cloneDeep = require('lodash/cloneDeep')
+var defaultsDeep = require('lodash/defaultsDeep')
 var lolex = require('lolex')
-var merge = require('lodash.merge')
+var merge = require('lodash/merge')
 var nock = require('nock')
 var test = require('tap').test
 
@@ -46,39 +48,38 @@ var deleteSessionRouteOptions = {
   headers: headersWithAuth
 }
 
-getServer(function (error, server) {
-  if (error) {
-    return test('test setup', function (t) {
-      t.error(error)
-      t.end()
-    })
-  }
+var couchdbGetUserMock = nock('http://localhost:5984')
+  .get('/_users/org.couchdb.user%3Apat-doe')
+  .query(true)
 
-  var couchdbGetUserMock = nock('http://localhost:5984')
-    .get('/_users/org.couchdb.user%3Apat-doe')
-    .query(true)
+function mockUserFound (docChange) {
+  return couchdbGetUserMock
+    .reply(200, merge({
+      _id: 'org.couchdb.user:pat-doe',
+      _rev: '1-234',
+      password_scheme: 'pbkdf2',
+      iterations: 10,
+      type: 'user',
+      name: 'pat-doe',
+      roles: ['id:userid123', 'mycustomrole'],
+      derived_key: '4b5c9721ab77dd2faf06a36785fd0a30f0bf0d27',
+      salt: 'salt123'
+    }, docChange))
+}
 
-  test('PUT /session', function (group) {
+test('PUT /session', function (group) {
+  getServer(function (error, server) {
+    if (error) {
+      group.error(error)
+      group.end()
+      return
+    }
+
     authorizationHeaderNotAllowedErrorTest(server, group, putSessionRouteOptions)
     couchdbErrorTests(server, group, couchdbGetUserMock, putSessionRouteOptions)
     invalidTypeErrors(server, group, putSessionRouteOptions)
 
     group.test('User Found', function (subGroup) {
-      function mockUserFound (docChange) {
-        return couchdbGetUserMock
-          .reply(200, merge({
-            _id: 'org.couchdb.user:pat-doe',
-            _rev: '1-234',
-            password_scheme: 'pbkdf2',
-            iterations: 10,
-            type: 'user',
-            name: 'pat-doe',
-            roles: ['id:userid123', 'mycustomrole'],
-            derived_key: '4b5c9721ab77dd2faf06a36785fd0a30f0bf0d27',
-            salt: 'salt123'
-          }, docChange))
-      }
-
       var sessionResponse = require('../fixtures/session-response.json')
 
       subGroup.test('Valid password', function (t) {
@@ -98,7 +99,8 @@ getServer(function (error, server) {
       subGroup.test('Invalid password', function (t) {
         var clock = lolex.install(0, ['Date'])
         var couchdb = mockUserFound()
-        var options = merge({}, putSessionRouteOptions, {
+
+        var options = defaultsDeep({
           payload: {
             data: {
               attributes: {
@@ -106,7 +108,7 @@ getServer(function (error, server) {
               }
             }
           }
-        })
+        }, putSessionRouteOptions)
 
         server.inject(options, function (response) {
           t.doesNotThrow(couchdb.done, 'CouchDB received request')
@@ -159,7 +161,7 @@ getServer(function (error, server) {
       subGroup.test('Valid password', function (t) {
         var clock = lolex.install(0, ['Date'])
 
-        var options = merge({}, putSessionRouteOptions, {
+        var options = defaultsDeep({
           payload: {
             data: {
               attributes: {
@@ -168,7 +170,7 @@ getServer(function (error, server) {
               }
             }
           }
-        })
+        }, putSessionRouteOptions)
 
         var adminSessionResponse = require('../fixtures/session-admin-response.json')
 
@@ -185,7 +187,7 @@ getServer(function (error, server) {
       subGroup.test('Invalid password', function (t) {
         var clock = lolex.install(0, ['Date'])
 
-        var options = merge({}, putSessionRouteOptions, {
+        var options = defaultsDeep({
           payload: {
             data: {
               attributes: {
@@ -194,7 +196,7 @@ getServer(function (error, server) {
               }
             }
           }
-        })
+        }, putSessionRouteOptions)
 
         server.inject(options, function (response) {
           t.is(response.statusCode, 401, 'returns 401 status')
@@ -212,28 +214,21 @@ getServer(function (error, server) {
 
     group.end()
   })
+})
 
-  test('PUT /session?include=account.profile', function (group) {
-    var putSessionRouteWithProfileOptions = merge({}, putSessionRouteOptions, {
+test('PUT /session?include=account.profile', function (group) {
+  getServer(function (error, server) {
+    if (error) {
+      group.error(error)
+      group.end()
+      return
+    }
+
+    var putSessionRouteWithProfileOptions = defaultsDeep({
       url: '/session?include=account.profile'
-    })
+    }, putSessionRouteOptions)
 
     group.test('User Found', function (subGroup) {
-      function mockUserFound (docChange) {
-        return couchdbGetUserMock
-          .reply(200, merge({
-            _id: 'org.couchdb.user:pat-doe',
-            _rev: '1-234',
-            password_scheme: 'pbkdf2',
-            iterations: 10,
-            type: 'user',
-            name: 'pat-doe',
-            roles: ['id:userid123', 'mycustomrole'],
-            derived_key: '4b5c9721ab77dd2faf06a36785fd0a30f0bf0d27',
-            salt: 'salt123'
-          }, docChange))
-      }
-
       var sessionWithProfileResponse = require('../fixtures/session-with-profile-response.json')
 
       subGroup.test('Valid password', function (t) {
@@ -262,7 +257,7 @@ getServer(function (error, server) {
       subGroup.test('Valid password', function (t) {
         var clock = lolex.install(0, ['Date'])
 
-        var options = merge({}, putSessionRouteWithProfileOptions, {
+        var options = defaultsDeep({
           payload: {
             data: {
               attributes: {
@@ -271,7 +266,7 @@ getServer(function (error, server) {
               }
             }
           }
-        })
+        }, putSessionRouteWithProfileOptions)
 
         server.inject(options, function (response) {
           t.is(response.statusCode, 403, 'returns 403 status')
@@ -288,8 +283,15 @@ getServer(function (error, server) {
 
     group.end()
   })
+})
 
-  test('GET /session', function (group) {
+test('GET /session', function (group) {
+  getServer(function (error, server) {
+    if (error) {
+      group.error(error)
+      group.end()
+      return
+    }
     couchdbErrorTests(server, group, couchdbGetUserMock, getSessionRouteOptions)
 
     group.test('No Authorization header sent', function (t) {
@@ -344,12 +346,12 @@ getServer(function (error, server) {
           salt: 'salt123'
         })
 
-        var requestOptions = merge({}, getSessionRouteOptions, {
+        var requestOptions = defaultsDeep({
           headers: {
             // Token calculated with invalid salt (salt456)
             authorization: 'Bearer cGF0LWRvZToxMjc1MDA6YMtzOJDSC7iTA4cB2kjfjqbfk1Y'
           }
-        })
+        }, getSessionRouteOptions)
 
         server.inject(requestOptions, function (response) {
           t.is(response.statusCode, 404, 'returns 404 status')
@@ -363,12 +365,12 @@ getServer(function (error, server) {
     })
 
     group.test('User is admin', function (t) {
-      var requestOptions = merge({}, getSessionRouteOptions, {
+      var requestOptions = defaultsDeep({
         headers: {
           // calculateSessionId('admin', '1081b31861bd1e91611341da16c11c16a12c13718d1f712e', 'secret', 1209600)
           authorization: 'Bearer YWRtaW46MTI3NTAwOh08V1EljPqAPAnv8mtxWNF87zdW'
         }
-      })
+      }, getSessionRouteOptions)
 
       var sessionAdminResponse = require('../fixtures/session-admin-response.json')
 
@@ -382,8 +384,16 @@ getServer(function (error, server) {
 
     group.end()
   })
+})
 
-  test('GET /session?include=account.profile', function (group) {
+test('GET /session?include=account.profile', function (group) {
+  getServer(function (error, server) {
+    if (error) {
+      group.error(error)
+      group.end()
+      return
+    }
+
     group.test('User found & Session valid', function (t) {
       couchdbGetUserMock.reply(200, {
         name: 'pat-doe',
@@ -397,9 +407,9 @@ getServer(function (error, server) {
         salt: 'salt123'
       })
 
-      var routeOptions = merge({}, getSessionRouteOptions, {
+      var routeOptions = defaultsDeep({
         url: '/session?include=account.profile'
-      })
+      }, getSessionRouteOptions)
 
       var sessionWithProfileResponse = require('../fixtures/session-with-profile-response.json')
 
@@ -414,24 +424,39 @@ getServer(function (error, server) {
 
     group.end()
   })
+})
 
-  test('GET /session?include=foobar', function (t) {
+test('GET /session?include=foobar', function (t) {
+  getServer(function (error, server) {
+    if (error) {
+      t.error(error)
+      t.end()
+      return
+    }
+
     t.plan(1)
 
-    var routeOptions = merge({}, getSessionRouteOptions, {
+    var routeOptions = defaultsDeep({
       url: '/session?include=foobar'
-    })
+    }, getSessionRouteOptions)
 
     server.inject(routeOptions, function (response) {
       t.is(response.statusCode, 403, 'returns 403 status')
     })
   })
+})
 
-  test('DELETE /session', function (group) {
+test('DELETE /session', function (group) {
+  getServer(function (error, server) {
+    if (error) {
+      group.error(error)
+      group.end()
+      return
+    }
     couchdbErrorTests(server, group, couchdbGetUserMock, deleteSessionRouteOptions)
 
     group.test('No Authorization header sent', function (t) {
-      var requestOptions = merge({}, deleteSessionRouteOptions)
+      var requestOptions = cloneDeep(deleteSessionRouteOptions)
       delete requestOptions.headers.authorization
 
       server.inject(requestOptions, function (response) {
@@ -475,12 +500,12 @@ getServer(function (error, server) {
       subGroup.test('Session invalid', function (t) {
         var couchdb = couchdbUserFoundMock()
 
-        var requestOptions = merge({}, deleteSessionRouteOptions, {
+        var requestOptions = defaultsDeep({
           headers: {
             // Token calculated with invalid salt (salt456)
             authorization: 'Bearer cGF0LWRvZToxMjc1MDA6YMtzOJDSC7iTA4cB2kjfjqbfk1Y'
           }
-        })
+        }, deleteSessionRouteOptions)
 
         server.inject(requestOptions, function (response) {
           t.is(response.statusCode, 404, 'returns 404 status')
@@ -496,11 +521,18 @@ getServer(function (error, server) {
 
     group.end()
   })
+})
 
-  test('DELETE /session?include=account', function (group) {
-    var routeOptions = merge({}, deleteSessionRouteOptions, {
+test('DELETE /session?include=account', function (group) {
+  getServer(function (error, server) {
+    if (error) {
+      group.error(error)
+      group.end()
+      return
+    }
+    var routeOptions = defaultsDeep({
       url: '/session?include=account'
-    })
+    }, deleteSessionRouteOptions)
 
     group.test('User found', function (subGroup) {
       function couchdbUserFoundMock () {
@@ -531,11 +563,19 @@ getServer(function (error, server) {
 
     group.end()
   })
+})
 
-  test('DELETE /session?include=account.profile', function (group) {
-    var routeOptions = merge({}, deleteSessionRouteOptions, {
-      url: '/session?include=account.profile'
-    })
+test('DELETE /session?include=account.profile', function (group) {
+  var routeOptions = defaultsDeep({
+    url: '/session?include=account.profile'
+  }, deleteSessionRouteOptions)
+
+  getServer(function (error, server) {
+    if (error) {
+      group.error(error)
+      group.end()
+      return
+    }
 
     group.test('User found', function (subGroup) {
       function couchdbUserFoundMock () {

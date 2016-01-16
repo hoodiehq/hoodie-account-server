@@ -1,6 +1,6 @@
 module.exports = authorizationHeaderNotAllowedError
 
-var merge = require('lodash.merge')
+var merge = require('lodash/merge')
 
 function authorizationHeaderNotAllowedError (server, group, routeOptions) {
   var options = merge({}, routeOptions, {
