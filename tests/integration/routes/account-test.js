@@ -1,5 +1,6 @@
+var defaultsDeep = require('lodash/defaultsDeep')
 var Joi = require('joi')
-var merge = require('lodash.merge')
+var merge = require('lodash/merge')
 var nock = require('nock')
 var test = require('tap').test
 
@@ -164,12 +165,12 @@ getServer(function (error, server) {
     })
 
     group.test('User Is admin', function (t) {
-      var requestOptions = merge({}, getAccountRouteOptions, {
+      var requestOptions = defaultsDeep({
         headers: {
           // calculateSessionId('admin', '1081b31861bd1e91611341da16c11c16a12c13718d1f712e', 'secret', 1209600)
           authorization: 'Bearer YWRtaW46MTI3NTAwOh08V1EljPqAPAnv8mtxWNF87zdW'
         }
-      })
+      }, getAccountRouteOptions)
 
       server.inject(requestOptions, function (response) {
         delete response.result.meta
@@ -192,9 +193,9 @@ getServer(function (error, server) {
         }
       })
       var accountWithProfileFixture = require('../fixtures/account-with-profile.json')
-      var requestOptions = merge({}, getAccountRouteOptions, {
+      var requestOptions = defaultsDeep({
         url: '/session/account?include=profile'
-      })
+      }, getAccountRouteOptions)
 
       server.inject(requestOptions, function (response) {
         t.is(couch.pendingMocks()[0], undefined, 'all mocks satisfied')

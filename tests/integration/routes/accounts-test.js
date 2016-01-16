@@ -1,5 +1,5 @@
 var Joi = require('joi')
-var merge = require('lodash.merge')
+var merge = require('lodash/merge')
 var nock = require('nock')
 var test = require('tap').test
 

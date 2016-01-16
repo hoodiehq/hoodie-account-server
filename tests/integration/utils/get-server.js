@@ -1,6 +1,6 @@
 module.exports = getServer
 
-var defaults = require('lodash/object/defaultsDeep')
+var defaults = require('lodash/defaultsDeep')
 var Hapi = require('hapi')
 var nock = require('nock')
 var PouchDB = require('pouchdb')
