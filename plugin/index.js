@@ -10,6 +10,7 @@ var _ = require('lodash')
 var routePlugins = [
   require('../routes/account'),
   require('../routes/accounts'),
+  require('../routes/profile'),
   require('../routes/requests'),
   require('../routes/session')
 ]
