@@ -1,0 +1,13 @@
+{
+  "links": {
+    "self": "http://localhost:80/session/account/profile"
+  },
+  "data": {
+    "id": "userid123-profile",
+    "type": "profile",
+    "attributes": {
+      "fullName": "Pat Doe",
+      "email": "pat@example.com"
+    }
+  }
+}
