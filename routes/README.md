@@ -43,9 +43,9 @@ The route groups are implemented as hapi plugins themselves.
 
 - [session.js](session.js)
 - [account.js](account.js)
-- [profile.js](profile.js) ([tbd hoodie-server-account#11](https://github.com/hoodiehq/hoodie-server-account/issues/11))
-- [requests.js](requests.js) ([hoodie-server-account#10](https://github.com/hoodiehq/hoodie-server-account/issues/10))
-- [accounts.js](accounts.js) ([hoodie-server-account#12](https://github.com/hoodiehq/hoodie-server-account/issues/12))
+- [profile.js](profile.js)
+- [requests.js](requests.js)
+- [accounts.js](accounts.js)
 
 The options passed to the routes plugins are the same as the ones passed to the
 [main plugin](../plugin/README.md).
