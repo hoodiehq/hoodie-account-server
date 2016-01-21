@@ -102,6 +102,48 @@ function accountRoutes (server, options, next) {
     }
   }
 
+  var patchAccountRoute = {
+    method: 'PATCH',
+    path: '/session/account',
+    config: {
+      auth: false,
+      validate: {
+        headers: validations.bearerTokenHeader,
+        payload: validations.accountPayload,
+        failAction: joiFailAction
+      }
+    },
+    handler: function (request, reply) {
+      var sessionId = toBearerToken(request)
+      var username = request.payload.data.attributes.username
+      var password = request.payload.data.attributes.password
+      var profile = request.payload.data.attributes.profile
+
+      return accounts.update(request.params.id, {
+        username: username,
+        password: password,
+        profile: profile
+      }, {
+        bearerToken: sessionId,
+        include: request.query.include
+      })
+
+      .then(function (account) {
+        return serialise({
+          baseUrl: server.info.uri,
+          include: request.query.include,
+          admin: false
+        }, account)
+      })
+
+      .then(function (json) {
+        reply(json).code(201)
+      })
+
+      .catch(reply)
+    }
+  }
+
   var destroyAccountRoute = {
     method: 'DELETE',
     path: '/session/account',
@@ -151,6 +193,7 @@ function accountRoutes (server, options, next) {
 
   server.route([
     getAccountRoute,
+    patchAccountRoute,
     signUpRoute,
     destroyAccountRoute
   ])
