@@ -85,6 +85,7 @@ getServer(function (error, server) {
 
   test('PUT /session/account', function (group) {
     couchdbErrorTests(server, group, couchdbPutUserMock, putAccountRouteOptions)
+    authorizationHeaderNotAllowedErrorTest(server, group, putAccountRouteOptions)
     invalidTypeErrors(server, group, putAccountRouteOptions)
 
     group.test('User not found', function (t) {
@@ -132,7 +133,6 @@ getServer(function (error, server) {
   })
 
   test('GET /session/account', function (group) {
-    authorizationHeaderNotAllowedErrorTest(server, group, putAccountRouteOptions)
     couchdbErrorTests(server, group, couchdbGetUserMock, getAccountRouteOptions)
 
     group.test('Session does exist', function (t) {
@@ -175,7 +175,7 @@ getServer(function (error, server) {
         delete response.result.meta
         t.is(response.statusCode, 403, 'returns 403 status')
 
-        t.deepEqual(response.result.errors[0].detail, 'Admins have no account', 'returns account in right format')
+        t.deepEqual(response.result.errors[0].detail, 'Admins have no account', 'returns "Admins have no account" error')
         t.end()
       })
     })
