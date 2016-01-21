@@ -1,5 +1,5 @@
 var Joi = require('joi')
-var merge = require('lodash/merge')
+var _ = require('lodash')
 var nock = require('nock')
 var test = require('tap').test
 
@@ -18,7 +18,7 @@ getServer(function (error, server) {
     accept: 'application/vnd.api+json',
     'content-type': 'application/vnd.api+json'
   }
-  var headersWithAuth = merge({
+  var headersWithAuth = _.merge({
     // calculateSessionId('admin', '1081b31861bd1e91611341da16c11c16a12c13718d1f712e', 'secret', 1209600)
     authorization: 'Bearer YWRtaW46MTI3NTAwOh08V1EljPqAPAnv8mtxWNF87zdW'
   }, jsonAPIHeaders)

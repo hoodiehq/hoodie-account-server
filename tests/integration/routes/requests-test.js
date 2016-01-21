@@ -1,6 +1,6 @@
 var defaultsDeep = require('lodash/defaultsDeep')
 var Joi = require('joi')
-var merge = require('lodash/merge')
+var _ = require('lodash')
 var nock = require('nock')
 var stubTransport = require('nodemailer-stub-transport')
 var test = require('tap').test
@@ -35,7 +35,7 @@ var couchdbGetUserMock = nock('http://localhost:5984')
 
 function mockUserFound (docChange) {
   return couchdbGetUserMock
-    .reply(200, merge({
+    .reply(200, _.merge({
       _id: 'org.couchdb.user:pat@example.com',
       _rev: '1-234',
       password_scheme: 'pbkdf2',

@@ -1,7 +1,7 @@
 var cloneDeep = require('lodash/cloneDeep')
 var defaultsDeep = require('lodash/defaultsDeep')
 var lolex = require('lolex')
-var merge = require('lodash/merge')
+var _ = require('lodash')
 var nock = require('nock')
 var test = require('tap').test
 
@@ -16,7 +16,7 @@ var jsonAPIHeaders = {
   'content-type': 'application/vnd.api+json'
 }
 
-var headersWithAuth = merge({authorization: 'Bearer cGF0LWRvZToxMjc1MDA6zEZsQ1BuO-W8SthDSrg8KXQ8OlQ'}, jsonAPIHeaders)
+var headersWithAuth = _.merge({authorization: 'Bearer cGF0LWRvZToxMjc1MDA6zEZsQ1BuO-W8SthDSrg8KXQ8OlQ'}, jsonAPIHeaders)
 
 var putSessionRouteOptions = {
   method: 'PUT',
@@ -54,7 +54,7 @@ var couchdbGetUserMock = nock('http://localhost:5984')
 
 function mockUserFound (docChange) {
   return couchdbGetUserMock
-    .reply(200, merge({
+    .reply(200, _.merge({
       _id: 'org.couchdb.user:pat-doe',
       _rev: '1-234',
       password_scheme: 'pbkdf2',

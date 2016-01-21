@@ -1,6 +1,6 @@
 module.exports = updateAccount
 
-var merge = require('lodash/merge')
+var _ = require('lodash')
 
 var findUserDoc = require('../utils/find-user-by-username-or-id')
 var toAccount = require('../utils/doc-to-account')
@@ -12,7 +12,7 @@ function updateAccount (state, idOrObject, change, options) {
   return findUserDoc(state.db, idOrObject)
 
   .then(function (doc) {
-    return state.db.put(merge(doc, change))
+    return state.db.put(_.merge(doc, change))
 
     .then(function (response) {
       doc._rev = response.rev

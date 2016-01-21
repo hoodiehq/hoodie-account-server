@@ -5,7 +5,7 @@ hapiAccount.attributes = {
 
 var async = require('async')
 var getApi = require('../api')
-var cloneDeep = require('lodash/cloneDeep')
+var _ = require('lodash')
 
 var routePlugins = [
   require('../routes/account'),
@@ -16,7 +16,7 @@ var routePlugins = [
 
 var TIMEOUT_14_DAYS = 1209600
 function hapiAccount (server, options, next) {
-  var routeOptions = cloneDeep({}, options)
+  var routeOptions = _.cloneDeep({}, options)
   routeOptions.sessionTimeout = options.sessionTimeout || TIMEOUT_14_DAYS
 
   options.usersDb.constructor.plugin(require('pouchdb-admins'))

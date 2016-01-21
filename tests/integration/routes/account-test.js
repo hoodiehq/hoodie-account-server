@@ -1,6 +1,5 @@
-var defaultsDeep = require('lodash/defaultsDeep')
+var _ = require('lodash')
 var Joi = require('joi')
-var merge = require('lodash/merge')
 var nock = require('nock')
 var test = require('tap').test
 
@@ -13,7 +12,7 @@ var jsonAPIHeaders = {
   accept: 'application/vnd.api+json',
   'content-type': 'application/vnd.api+json'
 }
-var headersWithAuth = merge({authorization: 'Bearer cGF0LWRvZToxMjc1MDA6zEZsQ1BuO-W8SthDSrg8KXQ8OlQ'}, jsonAPIHeaders)
+var headersWithAuth = _.merge({authorization: 'Bearer cGF0LWRvZToxMjc1MDA6zEZsQ1BuO-W8SthDSrg8KXQ8OlQ'}, jsonAPIHeaders)
 
 var putAccountRouteOptions = {
   method: 'PUT',
@@ -63,7 +62,7 @@ var couchdbGetUserMock = nock('http://localhost:5984')
 
 function mockUserFound (docChange) {
   return couchdbGetUserMock
-    .reply(200, merge({
+    .reply(200, _.merge({
       _id: 'org.couchdb.user:pat-doe',
       _rev: '1-234',
       password_scheme: 'pbkdf2',
@@ -165,7 +164,7 @@ getServer(function (error, server) {
     })
 
     group.test('User Is admin', function (t) {
-      var requestOptions = defaultsDeep({
+      var requestOptions = _.defaultsDeep({
         headers: {
           // calculateSessionId('admin', '1081b31861bd1e91611341da16c11c16a12c13718d1f712e', 'secret', 1209600)
           authorization: 'Bearer YWRtaW46MTI3NTAwOh08V1EljPqAPAnv8mtxWNF87zdW'
@@ -193,7 +192,7 @@ getServer(function (error, server) {
         }
       })
       var accountWithProfileFixture = require('../fixtures/account-with-profile.json')
-      var requestOptions = defaultsDeep({
+      var requestOptions = _.defaultsDeep({
         url: '/session/account?include=profile'
       }, getAccountRouteOptions)
 
