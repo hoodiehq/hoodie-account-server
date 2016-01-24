@@ -52,3 +52,11 @@ validations.requestPayload = Joi.object({
 }).unknown().required().meta({
   statusCode: 409
 })
+
+validations.profilePayload = Joi.object({
+  data: Joi.object({
+    type: Joi.any().required().only(['profile'])
+  }).unknown()
+}).unknown().required().meta({
+  statusCode: 409
+})
