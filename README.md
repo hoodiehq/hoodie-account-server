@@ -44,7 +44,6 @@ db.installUsersBehavior().then(function () {
 - [How it works](how-it-works.md)
 - [Testing](tests/README.md)
 
-
 ## License
 
-[Apache-2.0](https://github.com/hoodiehq/hoodie/blob/master/LICENSE)
+[Apache 2.0](http://www.apache.org/licenses/LICENSE-2.0)
