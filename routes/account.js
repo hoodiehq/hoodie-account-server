@@ -102,6 +102,58 @@ function accountRoutes (server, options, next) {
     }
   }
 
+  var patchAccountRoute = {
+    method: 'PATCH',
+    path: '/session/account',
+    config: {
+      auth: false,
+      validate: {
+        headers: validations.bearerTokenHeader,
+        payload: validations.accountPayload,
+        failAction: joiFailAction
+      }
+    },
+    handler: function (request, reply) {
+      var sessionId = toBearerToken(request)
+
+      var newUsername = request.payload.data.attributes.username
+      var newPassword = request.payload.data.attributes.password
+
+      admins.validateSession(sessionId)
+      .then(function (doc) {
+        throw errors.FORBIDDEN_ADMIN_ACCOUNT
+      })
+
+      .catch(function (error) {
+        if (error.name === 'not_found') {
+          return sessions.find(sessionId)
+        }
+        throw error
+      })
+
+      .then(function (session) {
+        return accounts.update(session.account, {
+          username: newUsername,
+          password: newPassword
+        }, {
+          include: request.query.include
+        })
+      })
+
+      .then(serialise)
+
+      .then(function (json) {
+        reply(json).code(201)
+      })
+
+      .catch(function (error) {
+        error = errors.parse(error)
+
+        reply(Boom.create(error.status, error.message))
+      })
+    }
+  }
+
   var destroyAccountRoute = {
     method: 'DELETE',
     path: '/session/account',
@@ -151,6 +203,7 @@ function accountRoutes (server, options, next) {
 
   server.route([
     getAccountRoute,
+    patchAccountRoute,
     signUpRoute,
     destroyAccountRoute
   ])
