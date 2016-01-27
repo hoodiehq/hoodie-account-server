@@ -33,7 +33,7 @@
     "hapi": "^12.0.1",
     "lolex": "^1.4.0",
     "memdown": "^1.1.1",
-    "nock": "^6.0.1",
+    "nock": "^7.0.2",
     "nodemailer-stub-transport": "^1.0.0",
     "pouchdb": "^5.2.0",
     "pouchdb-users": "^1.0.3",
