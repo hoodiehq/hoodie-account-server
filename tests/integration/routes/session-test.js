@@ -111,7 +111,7 @@ test('PUT /session', function (group) {
         }, putSessionRouteOptions)
 
         server.inject(options, function (response) {
-          t.doesNotThrow(couchdb.done, 'CouchDB received request')
+          t.is(couchdb.pendingMocks()[0], undefined, 'CouchDB received request')
           t.is(response.statusCode, 401, 'returns 401 status')
           t.is(response.result.errors.length, 1, 'returns one error')
           t.is(response.result.errors[0].title, 'Unauthorized', 'returns "Unauthorized" error')
@@ -130,7 +130,7 @@ test('PUT /session', function (group) {
         server.inject(putSessionRouteOptions, function (response) {
           delete response.result.meta
 
-          t.doesNotThrow(couchdb.done, 'CouchDB received request')
+          t.is(couchdb.pendingMocks()[0], undefined, 'CouchDB received request')
           t.is(response.statusCode, 403, 'returns 403 status')
           t.is(response.result.errors.length, 1, 'returns one error')
           t.is(response.result.errors[0].title, 'Forbidden', 'returns "Forbidden" error')
@@ -147,7 +147,7 @@ test('PUT /session', function (group) {
     //   var couchdb = couchdbGetUserMock.reply(404, {error: 'Not Found'})
     //
     //   server.inject(putSessionRouteOptions, function (response) {
-    //     t.doesNotThrow(couchdb.done, 'CouchDB received request')
+    //     t.is(couchdb.pendingMocks()[0], undefined, 'CouchDB received request')
     //     t.is(response.statusCode, 401, 'returns 401 status')
     //     t.is(response.result.errors.length, 1, 'returns one error')
     //     t.is(response.result.errors[0].title, 'Unauthorized', 'returns "Unauthorized" error')
@@ -309,10 +309,10 @@ test('GET /session', function (group) {
       var couchdb = couchdbGetUserMock.reply(404, {error: 'Not Found'})
 
       server.inject(getSessionRouteOptions, function (response) {
+        t.is(couchdb.pendingMocks()[0], undefined, 'CouchDB received request')
         t.is(response.statusCode, 404, 'returns 404 status')
         t.is(response.result.errors.length, 1, 'returns one error')
         t.is(response.result.errors[0].title, 'Not Found', 'returns "Not Found" error')
-        t.doesNotThrow(couchdb.done, 'CouchDB received request')
         t.end()
       })
     })
@@ -469,10 +469,10 @@ test('DELETE /session', function (group) {
       var couchdb = couchdbGetUserMock.reply(404, {error: 'Not Found'})
 
       server.inject(deleteSessionRouteOptions, function (response) {
+        t.is(couchdb.pendingMocks()[0], undefined, 'CouchDB received request')
         t.is(response.statusCode, 404, 'returns 404 status')
         t.is(response.result.errors.length, 1, 'returns one error')
         t.is(response.result.errors[0].title, 'Not Found', 'returns "Not Found" error')
-        t.doesNotThrow(couchdb.done, 'CouchDB received request')
         t.end()
       })
     })
@@ -491,8 +491,8 @@ test('DELETE /session', function (group) {
         var couchdb = couchdbUserFoundMock()
 
         server.inject(deleteSessionRouteOptions, function (response) {
+          t.is(couchdb.pendingMocks()[0], undefined, 'CouchDB received request')
           t.is(response.statusCode, 204, 'returns 204 status')
-          t.doesNotThrow(couchdb.done, 'CouchDB received request')
           t.end()
         })
       })
@@ -508,10 +508,10 @@ test('DELETE /session', function (group) {
         }, deleteSessionRouteOptions)
 
         server.inject(requestOptions, function (response) {
+          t.is(couchdb.pendingMocks()[0], undefined, 'CouchDB received request')
           t.is(response.statusCode, 404, 'returns 404 status')
           t.is(response.result.errors.length, 1, 'returns one error')
           t.is(response.result.errors[0].title, 'Not Found', 'returns "Not Found" error')
-          t.doesNotThrow(couchdb.done, 'CouchDB received request')
           t.end()
         })
       })
@@ -550,10 +550,10 @@ test('DELETE /session?include=account', function (group) {
         var sessionResponse = require('../fixtures/session-response.json')
 
         server.inject(routeOptions, function (response) {
+          t.is(couchdb.pendingMocks()[0], undefined, 'CouchDB received request')
           delete response.result.meta
           t.is(response.statusCode, 200, 'returns 200 status')
           t.deepEqual(response.result, sessionResponse, 'returns the right content')
-          t.doesNotThrow(couchdb.done, 'CouchDB received request')
           t.end()
         })
       })
@@ -598,10 +598,10 @@ test('DELETE /session?include=account.profile', function (group) {
         var sessionWithProfileResponse = require('../fixtures/session-with-profile-response.json')
 
         server.inject(routeOptions, function (response) {
+          t.is(couchdb.pendingMocks()[0], undefined, 'CouchDB received request')
           delete response.result.meta
           t.is(response.statusCode, 200, 'returns 200 status')
           t.deepEqual(response.result, sessionWithProfileResponse, 'returns the right content')
-          t.doesNotThrow(couchdb.done, 'CouchDB received request')
           t.end()
         })
       })
