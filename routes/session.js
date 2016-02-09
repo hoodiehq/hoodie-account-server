@@ -59,6 +59,12 @@ function sessionRoutes (server, options, next) {
             password: password,
             include: query.include
           })
+          .catch(function (error) {
+            if (error.status === 404) {
+              throw errors.INVALID_CREDENTIALS
+            }
+            throw error
+          })
         }
 
         throw error

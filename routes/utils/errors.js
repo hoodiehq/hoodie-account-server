@@ -16,6 +16,12 @@ module.exports.INVALID_SESSION = hoodieError({
   status: 401
 })
 
+module.exports.INVALID_CREDENTIALS = hoodieError({
+  name: 'Unauthorized',
+  message: 'Invalid credentials',
+  status: 401
+})
+
 module.exports.FORBIDDEN_ADMIN_ACCOUNT = hoodieError({
   name: 'Forbidden',
   message: 'Admins have no account',
