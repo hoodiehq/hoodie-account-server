@@ -156,9 +156,10 @@ getServer(function (error, server) {
       server.inject(getAccountRouteOptions, function (response) {
         t.is(couch.pendingMocks()[0], undefined, 'all mocks satisfied')
 
-        t.is(response.statusCode, 404, 'returns 404 status')
+        t.is(response.statusCode, 401, 'returns 401 status')
         t.is(response.result.errors.length, 1, 'returns one error')
-        t.is(response.result.errors[0].title, 'Not Found', 'returns "Not Found" error')
+        t.is(response.result.errors[0].title, 'Unauthorized', 'returns "Unauthorized" error')
+        t.is(response.result.errors[0].detail, 'Invalid session', 'returns Invalid session message')
         t.end()
       })
     })
@@ -247,6 +248,21 @@ getServer(function (error, server) {
         .query(true)
     }
 
+    group.test('without valid session', function (t) {
+      var couch = couchdbGetUserMock
+        .reply(404, {error: 'Not Found'})
+
+      server.inject(patchAccountRouteOptionsPassword, function (response) {
+        t.is(couch.pendingMocks()[0], undefined, 'all mocks satisfied')
+        t.is(response.statusCode, 401, 'returns 401 status')
+        t.is(response.result.errors.length, 1, 'returns one error')
+        t.is(response.result.errors[0].title, 'Unauthorized', 'returns "Unauthorized" error')
+        t.is(response.result.errors[0].detail, 'Session invalid', 'returns "Session invalid" message')
+
+        t.end()
+      })
+    })
+
     group.test('No Authorization header sent', function (t) {
       server.inject({
         method: 'PATCH',
@@ -321,9 +337,10 @@ getServer(function (error, server) {
 
       server.inject(deleteAccountRouteOptions, function (response) {
         t.is(couch.pendingMocks()[0], undefined, 'all mocks satisfied')
-        t.is(response.statusCode, 404, 'returns 404 status')
+        t.is(response.statusCode, 401, 'returns 401 status')
         t.is(response.result.errors.length, 1, 'returns one error')
-        t.is(response.result.errors[0].title, 'Not Found', 'returns "Not Found" error')
+        t.is(response.result.errors[0].title, 'Unauthorized', 'returns "Unauthorized" error')
+        t.is(response.result.errors[0].detail, 'Session invalid', 'returns "Session invalid" message')
 
         t.end()
       })
