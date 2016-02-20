@@ -81,6 +81,10 @@ function accountRoutes (server, options, next) {
         if (error.name === 'not_found') {
           return sessions.find(sessionId, {
             include: request.query.include === 'profile' ? 'account.profile' : undefined
+          }).catch(function (error) {
+            if (error.status === 404) {
+              throw errors.INVALID_SESSION
+            }
           })
         }
 
@@ -127,6 +131,11 @@ function accountRoutes (server, options, next) {
       .catch(function (error) {
         if (error.name === 'not_found') {
           return sessions.find(sessionId)
+            .catch(function (error) {
+              if (error.status === 404) {
+                throw errors.INVALID_SESSION
+              }
+            })
         }
         throw error
       })
@@ -174,6 +183,10 @@ function accountRoutes (server, options, next) {
         if (error.name === 'not_found') {
           return sessions.find(sessionId, {
             include: request.query.include === 'profile' ? 'account.profile' : undefined
+          }).catch(function (error) {
+            if (error.status === 404) {
+              throw errors.INVALID_SESSION
+            }
           })
         }
 
