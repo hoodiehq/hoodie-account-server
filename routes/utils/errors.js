@@ -30,7 +30,7 @@ module.exports.FORBIDDEN_ADMIN_ACCOUNT = hoodieError({
 
 function parse (error) {
   if (error.message === 'Name or password is incorrect.') {
-    error.message = 'Invalid password'
+    error.message = 'Invalid credentials'
   }
 
   if (error.message === 'Only admins can access _all_docs of system databases.') {

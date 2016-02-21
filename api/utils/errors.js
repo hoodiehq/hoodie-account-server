@@ -10,7 +10,7 @@ function hoodieError (options) {
 
 module.exports.UNAUTHORIZED_PASSWORD = hoodieError({
   name: 'Unauthorized',
-  message: 'Invalid password',
+  message: 'Invalid credentials',
   status: 401
 })
 
