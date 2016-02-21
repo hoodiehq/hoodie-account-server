@@ -201,7 +201,7 @@ test('PUT /session', function (group) {
           t.is(response.statusCode, 401, 'returns 401 status')
           t.is(response.result.errors.length, 1, 'returns one error')
           t.is(response.result.errors[0].title, 'Unauthorized', 'returns "Unauthorized" error')
-          t.is(response.result.errors[0].detail, 'Invalid password', 'returns "Invalid password" message')
+          t.is(response.result.errors[0].detail, 'Invalid credentials', 'returns "Invalid credentials" message')
 
           clock.uninstall()
           t.end()
