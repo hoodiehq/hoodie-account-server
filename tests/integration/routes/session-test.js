@@ -440,7 +440,8 @@ test('GET /session?include=foobar', function (t) {
     }, getSessionRouteOptions)
 
     server.inject(routeOptions, function (response) {
-      t.is(response.statusCode, 403, 'returns 403 status')
+      t.is(response.statusCode, 400, 'returns 400 status')
+      t.is(response.result.errors[0].title, 'Bad Request', 'returns "Bad Request" error')
     })
   })
 })
