@@ -16,13 +16,13 @@ validations.bearerTokenHeaderForbidden = Joi.object({
 validations.sessionQuery = Joi.object({
   include: Joi.any().only(['account', 'account.profile'])
 }).unknown().meta({
-  statusCode: 403
+  statusCode: 400
 })
 
 validations.accountQuery = Joi.object({
   include: Joi.any().only(['profile'])
 }).unknown().meta({
-  statusCode: 403
+  statusCode: 400
 })
 
 validations.accountPayload = Joi.object({
