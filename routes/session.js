@@ -118,7 +118,7 @@ function sessionRoutes (server, options, next) {
           })
         }
 
-        // throw error
+        throw error
       })
 
       .then(serialise)
