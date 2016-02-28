@@ -6,7 +6,7 @@
   "scripts": {
     "start": "bin/server",
     "pretest": "standard",
-    "test": "tap tests/{unit,integration}/**/*-test.js",
+    "test": "tap tests/{unit,integration}/{**,**/**}/*-test.js",
     "test:watch": "gaze 'bin/watch-and-test.sh $path' 'tests/**/*.js' '*.js' 'api/**/*.js' 'plugin/**/*.js' 'routes/**/*.js' 'utils/**/*.js'",
     "semantic-release": "semantic-release pre && npm publish && semantic-release post"
   },
