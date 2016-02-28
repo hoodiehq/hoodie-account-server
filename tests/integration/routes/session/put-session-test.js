@@ -57,7 +57,7 @@ test('PUT /session', function (group) {
 
     authorizationHeaderNotAllowedErrorTest(server, group, routeOptions)
     couchdbErrorTests(server, group, couchdbGetUserMock, routeOptions)
-    invalidTypeErrors(server, group, routeOptions)
+    invalidTypeErrors(server, group, routeOptions, 'session')
 
     group.test('User Found', function (subGroup) {
       var sessionResponse = require('../../fixtures/session-response.json')
