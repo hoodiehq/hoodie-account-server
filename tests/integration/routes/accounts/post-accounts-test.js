@@ -83,7 +83,7 @@ getServer(function (error, server) {
     })
 
     couchdbErrorTests(server, group, mockCouchDbCreateUserDoc, routeOptions)
-    invalidTypeErrors(server, group, routeOptions)
+    invalidTypeErrors(server, group, routeOptions, 'account')
 
     group.end()
   })

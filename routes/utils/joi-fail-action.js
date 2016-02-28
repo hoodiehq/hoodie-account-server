@@ -1,5 +1,6 @@
 module.exports = failAction
 
+var _ = require('lodash')
 var Boom = require('boom')
 
 /**
@@ -21,7 +22,8 @@ var Boom = require('boom')
  */
 function failAction (request, reply, source, error) {
   var meta = request.route.settings.validate[source].describe().meta
-  var statusCode = meta ? meta[0].statusCode : 400
+  var statusCode = _.get(meta, '[0].statusCode') || 400
+  var message = _.get(meta, '[0].message') || error.message
 
-  reply(Boom.create(statusCode, error.message, error.data))
+  reply(Boom.create(statusCode, message, error.data))
 }

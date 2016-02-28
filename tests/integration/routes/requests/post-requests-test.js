@@ -157,7 +157,7 @@ test('POST /requests', function (group) {
     })
 
     couchdbErrorTests(server, group, mockCouchDbGetUserDoc, routeOptions)
-    invalidTypeErrors(server, group, routeOptions)
+    invalidTypeErrors(server, group, routeOptions, 'request')
 
     group.end()
   })

@@ -51,7 +51,7 @@ getServer(function (error, server) {
   test('PUT /session/account', function (group) {
     couchdbErrorTests(server, group, mockCouchDbPutUser, routeOptions)
     authorizationHeaderNotAllowedErrorTest(server, group, routeOptions)
-    invalidTypeErrors(server, group, routeOptions)
+    invalidTypeErrors(server, group, routeOptions, 'account')
 
     group.test('User not found', function (t) {
       var couchdb = mockCouchDbPutUser

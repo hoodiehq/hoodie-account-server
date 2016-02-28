@@ -30,7 +30,8 @@ validations.accountPayload = Joi.object({
     type: Joi.any().required().only(['account'])
   }).unknown()
 }).unknown().required().meta({
-  statusCode: 409
+  statusCode: 409,
+  message: 'data.type must be \'account\''
 })
 
 validations.sessionPayload = Joi.object({
@@ -38,7 +39,8 @@ validations.sessionPayload = Joi.object({
     type: Joi.any().required().only(['session'])
   }).unknown()
 }).unknown().required().meta({
-  statusCode: 409
+  statusCode: 409,
+  message: 'data.type must be \'session\''
 })
 
 validations.requestPayload = Joi.object({
@@ -50,7 +52,8 @@ validations.requestPayload = Joi.object({
     })
   })
 }).unknown().required().meta({
-  statusCode: 409
+  statusCode: 409,
+  message: 'data.type must be \'request\''
 })
 
 validations.profilePayload = Joi.object({
@@ -58,5 +61,6 @@ validations.profilePayload = Joi.object({
     type: Joi.any().required().only(['profile'])
   }).unknown()
 }).unknown().required().meta({
-  statusCode: 409
+  statusCode: 409,
+  message: 'data.type must be \'profile\''
 })

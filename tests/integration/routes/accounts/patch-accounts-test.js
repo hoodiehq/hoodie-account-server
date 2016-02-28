@@ -107,7 +107,7 @@ getServer(function (error, server) {
 
     // TOOD: test server error handling
     // couchdbErrorTests(server, group, mockCouchDbUpdateAccountResponse(), routeOptions)
-    invalidTypeErrors(server, group, routeOptions)
+    invalidTypeErrors(server, group, routeOptions, 'account')
 
     group.end()
   })
