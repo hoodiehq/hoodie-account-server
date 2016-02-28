@@ -36,6 +36,18 @@ test('GET /session', function (group) {
         headers: {}
       }, function (response) {
         t.is(response.statusCode, 403, 'returns 403 status')
+
+        // prepared test for https://github.com/hoodiehq/hoodie-server-account/issues/94
+        // replace the line above with the 3 lines below
+        // t.is(response.statusCode, 401, 'returns 401 status')
+        // t.is(response.result.error, 'Unauthorized', 'returns "Unauthorized" error')
+        // t.is(response.result.message, 'Authorization header missing', 'returns "Authorization header missing" error')
+
+        // TODO:
+        // - response.result.error should be response.result.errors[0].title
+        // - response.result.message should be  response.result.errors[0].msesage
+        // - and we should check for response.result.errors.length === 1
+        // ^ these are currently blocked by https://github.com/wraithgar/hapi-json-api/issues/20
         t.end()
       })
     })
