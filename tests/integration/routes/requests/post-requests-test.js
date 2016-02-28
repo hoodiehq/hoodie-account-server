@@ -5,13 +5,13 @@ var nock = require('nock')
 var stubTransport = require('nodemailer-stub-transport')
 var test = require('tap').test
 
-var getServer = require('../utils/get-server')
-var couchdbErrorTests = require('../utils/couchdb-error-tests')
-var invalidTypeErrors = require('../utils/invalid-type-errors.js')
+var getServer = require('../../utils/get-server')
+var couchdbErrorTests = require('../../utils/couchdb-error-tests')
+var invalidTypeErrors = require('../../utils/invalid-type-errors.js')
 
 var transport = stubTransport()
 
-var postRequestsRouteOptions = {
+var routeOptions = {
   method: 'POST',
   url: '/requests',
   headers: {
@@ -29,12 +29,12 @@ var postRequestsRouteOptions = {
   }
 }
 
-var couchdbGetUserMock = nock('http://localhost:5984')
+var mockCouchDbGetUserDoc = nock('http://localhost:5984')
   .get('/_users/org.couchdb.user%3Apat%40example.com')
   .query(true)
 
 function mockUserFound (docChange) {
-  return couchdbGetUserMock
+  return mockCouchDbGetUserDoc
     .reply(200, _.merge({
       _id: 'org.couchdb.user:pat@example.com',
       _rev: '1-234',
@@ -97,7 +97,7 @@ test('POST /requests', function (group) {
           rev: '2-345'
         }])
 
-      server.inject(postRequestsRouteOptions, function (response) {
+      server.inject(routeOptions, function (response) {
         t.is(couchdb.pendingMocks()[0], undefined, 'all mocks satisfied')
         t.is(response.statusCode, 201, 'returns 201 status')
         t.ok(response.result.data.id, 'returns with id')
@@ -115,13 +115,13 @@ test('POST /requests', function (group) {
     })
 
     group.test('user not found', function (t) {
-      var couchdb = couchdbGetUserMock
+      var couchdb = mockCouchDbGetUserDoc
         .reply(404, {
           error: 'not_found',
           reason: 'missing'
         })
 
-      server.inject(postRequestsRouteOptions, function (response) {
+      server.inject(routeOptions, function (response) {
         t.is(couchdb.pendingMocks()[0], undefined, 'all mocks satisfied')
         t.is(response.statusCode, 404, 'returns 404 status')
 
@@ -140,7 +140,7 @@ test('POST /requests', function (group) {
             }
           }
         }
-      }, postRequestsRouteOptions)
+      }, routeOptions)
 
       server.inject(options, function (response) {
         t.is(response.statusCode, 409, 'returns 409 status')
@@ -156,8 +156,8 @@ test('POST /requests', function (group) {
       })
     })
 
-    couchdbErrorTests(server, group, couchdbGetUserMock, postRequestsRouteOptions)
-    invalidTypeErrors(server, group, postRequestsRouteOptions)
+    couchdbErrorTests(server, group, mockCouchDbGetUserDoc, routeOptions)
+    invalidTypeErrors(server, group, routeOptions)
 
     group.end()
   })
@@ -172,7 +172,7 @@ test('POST /requests', function (group) {
 //       t.end()
 //     }
 //
-//     server.inject(postRequestsRouteOptions, function (response) {
+//     server.inject(routeOptions, function (response) {
 //       t.is(response.statusCode, 503, 'returns 503 status')
 //       t.end()
 //     })

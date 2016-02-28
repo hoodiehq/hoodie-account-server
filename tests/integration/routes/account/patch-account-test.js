@@ -1,0 +1,125 @@
+var _ = require('lodash')
+var Joi = require('joi')
+var nock = require('nock')
+var test = require('tap').test
+
+var getServer = require('../../utils/get-server')
+
+var couchdbGetUserMock = nock('http://localhost:5984')
+  .get('/_users/org.couchdb.user%3Apat-doe')
+  .query(true)
+
+function mockUserFound (docChange) {
+  return couchdbGetUserMock
+    .reply(200, _.merge({
+      _id: 'org.couchdb.user:pat-doe',
+      _rev: '1-234',
+      password_scheme: 'pbkdf2',
+      iterations: 10,
+      type: 'user',
+      name: 'pat-doe',
+      roles: ['id:userid123', 'mycustomrole'],
+      derived_key: '4b5c9721ab77dd2faf06a36785fd0a30f0bf0d27',
+      salt: 'salt123'
+    }, docChange))
+}
+
+var routeOptions = {
+  method: 'PATCH',
+  url: '/session/account',
+  headers: {
+    accept: 'application/vnd.api+json',
+    authorization: 'Bearer cGF0LWRvZToxMjc1MDA6zEZsQ1BuO-W8SthDSrg8KXQ8OlQ',
+    'content-type': 'application/vnd.api+json'
+  },
+  payload: {
+    data: {
+      type: 'account',
+      attributes: {
+        password: 'newsecret'
+      }
+    }
+  }
+}
+function responseMock () {
+  // user document gets fetched twice, once for session.find(),
+  // then for account.update(). We might improve that by implementing
+  // an API like account.update({session: id}, change)
+  mockUserFound()
+  return mockUserFound()
+    .post('/_users/_bulk_docs', function (body) {
+      var error = Joi.object({
+        _id: Joi.any().only('org.couchdb.user:pat-doe').required(),
+        _rev: Joi.any().only('1-234').required(),
+        name: Joi.any().only('pat-doe').required(),
+        type: Joi.any().only('user').required(),
+        salt: Joi.string().required(),
+        derived_key: Joi.string().required(),
+        iterations: Joi.any().only(10).required(),
+        password_scheme: Joi.any().only('pbkdf2').required(),
+        roles: Joi.array().items(Joi.string())
+      }).validate(body.docs[0]).error
+
+      return error === null
+    })
+    .query(true)
+}
+
+getServer(function (error, server) {
+  if (error) {
+    return test('test setup', function (t) {
+      t.error(error)
+      t.end()
+    })
+  }
+
+  test('PATCH /session/account', function (group) {
+    group.test('without valid session', function (t) {
+      var couch = couchdbGetUserMock
+        .reply(404, {error: 'Not Found'})
+
+      server.inject(routeOptions, function (response) {
+        t.is(couch.pendingMocks()[0], undefined, 'all mocks satisfied')
+        t.is(response.statusCode, 401, 'returns 401 status')
+        t.is(response.result.errors.length, 1, 'returns one error')
+        t.is(response.result.errors[0].title, 'Unauthorized', 'returns "Unauthorized" error')
+        t.is(response.result.errors[0].detail, 'Session invalid', 'returns "Session invalid" message')
+
+        t.end()
+      })
+    })
+
+    group.test('No Authorization header sent', function (t) {
+      server.inject({
+        method: 'PATCH',
+        url: '/session/account',
+        headers: {}
+      }, function (response) {
+        t.is(response.statusCode, 403, 'returns 403 status')
+        t.end()
+      })
+    })
+
+    group.test('changing password', function (t) {
+      var couchdb = responseMock()
+        .reply(201, [{
+          id: 'org.couchdb.user:pat-doe',
+          rev: '2-3456'
+        }])
+
+      server.inject(routeOptions, function (response) {
+        t.is(couchdb.pendingMocks()[0], undefined, 'all mocks satisfied')
+        delete response.result.meta
+        t.is(response.statusCode, 201, 'returns 201 status')
+        t.is(response.result.data.attributes.username, 'pat-doe', 'returns the right content')
+        t.end()
+      })
+    })
+
+    group.end()
+  })
+
+  test('PATCH /session/account?include=profile', {todo: true}, function (t) {
+    t.end()
+  })
+})
