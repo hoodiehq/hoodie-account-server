@@ -5,7 +5,7 @@
 `hoodie-server-account/api` is a JavaScript API for all things account
 on top of CouchDB’s REST API.
 
-After registering the `hoodie-server-acctoun` hapi plugin, the account API
+After registering the `hoodie-server-account` hapi plugin, the account API
 becomes available at `server.plugins.account.api`. It can also be directly
 required using
 
