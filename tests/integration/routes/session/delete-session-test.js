@@ -187,3 +187,23 @@ test('DELETE /session?include=account.profile', function (group) {
     group.end()
   })
 })
+
+test('DELETE /session?include=foobar', function (t) {
+  getServer(function (error, server) {
+    if (error) {
+      t.error(error)
+      t.end()
+      return
+    }
+
+    t.plan(1)
+
+    var options = defaultsDeep({
+      url: '/session?include=foobar'
+    }, routeOptions)
+
+    server.inject(options, function (response) {
+      t.is(response.statusCode, 400, 'returns 400 status')
+    })
+  })
+})
