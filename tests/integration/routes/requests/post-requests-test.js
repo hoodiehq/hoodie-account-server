@@ -163,6 +163,32 @@ test('POST /requests', function (group) {
   })
 })
 
+test('POST /requests?include=foobar', function (t) {
+  getServer({
+    notifications: {
+      transport: transport,
+      from: 'notifications@example.com'
+    }
+  }, function (error, server) {
+    if (error) {
+      return test('test setup', function (t) {
+        t.error(error)
+        t.end()
+      })
+    }
+
+    var options = _.defaultsDeep({
+      url: '/requests?include=foobar'
+    }, routeOptions)
+
+    server.inject(options, function (response) {
+      t.is(response.statusCode, 400, 'returns 400 status')
+      t.deepEqual(response.result.errors[0].detail, '?include not allowed', 'returns error message')
+      t.end()
+    })
+  })
+})
+
 // test('POST /requests without notifications config', function (t) {
 //   getServer({
 //     notifications: {}
