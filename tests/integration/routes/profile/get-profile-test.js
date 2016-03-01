@@ -58,6 +58,7 @@ getServer(function (error, server) {
       server.inject(routeOptions, function (response) {
         t.is(couch.pendingMocks()[0], undefined, 'all mocks satisfied')
 
+        delete response.result.meta
         t.is(response.statusCode, 200, 'returns 200 status')
         t.deepEqual(response.result, profileFixture, 'returns profile in right format')
 

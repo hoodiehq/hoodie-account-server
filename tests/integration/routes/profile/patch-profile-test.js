@@ -116,6 +116,29 @@ getServer(function (error, server) {
       })
     })
 
+    // test prepared for https://github.com/hoodiehq/hoodie-server-account/issues/104
+    // group.test('data.is is != account.id belonging to session', function (t) {
+    //   var couch = mockUserFound()
+    //   var options = _.defaultsDeep({
+    //     payload: {
+    //       data: {
+    //         id: 'foobar-profile'
+    //       }
+    //     }
+    //   }, routeOptions)
+    //
+    //   server.inject(options, function (response) {
+    //     t.is(couch.pendingMocks()[0], undefined, 'all mocks satisfied')
+    //
+    //     t.is(response.statusCode, 409, 'returns 409 status')
+    //     t.is(response.result.errors.length, 1, 'returns one error')
+    //     t.is(response.result.errors[0].title, 'Conflict', 'returns "Conflict" error')
+    //     t.is(response.result.errors[0].detail, 'data.id must be \'userid123-profile\'', 'returns "data.id must be \'userid123-profile\'" message')
+    //
+    //     t.end()
+    //   })
+    // })
+
     group.end()
   })
 })
