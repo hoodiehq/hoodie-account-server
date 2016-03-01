@@ -35,6 +35,7 @@ var routeOptions = {
   },
   payload: {
     data: {
+      id: 'userid123',
       type: 'account',
       attributes: {
         password: 'newsecret'
@@ -83,6 +84,7 @@ getServer(function (error, server) {
 
       server.inject(routeOptions, function (response) {
         t.is(couch.pendingMocks()[0], undefined, 'all mocks satisfied')
+
         t.is(response.statusCode, 401, 'returns 401 status')
         t.is(response.result.errors.length, 1, 'returns one error')
         t.is(response.result.errors[0].title, 'Unauthorized', 'returns "Unauthorized" error')
@@ -102,6 +104,29 @@ getServer(function (error, server) {
         t.end()
       })
     })
+
+    // test prepared for https://github.com/hoodiehq/hoodie-server-account/issues/100
+    // group.test('data.is is != account.id belonging to session', function (t) {
+    //   var couch = mockUserFound()
+    //   var options = _.defaultsDeep({
+    //     payload: {
+    //       data: {
+    //         id: 'foobar'
+    //       }
+    //     }
+    //   }, routeOptions)
+    //
+    //   server.inject(options, function (response) {
+    //     t.is(couch.pendingMocks()[0], undefined, 'all mocks satisfied')
+    //
+    //     t.is(response.statusCode, 409, 'returns 409 status')
+    //     t.is(response.result.errors.length, 1, 'returns one error')
+    //     t.is(response.result.errors[0].title, 'Conflict', 'returns "Conflict" error')
+    //     t.is(response.result.errors[0].detail, 'data.id must be \'userid123\'', 'returns "data.id must be \'userid123\'" message')
+    //
+    //     t.end()
+    //   })
+    // })
 
     group.test('changing password', function (t) {
       var couchdb = responseMock()
