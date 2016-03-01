@@ -26,6 +26,7 @@ function profileRoutes (server, options, next) {
       auth: false,
       validate: {
         headers: validations.bearerTokenHeader,
+        query: validations.profileQuery,
         failAction: joiFailAction
       }
     },

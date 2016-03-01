@@ -27,6 +27,13 @@ validations.accountQuery = Joi.object({
   message: 'Allowed value for ?include is \'profile\''
 })
 
+validations.profileQuery = Joi.object({
+  include: Joi.forbidden()
+}).unknown().meta({
+  statusCode: 400,
+  message: '?include not allowed'
+})
+
 validations.accountPayload = Joi.object({
   data: Joi.object({
     type: Joi.any().required().only(['account'])
