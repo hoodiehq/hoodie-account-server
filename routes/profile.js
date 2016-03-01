@@ -78,6 +78,7 @@ function profileRoutes (server, options, next) {
       validate: {
         headers: validations.bearerTokenHeader,
         payload: validations.profilePayload,
+        query: validations.profileQuery,
         failAction: joiFailAction
       }
     },
