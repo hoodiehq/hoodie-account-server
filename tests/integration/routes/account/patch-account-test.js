@@ -3,6 +3,7 @@ var Joi = require('joi')
 var nock = require('nock')
 var test = require('tap').test
 
+var invalidTypeErrors = require('../../utils/invalid-type-errors.js')
 var getServer = require('../../utils/get-server')
 
 var couchdbGetUserMock = nock('http://localhost:5984')
@@ -74,6 +75,8 @@ getServer(function (error, server) {
   }
 
   test('PATCH /session/account', function (group) {
+    invalidTypeErrors(server, group, routeOptions, 'account')
+
     group.test('without valid session', function (t) {
       var couch = couchdbGetUserMock
         .reply(404, {error: 'Not Found'})
