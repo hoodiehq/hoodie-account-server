@@ -16,13 +16,15 @@ validations.bearerTokenHeaderForbidden = Joi.object({
 validations.sessionQuery = Joi.object({
   include: Joi.any().only(['account', 'account.profile'])
 }).unknown().meta({
-  statusCode: 400
+  statusCode: 400,
+  message: 'Allowed values for ?include are \'account\', \'account.profile\''
 })
 
 validations.accountQuery = Joi.object({
   include: Joi.any().only(['profile'])
 }).unknown().meta({
-  statusCode: 400
+  statusCode: 400,
+  message: 'Allowed value for ?include is \'profile\''
 })
 
 validations.accountPayload = Joi.object({
