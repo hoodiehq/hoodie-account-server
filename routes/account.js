@@ -114,6 +114,7 @@ function accountRoutes (server, options, next) {
       validate: {
         headers: validations.bearerTokenHeader,
         payload: validations.accountPayload,
+        query: validations.accountQuery,
         failAction: joiFailAction
       }
     },
