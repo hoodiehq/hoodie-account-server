@@ -100,4 +100,16 @@ getServer(function (error, server) {
   test('DELETE /session/account?include=profile', {todo: true}, function (t) {
     t.end()
   })
+
+  test('DELETE /session/account?include=foobar', function (t) {
+    var options = _.defaultsDeep({
+      url: '/session/account?include=foobar'
+    }, routeOptions)
+
+    server.inject(options, function (response) {
+      t.is(response.statusCode, 400, 'returns 400 status')
+      t.deepEqual(response.result.errors[0].detail, 'Allowed value for ?include is \'profile\'', 'returns error message')
+      t.end()
+    })
+  })
 })
