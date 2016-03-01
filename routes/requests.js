@@ -21,6 +21,7 @@ function requestRoutes (server, options, next) {
       auth: false,
       validate: {
         payload: validations.requestPayload,
+        query: validations.requestQuery,
         failAction: joiFailAction
       }
     },
