@@ -168,7 +168,11 @@ function accountRoutes (server, options, next) {
     method: 'DELETE',
     path: '/session/account',
     config: {
-      auth: false
+      auth: false,
+      validate: {
+        query: validations.accountQuery,
+        failAction: joiFailAction
+      }
     },
     handler: function (request, reply) {
       var sessionId = toBearerToken(request)
