@@ -44,13 +44,14 @@ test('DELETE /session', function (group) {
     })
 
     group.test('User not found', function (t) {
-      var couchdb = couchdbGetUserMock.reply(404, {error: 'Not Found'})
+      var couchdb = couchdbGetUserMock.reply(401, {error: 'Unauthorized'})
 
       server.inject(routeOptions, function (response) {
         t.is(couchdb.pendingMocks()[0], undefined, 'CouchDB received request')
-        t.is(response.statusCode, 404, 'returns 404 status')
+        t.is(response.statusCode, 401, 'returns 401 status')
         t.is(response.result.errors.length, 1, 'returns one error')
-        t.is(response.result.errors[0].title, 'Not Found', 'returns "Not Found" error')
+        t.is(response.result.errors[0].title, 'Unauthorized', 'returns "Unauthorized" error')
+        t.is(response.result.errors[0].detail, 'Session invalid', 'returns "Session invalid" message')
         t.end()
       })
     })
@@ -87,9 +88,10 @@ test('DELETE /session', function (group) {
 
         server.inject(requestOptions, function (response) {
           t.is(couchdb.pendingMocks()[0], undefined, 'CouchDB received request')
-          t.is(response.statusCode, 404, 'returns 404 status')
+          t.is(response.statusCode, 401, 'returns 401 status')
           t.is(response.result.errors.length, 1, 'returns one error')
-          t.is(response.result.errors[0].title, 'Not Found', 'returns "Not Found" error')
+          t.is(response.result.errors[0].title, 'Unauthorized', 'returns "Unauthorized" error')
+          t.is(response.result.errors[0].detail, 'Session invalid', 'returns "Session invalid" message')
           t.end()
         })
       })
