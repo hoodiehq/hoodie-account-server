@@ -49,7 +49,7 @@
     "boom": "^3.1.2",
     "couchdb-calculate-session-id": "^1.1.0",
     "joi": "^8.0.1",
-    "lodash": "^4.0.1",
+    "lodash": "^4.6.0",
     "nodemailer": "^2.0.0",
     "nyc": "^5.5.0",
     "pouchdb-admins": "^1.0.0",
