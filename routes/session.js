@@ -161,6 +161,12 @@ function sessionRoutes (server, options, next) {
           return sessions.remove(sessionId, {
             include: request.query.include
           })
+          .catch(function (error) {
+            if (error.status === 404 || error.status === 401) {
+              throw errors.INVALID_SESSION
+            }
+            throw error
+          })
         }
 
         throw error
