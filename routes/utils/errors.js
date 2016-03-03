@@ -28,6 +28,12 @@ module.exports.FORBIDDEN_ADMIN_ACCOUNT = hoodieError({
   status: 403
 })
 
+module.exports.NO_ADMIN_ACCOUNT = hoodieError({
+  name: 'Not Found',
+  message: 'Admins have no accounts',
+  status: 404
+})
+
 function parse (error) {
   if (error.message === 'Name or password is incorrect.') {
     error.message = 'Invalid credentials'

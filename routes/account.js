@@ -74,7 +74,7 @@ function accountRoutes (server, options, next) {
       admins.validateSession(sessionId)
 
       .then(function (doc) {
-        throw errors.FORBIDDEN_ADMIN_ACCOUNT
+        throw errors.NO_ADMIN_ACCOUNT
       })
 
       .catch(function (error) {
