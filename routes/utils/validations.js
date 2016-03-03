@@ -11,7 +11,8 @@ validations.bearerTokenHeader = Joi.object({
 validations.bearerTokenHeaderForbidden = Joi.object({
   authorization: Joi.forbidden()
 }).unknown().required().meta({
-  statusCode: 403
+  statusCode: 403,
+  message: 'Authorization header not allowed'
 })
 validations.sessionQuery = Joi.object({
   include: Joi.any().only(['account', 'account.profile'])
