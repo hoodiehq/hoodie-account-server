@@ -84,9 +84,9 @@ getServer(function (error, server) {
 
       server.inject(requestOptions, function (response) {
         delete response.result.meta
-        t.is(response.statusCode, 403, 'returns 403 status')
+        t.is(response.statusCode, 404, 'returns 404 status')
 
-        t.deepEqual(response.result.errors[0].detail, 'Admins have no account', 'returns "Admins have no account" error')
+        t.deepEqual(response.result.errors[0].detail, 'Admins have no accounts', 'returns "Admins have no accounts" error')
         t.end()
       })
     })
