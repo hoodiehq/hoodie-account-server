@@ -25,3 +25,9 @@ module.exports.MISSING_SESSION = hoodieError({
   message: 'Session invalid',
   status: 404
 })
+
+module.exports.USERNAME_EXISTS = hoodieError({
+  name: 'Conflict',
+  message: 'An account with that username already exists',
+  status: 409
+})

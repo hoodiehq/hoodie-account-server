@@ -2,6 +2,7 @@ module.exports = addAccount
 
 var randomstring = require('randomstring')
 
+var errors = require('../utils/errors')
 var toAccount = require('../utils/doc-to-account')
 
 function addAccount (state, properties, options) {
@@ -25,6 +26,13 @@ function addAccount (state, properties, options) {
   }
 
   return state.db.put(doc)
+
+  .catch(function (error) {
+    if (error.status === 409) {
+      throw errors.USERNAME_EXISTS
+    }
+    throw error
+  })
 
   .then(function () {
     return toAccount(doc, {
