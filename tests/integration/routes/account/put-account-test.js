@@ -90,7 +90,7 @@ getServer(function (error, server) {
         t.is(response.statusCode, 409, 'returns 409 status')
         t.is(response.result.errors.length, 1, 'returns one error')
         t.is(response.result.errors[0].title, 'Conflict', 'returns "Conflict" error')
-        t.is(response.result.errors[0].detail, 'Document update conflict', 'returns "Document update conflict." error message')
+        t.is(response.result.errors[0].detail, 'An account with that username already exists', 'returns "An account with that username already exists." error message')
         t.end()
       })
     })
