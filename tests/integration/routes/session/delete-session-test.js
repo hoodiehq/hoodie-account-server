@@ -35,7 +35,10 @@ test('DELETE /session', function (group) {
       delete requestOptions.headers.authorization
 
       server.inject(requestOptions, function (response) {
-        t.is(response.statusCode, 403, 'returns 403 status')
+        t.is(response.statusCode, 401, 'returns 401 status')
+        t.is(response.result.errors.length, 1, 'returns one error')
+        t.is(response.result.errors[0].title, 'Unauthorized', 'returns "Unauthorized" error')
+        t.is(response.result.errors[0].detail, 'Authorization header missing', 'returns "Authorization header missing" error')
         t.end()
       })
     })

@@ -79,7 +79,9 @@ getServer(function (error, server) {
         url: '/accounts/abc4567',
         headers: {}
       }, function (response) {
-        t.is(response.statusCode, 403, 'returns 403 status')
+        t.is(response.statusCode, 401, 'returns 401 status')
+        t.is(response.result.error, 'Unauthorized', 'returns "Unauthorized" error')
+        t.is(response.result.message, 'Authorization header missing', 'returns "Authorization header missing" error')
         t.end()
       })
     })

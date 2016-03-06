@@ -35,13 +35,9 @@ test('GET /session', function (group) {
         url: '/session',
         headers: {}
       }, function (response) {
-        t.is(response.statusCode, 403, 'returns 403 status')
-
-        // prepared test for https://github.com/hoodiehq/hoodie-server-account/issues/94
-        // replace the line above with the 3 lines below
-        // t.is(response.statusCode, 401, 'returns 401 status')
-        // t.is(response.result.error, 'Unauthorized', 'returns "Unauthorized" error')
-        // t.is(response.result.message, 'Authorization header missing', 'returns "Authorization header missing" error')
+        t.is(response.statusCode, 401, 'returns 401 status')
+        t.is(response.result.error, 'Unauthorized', 'returns "Unauthorized" error')
+        t.is(response.result.message, 'Authorization header missing', 'returns "Authorization header missing" error')
 
         // TODO:
         // - response.result.error should be response.result.errors[0].title
