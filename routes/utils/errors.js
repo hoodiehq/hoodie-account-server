@@ -34,6 +34,12 @@ module.exports.NO_ADMIN_ACCOUNT = hoodieError({
   status: 404
 })
 
+module.exports.NO_PROFILE_ACCOUNT = hoodieError({
+  name: 'Not Found',
+  message: 'Admins have no profiles',
+  status: 404
+})
+
 function parse (error) {
   if (error.message === 'Name or password is incorrect.') {
     error.message = 'Invalid credentials'
