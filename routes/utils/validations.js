@@ -5,7 +5,8 @@ var validations = module.exports = {}
 validations.bearerTokenHeader = Joi.object({
   authorization: Joi.string().required().regex(/^Bearer [a-zA-Z0-9_\-]+$/)
 }).unknown().required().meta({
-  statusCode: 403
+  statusCode: 401,
+  message: 'Authorization header missing'
 })
 
 validations.bearerTokenHeaderForbidden = Joi.object({
