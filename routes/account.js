@@ -150,10 +150,8 @@ function accountRoutes (server, options, next) {
         })
       })
 
-      .then(serialise)
-
-      .then(function (json) {
-        reply(json).code(201)
+      .then(function () {
+        reply().code(204)
       })
 
       .catch(function (error) {
