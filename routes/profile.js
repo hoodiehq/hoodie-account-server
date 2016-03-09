@@ -114,10 +114,8 @@ function profileRoutes (server, options, next) {
           }, {include: 'profile'})
         })
 
-        .then(serialise)
-
         .then(function (json) {
-          reply(json).code(201)
+          reply().code(204)
         })
 
         .catch(function (error) {
