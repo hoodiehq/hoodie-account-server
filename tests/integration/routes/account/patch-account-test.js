@@ -108,7 +108,7 @@ getServer(function (error, server) {
     })
 
     // test prepared for https://github.com/hoodiehq/hoodie-server-account/issues/100
-    group.test('data.is is != account.id belonging to session', function (t) {
+    group.test('data.id is != account.id belonging to session', function (t) {
       var couch = mockUserFound()
       var options = _.defaultsDeep({
         payload: {
@@ -136,7 +136,6 @@ getServer(function (error, server) {
           id: 'org.couchdb.user:pat-doe',
           rev: '2-3456'
         }])
-
       server.inject(routeOptions, function (response) {
         t.is(couchdb.pendingMocks()[0], undefined, 'all mocks satisfied')
 

@@ -40,6 +40,14 @@ module.exports.NO_PROFILE_ACCOUNT = hoodieError({
   status: 404
 })
 
+module.exports.accountIdConflict = function (id) {
+  return hoodieError({
+    name: 'Conflict',
+    message: 'data.id must be \'' + id + '\'',
+    status: 409
+  })
+}
+
 function parse (error) {
   if (error.message === 'Name or password is incorrect.') {
     error.message = 'Invalid credentials'

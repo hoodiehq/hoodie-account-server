@@ -123,6 +123,7 @@ function accountRoutes (server, options, next) {
 
       var newUsername = request.payload.data.attributes.username
       var newPassword = request.payload.data.attributes.password
+      var id = request.payload.data.id
 
       admins.validateSession(sessionId)
       .then(function (doc) {
@@ -142,6 +143,9 @@ function accountRoutes (server, options, next) {
       })
 
       .then(function (session) {
+        if (session.account.id !== id) {
+          throw errors.accountIdConflict(session.account.id)
+        }
         return accounts.update(session.account, {
           username: newUsername,
           password: newPassword
