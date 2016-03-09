@@ -61,12 +61,6 @@ getServer(function (error, server) {
         delete response.result.meta
         t.is(response.statusCode, 200, 'returns 200 status')
         t.deepEqual(response.result, profileFixture, 'returns profile in right format')
-
-        // prepared for https://github.com/hoodiehq/hoodie-server-account/issues/102
-        // replace two lines above with lines below
-        // t.is(response.statusCode, 204, 'returns 204 status')
-        // t.is(response.result, null, 'returns no body')
-
         t.end()
       })
     })

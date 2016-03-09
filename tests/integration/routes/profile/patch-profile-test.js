@@ -56,7 +56,6 @@ getServer(function (error, server) {
     couchdbErrorTests(server, group, mockCouchDbGetUserDoc, routeOptions)
 
     group.test('Session does exist', function (t) {
-      var profileFixture = require('../../fixtures/profile.json')
       // Mock the update
       nock('http://localhost:5984')
         .post('/_users/_bulk_docs')
@@ -74,12 +73,9 @@ getServer(function (error, server) {
       })
       server.inject(routeOptions, function (response) {
         t.is(couch.pendingMocks()[0], undefined, 'all mocks satisfied')
-        delete response.result.meta
         // The PATCH updated the email
-        profileFixture.data.attributes.email = routeOptions
-                                                .payload.data.attributes.email
-        t.is(response.statusCode, 201, 'returns 201 status')
-        t.deepEqual(response.result, profileFixture, 'returns profile in right format')
+        t.is(response.statusCode, 204, 'returns 204 status')
+        t.is(response.result, null, 'returns no body')
         t.end()
       })
     })
