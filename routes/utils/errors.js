@@ -25,7 +25,7 @@ module.exports.INVALID_CREDENTIALS = hoodieError({
 module.exports.FORBIDDEN_ADMIN_ACCOUNT = hoodieError({
   name: 'Forbidden',
   message: 'Admins have no account',
-  status: 403
+  status: 400
 })
 
 module.exports.NO_ADMIN_ACCOUNT = hoodieError({
