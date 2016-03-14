@@ -107,8 +107,8 @@ getServer(function (error, server) {
         delete response.result.meta
         t.is(response.statusCode, 404, 'returns 404 status')
         t.is(response.result.errors.length, 1, 'returns one error')
-        // t.is(response.result.errors[0].title, 'Bad Request', 'returns "Bad Request" error')
-        t.deepEqual(response.result.errors[0].detail, 'Admins have no account', 'returns "Admins have no account" error')
+        t.is(response.result.errors[0].title, 'Not Found', 'returns "Not Found" error')
+        t.deepEqual(response.result.errors[0].detail, 'Admins have no profiles', 'returns "Admins have no profiles" error')
         t.end()
       })
     })
