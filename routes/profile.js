@@ -90,7 +90,7 @@ function profileRoutes (server, options, next) {
       admins.validateSession(sessionId)
 
         .then(function (doc) {
-          throw errors.FORBIDDEN_ADMIN_ACCOUNT
+          throw errors.NO_PROFILE_ACCOUNT
         })
 
         .catch(function (error) {
