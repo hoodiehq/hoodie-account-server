@@ -63,6 +63,7 @@ getServer(function (error, server) {
       })
     })
 
+    // prepared test for https://github.com/hoodiehq/hoodie-server-account/issues/124
     group.test('Not an admin', {todo: true}, function (t) {
       t.end()
     })
