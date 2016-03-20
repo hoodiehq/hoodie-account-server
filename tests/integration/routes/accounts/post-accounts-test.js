@@ -67,7 +67,6 @@ getServer(function (error, server) {
     group.test('Not an admin', {todo: true}, function (t) {
       t.end()
     })
-    })
 
     // prepared test for https://github.com/hoodiehq/hoodie-server-account/issues/125
     group.test('Session cannot be found', {todo: true}, function (t) {
