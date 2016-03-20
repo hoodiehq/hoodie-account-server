@@ -65,8 +65,30 @@ getServer(function (error, server) {
     })
 
     // prepared test for https://github.com/hoodiehq/hoodie-server-account/issues/124
-    group.test('Not an admin', {todo: true}, function (t) {
-      t.end()
+    group.test('Not an admin', function (t) {
+      server.inject({
+        method: 'POST',
+        url: '/accounts',
+        headers: {
+          accept: 'application/vnd.api+json',
+          authorization: 'Bearer cGF0LWRvZToxMjc1MDA6zEZsQ1BuO-W8SthDSrg8KXQ8OlQ',
+          'content-type': 'application/vnd.api+json'
+        },
+        payload: {
+          data: {
+            type: 'account',
+            attributes: {
+              username: 'pat-doe',
+              password: 'secret'
+            }
+          }
+        }
+      }, function (response) {
+        t.is(response.statusCode, 401, 'returns 401 status')
+        t.is(response.result.error, 'Unauthorized', 'returns "Unauthorized" error')
+        t.is(response.result.message, 'Session invalid', 'returns "Authorization header missing" error')
+        t.end()
+      })
     })
 
     // prepared test for https://github.com/hoodiehq/hoodie-server-account/issues/125
