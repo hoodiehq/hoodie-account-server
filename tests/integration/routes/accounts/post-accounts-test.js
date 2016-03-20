@@ -1,3 +1,4 @@
+var _ = require('lodash')
 var Joi = require('joi')
 var nock = require('nock')
 var test = require('tap').test
@@ -94,5 +95,18 @@ getServer(function (error, server) {
     invalidTypeErrors(server, group, routeOptions, 'account')
 
     group.end()
+  })
+
+  // prepared test for https://github.com/hoodiehq/hoodie-server-account/issues/126
+  test('POST /accounts?include=foobar', function (t) {
+    var options = _.defaultsDeep({
+      url: '/accounts?include=foobar'
+    }, routeOptions)
+
+    server.inject(options, function (response) {
+      // t.is(response.statusCode, 400, 'returns 400 status')
+      // t.deepEqual(response.result.errors[0].detail, 'Allowed value for ?include is \'profile\'', 'returns error message')
+      t.end()
+    })
   })
 })
