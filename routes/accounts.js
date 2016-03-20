@@ -13,6 +13,7 @@ var validations = require('./utils/validations')
 
 function accountRoutes (server, options, next) {
   var accounts = server.plugins.account.api.accounts
+  var admins = options.admins
 
   var postAccountsRoute = {
     method: 'POST',
@@ -30,14 +31,17 @@ function accountRoutes (server, options, next) {
       var password = request.payload.data.attributes.password
       var query = request.query
 
-      accounts.add({
-        username: username,
-        password: password,
-        include: query.include
-      })
+      var sessionId = toBearerToken(request)
 
-      .then(function (account) {
-        return account
+      // check for admin. If not found, check for user
+      admins.validateSession(sessionId)
+
+      .then(function (doc) {
+        return accounts.add({
+          username: username,
+          password: password,
+          include: query.include
+        })
       })
 
       .then(function (account) {
@@ -52,7 +56,11 @@ function accountRoutes (server, options, next) {
       })
 
       .catch(function (error) {
+        if (error.message === 'Name or password is incorrect.') {
+          error.message = 'Session invalid'
+        }
         error = errors.parse(error)
+
         reply(Boom.create(error.status, error.message))
       })
     }
