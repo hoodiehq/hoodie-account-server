@@ -2,6 +2,7 @@ var _ = require('lodash')
 var Joi = require('joi')
 var nock = require('nock')
 var test = require('tap').test
+var cloneDeep = require('lodash/cloneDeep')
 
 var getServer = require('../../utils/get-server')
 var couchdbErrorTests = require('../../utils/couchdb-error-tests')
@@ -70,8 +71,17 @@ getServer(function (error, server) {
     })
 
     // prepared test for https://github.com/hoodiehq/hoodie-server-account/issues/125
-    group.test('Session cannot be found', {todo: true}, function (t) {
-      t.end()
+    group.test('Session cannot be found', function (t) {
+      var requestOptions = cloneDeep(routeOptions)
+      requestOptions.headers.authorization = 'Bearer YWRtaW46__BOGUS'
+
+      server.inject(requestOptions, function (response) {
+        t.is(response.statusCode, 401, 'returns 401 status')
+        t.is(response.result.errors.length, 1, 'returns one error')
+        t.is(response.result.errors[0].title, 'Unauthorized', 'returns "Unauthorized" error')
+        t.is(response.result.errors[0].detail, 'Session invalid', 'returns "Session invalid" error')
+        t.end()
+      })
     })
 
     group.test('CouchDB Session valid', function (t) {
