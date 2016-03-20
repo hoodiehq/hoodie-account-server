@@ -9,7 +9,7 @@ var getServer = require('../../utils/get-server')
 var couchdbGetUserMock = nock('http://localhost:5984')
   .get('/_users/org.couchdb.user%3Apat-doe')
   .query(true)
-
+  
 function mockUserFound (docChange) {
   return couchdbGetUserMock
     .reply(200, _.merge({
@@ -146,10 +146,65 @@ getServer(function (error, server) {
         t.end()
       })
     })
+    
+    group.test('username change', function (t) {
+      var couchdbChangeUserMock = nock('http://localhost:5984')
+        .post('/_users/_bulk_docs', function (body) {
+          return Joi.object({
+            all_or_nothing: Joi.boolean().only(true).required(),
+            docs: Joi.array().items(
+              Joi.object({
+                'name': Joi.string().only('org.couchdb.user:newusername').required(),
+                'renamedTo': Joi.string().only('newusername').required(),
+                'username': Joi.any().forbidden()
+              }),
+              Joi.object({
+                '_id': Joi.string().only('org.couchdb.user:oldusername').required(),
+                '_deleted': Joi.boolean().only(true).required()
+              })
+            )
+          }).validate(body).error === null
+        })
+        .query(true);
+      
+            
+      var couchdb = couchdbChangeUserMock
+        .reply(201, [{
+          'ok': true,
+          'id': 'org.couchdb.user:oldusername',
+          'rev': '2-3456'
+        },{
+          'ok': true,
+          'id': 'org.couchdb.user:newusername',
+          'rev': '2-3456'
+        }]);
+      
+      var usernameChangeRouteOptions = {
+        method: 'PATCH',
+        url: '/session/account',
+        headers: {
+          accept: 'application/vnd.api+json',
+          authorization: 'Bearer cGF0LWRvZToxMjc1MDA6zEZsQ1BuO-W8SthDSrg8KXQ8OlQ',
+          'content-type': 'application/vnd.api+json'
+        },
+        payload: {
+          data: {
+            username: 'newusername'
+          }
+        }
+      }
+  
+      server.inject(usernameChangeRouteOptions, function (response) {
+        t.is(couchdb.pendingMocks()[0], undefined, 'CouchDB received request')
+        t.is(response.statusCode, 201, 'returns 201 status')
+        
+        t.end()
+      })
+    })
 
     group.end()
   })
-
+  
   test('PATCH /session/account?include=profile', {todo: true}, function (t) {
     t.end()
   })
