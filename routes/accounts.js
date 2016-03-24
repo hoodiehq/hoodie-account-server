@@ -22,6 +22,7 @@ function accountRoutes (server, options, next) {
       auth: false,
       validate: {
         headers: validations.bearerTokenHeader,
+        query: validations.accountQuery,
         payload: validations.accountPayload,
         failAction: joiFailAction
       }
