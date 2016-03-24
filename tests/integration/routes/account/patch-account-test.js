@@ -107,7 +107,7 @@ getServer(function (error, server) {
       })
     })
 
-    // test prepared for https://github.com/hoodiehq/hoodie-server-account/issues/100
+    // test prepared for https://github.com/hoodiehq/hoodie-account-server/issues/100
     group.test('data.id is != account.id belonging to session', function (t) {
       var couch = mockUserFound()
       var options = _.defaultsDeep({

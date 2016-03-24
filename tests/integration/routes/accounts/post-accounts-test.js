@@ -65,12 +65,12 @@ getServer(function (error, server) {
       })
     })
 
-    // prepared test for https://github.com/hoodiehq/hoodie-server-account/issues/124
+    // prepared test for https://github.com/hoodiehq/hoodie-account-server/issues/124
     group.test('Not an admin', {todo: true}, function (t) {
       t.end()
     })
 
-    // prepared test for https://github.com/hoodiehq/hoodie-server-account/issues/125
+    // prepared test for https://github.com/hoodiehq/hoodie-account-server/issues/125
     group.test('Session cannot be found', function (t) {
       var requestOptions = cloneDeep(routeOptions)
       requestOptions.headers.authorization = 'Bearer YWRtaW46__BOGUS'
@@ -107,6 +107,7 @@ getServer(function (error, server) {
     group.end()
   })
 
+  // prepared test for https://github.com/hoodiehq/hoodie-account-server/issues/126
   test('POST /accounts?include=foobar', function (t) {
     var options = _.defaultsDeep({
       url: '/accounts?include=foobar'

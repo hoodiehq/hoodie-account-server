@@ -12,7 +12,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/hoodiehq/hoodie-server-account.git"
+    "url": "https://github.com/hoodiehq/hoodie-account-server.git"
   },
   "keywords": [
     "hapi",
@@ -24,9 +24,9 @@
   "author": "The Hoodie Community and other contributors | http://hood.ie/",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/hoodiehq/hoodie-server-account/issues"
+    "url": "https://github.com/hoodiehq/hoodie-account-server/issues"
   },
-  "homepage": "https://github.com/hoodiehq/hoodie-server-account#readme",
+  "homepage": "https://github.com/hoodiehq/hoodie-account-server#readme",
   "devDependencies": {
     "coveralls": "^2.11.6",
     "gaze-cli": "^0.2.0",

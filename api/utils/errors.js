@@ -16,7 +16,7 @@ module.exports.UNAUTHORIZED_PASSWORD = hoodieError({
 
 module.exports.FORBIDDEN_ID_ROLE_MISSING = hoodieError({
   name: 'Forbidden',
-  message: '"id:..." role missing (https://github.com/hoodiehq/hoodie-server-account/blob/master/how-it-works.md#id-role)',
+  message: '"id:..." role missing (https://github.com/hoodiehq/hoodie-account-server/blob/master/how-it-works.md#id-role)',
   status: 403
 })
 

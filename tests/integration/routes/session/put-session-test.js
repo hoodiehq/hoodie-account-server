@@ -114,7 +114,7 @@ test('PUT /session', function (group) {
           t.is(response.statusCode, 403, 'returns 403 status')
           t.is(response.result.errors.length, 1, 'returns one error')
           t.is(response.result.errors[0].title, 'Forbidden', 'returns "Forbidden" error')
-          t.is(response.result.errors[0].detail, '"id:..." role missing (https://github.com/hoodiehq/hoodie-server-account/blob/master/how-it-works.md#id-role)')
+          t.is(response.result.errors[0].detail, '"id:..." role missing (https://github.com/hoodiehq/hoodie-account-server/blob/master/how-it-works.md#id-role)')
           t.end()
         })
       })
