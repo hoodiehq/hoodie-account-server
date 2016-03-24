@@ -1,16 +1,16 @@
-[back to hoodie-server-account](../README.md)
+[back to hoodie-account-server](../README.md)
 
-# hoodie-server-account/api
+# @hoodie/account-server/api
 
-`hoodie-server-account/api` is a JavaScript API for all things account
+`@hoodie/account-server/api` is a JavaScript API for all things account
 on top of CouchDB’s REST API.
 
-After registering the `hoodie-server-account` hapi plugin, the account API
+After registering the `@hoodie/account-server` hapi plugin, the account API
 becomes available at `server.plugins.account.api`. It can also be directly
 required using
 
 ```js
-var api = require ('hoodie-server-account/api')({
+var api = require ('@hoodie/server-account/api')({
   url: couchdbUrl
 })
 ```
@@ -18,7 +18,7 @@ var api = require ('hoodie-server-account/api')({
 ## Example
 
 ```js
-var AccountApi = require('hoodie-server-account/api')
+var AccountApi = require('@hoodie/server-account/api')
 var PouchDB = require('pouchdb')
 
 PouchDB.plugin(require('pouchdb-users'))
@@ -38,8 +38,8 @@ db.installUsersBehavior().then(function () {
 
 ## API
 
-`hoodie-server-account/api` is a subset of [hoodie-client-account/admin](https://github.com/hoodiehq/hoodie-client-account/tree/master/admin).
-If you see any inconsistencies, please [create an issue](https://github.com/hoodiehq/hoodie-server-account/issues/new?title=API+inconsistency)
+`@hoodie/account-server/api` is a subset of [hoodie-account-client/admin](https://github.com/hoodiehq/hoodie-account-client/tree/master/admin).
+If you see any inconsistencies, please [create an issue](https://github.com/hoodiehq/hoodie-account-server/issues/new?title=API+inconsistency)
 
 - [Constructor](#constructor)
 - [api.sessions.add()](#apisessionsadd)
@@ -281,7 +281,7 @@ admin.sessions.find('abc4567').then(function (sessionProperties) {
 
 ---
 
-🐕 **TO BE DONE**: [#27](https://github.com/hoodiehq/hoodie-server-account/issues/27)
+🐕 **TO BE DONE**: [#27](https://github.com/hoodiehq/hoodie-account-server/issues/27)
 
 ---
 
@@ -448,7 +448,7 @@ admin.sessions.remove('abc4567')
 
 ---
 
-**NOTE**: [#27](https://github.com/hoodiehq/hoodie-server-account/issues/27)
+**NOTE**: [#27](https://github.com/hoodiehq/hoodie-account-server/issues/27)
 Deleting a Session does not really have an effect today, as no session state
 is kept, and sessions are hash based
 
@@ -458,7 +458,7 @@ is kept, and sessions are hash based
 
 ---
 
-🐕 **TO BE DONE**: [#27](https://github.com/hoodiehq/hoodie-server-account/issues/27)
+🐕 **TO BE DONE**: [#27](https://github.com/hoodiehq/hoodie-account-server/issues/27)
 
 ---
 
@@ -1476,7 +1476,7 @@ admin.account({username: 'pat'}).roles.remove('mycustomrole')
 
 ---
 
-🐕 **TO BE DONE**: [#35](https://github.com/hoodiehq/hoodie-server-account/issues/35)
+🐕 **TO BE DONE**: [#35](https://github.com/hoodiehq/hoodie-account-server/issues/35)
 
 ---
 

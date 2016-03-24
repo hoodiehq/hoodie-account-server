@@ -1,10 +1,10 @@
-[back to hoodie-server-account](README.md)
+[back to hoodie-account-server](README.md)
 
 # How it works
 
-## CouchDB `_users` doc specification & custom properties used by `hoodie-server-account`
+## CouchDB `_users` doc specification & custom properties used by `hoodie-account-server`
 
-`hoodie-server-account` works directly against [CouchDB’s Authentication System](http://docs.couchdb.org/en/latest/api/server/authn.html).
+`hoodie-account-server` works directly against [CouchDB’s Authentication System](http://docs.couchdb.org/en/latest/api/server/authn.html).
 User accounts are docs in the `_users` database, and they have the following
 requirements:
 
@@ -35,7 +35,7 @@ requirements:
 ### <a name="id-role"></a>The "id role" – because usernames can change.
 
 Access permissions can be set in CouchDB on a database level, by using usernames
-or roles. As usernames are prone to change, `hoodie-server-account` adds an
+or roles. As usernames are prone to change, `hoodie-account-server` adds an
 id that is globally unique and will never change, and can therefore be used to
 reference ownership & permissions. The id is added as the first entry in `"roles"`,
 for example if the account id is `abc4567`, the role is `id:abc4567`
@@ -52,9 +52,9 @@ for example if the account id is `abc4567`, the role is `id:abc4567`
 It's recommended to always use the "id role" to grant permissions to databases,
 as usernames can change.
 
-### Exposed account properties by `hoodie-server-account`
+### Exposed account properties by `hoodie-account-server`
 
-`hoodie-server-account`’s REST API will only ever expose the following properties:
+`hoodie-account-server`’s REST API will only ever expose the following properties:
 
 1. `username` – read only
 2. `id` – read only
@@ -63,7 +63,7 @@ Usernames can be changed using the `"requests"` API, for which a custom routine
 can be defined, for example an email confirmation workflow.
 
 As no other properties from the `_users` docs will be exposed by
-`hoodie-server-account`’s API by default, you can securely store sensitive
+`hoodie-account-server`’s API by default, you can securely store sensitive
 information like API keys, or password reset tokens.
 
 ### Account Profile

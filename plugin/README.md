@@ -1,4 +1,4 @@
-[back to hoodie-server-account](../README.md)
+[back to hoodie-account-server](../README.md)
 
 # hapi CouchDB Account Plugin
 
@@ -12,7 +12,7 @@ map function ([see doc](couchdb/users-design-doc.js)).
 
 ```js
 var Hapi = require('hapi')
-var hapiAccount = require('hoodie-server-account')
+var hapiAccount = require('@hoodie/account-server')
 
 var PouchDB = require('pouchdb')
 PouchDB.plugin(require('pouchdb-users'))

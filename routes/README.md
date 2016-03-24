@@ -1,4 +1,4 @@
-[back to hoodie-server-account](../README.md)
+[back to hoodie-account-server](../README.md)
 
 # hapi CouchDB Account Routes
 

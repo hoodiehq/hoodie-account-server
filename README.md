@@ -1,20 +1,20 @@
-# hoodie-server-account
+# hoodie-account-server
 
 > Account REST API backed by CouchDB
 
-[![Build Status](https://travis-ci.org/hoodiehq/hoodie-server-account.svg?branch=master)](https://travis-ci.org/hoodiehq/hoodie-server-account)
-[![Dependency Status](https://david-dm.org/hoodiehq/hoodie-server-account.svg)](https://david-dm.org/hoodiehq/hoodie-server-account)
-[![devDependency Status](https://david-dm.org/hoodiehq/hoodie-server-account/dev-status.svg)](https://david-dm.org/hoodiehq/hoodie-server-account#info=devDependencies)
+[![Build Status](https://travis-ci.org/hoodiehq/hoodie-account-server.svg?branch=master)](https://travis-ci.org/hoodiehq/hoodie-account-server)
+[![Dependency Status](https://david-dm.org/hoodiehq/hoodie-account-server.svg)](https://david-dm.org/hoodiehq/hoodie-account-server)
+[![devDependency Status](https://david-dm.org/hoodiehq/hoodie-account-server/dev-status.svg)](https://david-dm.org/hoodiehq/hoodie-account-server#info=devDependencies)
 ✷
 
-✷ coverage is currently disabled: [#37](https://github.com/hoodiehq/hoodie-server-account/issues/37)
+✷ coverage is currently disabled: [#37](https://github.com/hoodiehq/hoodie-account-server/issues/37)
 
 ## Usage
 
 ```js
 var Hapi = require('hapi')
 var PouchDB = require('PouchDB')
-var hapiAccount = require('hoodie-server-account')
+var hapiAccount = require('@hoodie/server-account')
 
 PouchDB.plugin(require('pouchdb-users'))
 

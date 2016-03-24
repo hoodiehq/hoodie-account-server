@@ -1,12 +1,12 @@
-[back to hoodie-server-account](../README.md)
+[back to hoodie-account-server](../README.md)
 
 # Testing
 
 Local setup
 
 ```
-git clone git@github.com:hoodiehq/hoodie-server-account.git
-cd hoodie-server-account
+git clone git@github.com:hoodiehq/hoodie-account-server.git
+cd hoodie-account-server
 npm install
 ```
 
