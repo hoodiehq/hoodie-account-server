@@ -149,25 +149,26 @@ getServer(function (error, server) {
     
     group.test('username change', function (t) {
       var couchdbChangeUserMock = nock('http://localhost:5984')
-        .post('/_users/_bulk_docs', function (body) {
-          return Joi.object({
-            all_or_nothing: Joi.boolean().only(true).required(),
-            docs: Joi.array().items(
-              Joi.object({
-                'name': Joi.string().only('org.couchdb.user:newusername').required(),
-                'renamedTo': Joi.string().only('newusername').required(),
-                'username': Joi.any().forbidden()
-              }),
-              Joi.object({
-                '_id': Joi.string().only('org.couchdb.user:oldusername').required(),
-                '_deleted': Joi.boolean().only(true).required()
-              })
-            )
-          }).validate(body).error === null
-        })
-        .query(true);
-      
-            
+          .post('/_users/_bulk_docs', function (body) {
+            return Joi.object({
+              all_or_nothing: Joi.boolean().only(true).required(),
+              docs: Joi.array().items(
+                Joi.object({
+                  'name': Joi.string().only('org.couchdb.user:newusername').required(),
+                  'username': Joi.any().forbidden()
+                }),
+                Joi.object({
+                  '_id': Joi.string().only('org.couchdb.user:oldusername').required(),
+                  'renamedTo': Joi.string().only('newusername').required(),
+                  'username': Joi.any().forbidden(),
+                  '_deleted': Joi.boolean().only(true).required()
+                })
+              )
+            }).validate(body).error === null
+          })
+          .query(true);
+
+
       var couchdb = couchdbChangeUserMock
         .reply(201, [{
           'ok': true,
