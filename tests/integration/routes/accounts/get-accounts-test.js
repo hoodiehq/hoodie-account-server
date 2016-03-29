@@ -1,3 +1,4 @@
+var _ = require('lodash')
 var nock = require('nock')
 var test = require('tap').test
 
@@ -54,8 +55,21 @@ getServer(function (error, server) {
       t.end()
     })
 
-    group.test('Not an admin', {todo: true}, function (t) {
-      t.end()
+    group.test('Not an admin', function (t) {
+      var requestOptions = _.defaultsDeep({
+        headers: {
+          // Session ID based on 'pat-doe', 'salt123', 'secret', 1209600
+          authorization: 'Bearer cGF0LWRvZToxMjc1MDA6zEZsQ1BuO-W8SthDSrg8KXQ8OlQ'
+        }
+      }, routeOptions)
+
+      server.inject(requestOptions, function (response) {
+        t.is(response.statusCode, 401, 'returns 401 status')
+        t.is(response.result.errors.length, 1, 'returns one error')
+        t.is(response.result.errors[0].title, 'Unauthorized', 'returns "Unauthorized" error')
+        t.is(response.result.errors[0].detail, 'Session invalid', 'returns Invalid session message')
+        t.end()
+      })
     })
 
     group.test('CouchDB Session valid', function (t) {
