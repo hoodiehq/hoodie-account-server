@@ -151,7 +151,7 @@ admin.sessions.add(options)
   <tr>
     <th align="left"><code>options.auth</code></th>
     <td>Object</td>
-    <td>Can be <code>username</code> and <code>password</code> or <code>session</code>. If not set, will use <code>options.auth</code> from [Constructor](#constructor)</td>
+    <td>Can be <code>username</code> and <code>password</code> or <code>session</code>. If not set, will use <code>options.auth</code> from https://github.com/hoodiehq/hoodie-server-account/tree/master/api#constructor</td>
     <td>No</td>
   </tr>
 </table>
