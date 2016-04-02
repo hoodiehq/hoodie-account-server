@@ -60,9 +60,12 @@ function accountRoutes (server, options, next) {
         if (error.message === 'Name or password is incorrect.') {
           error.message = 'Session invalid'
         }
+        if (error.message === 'missing') {
+          error = errors.INVALID_SESSION
+        }
         error = errors.parse(error)
 
-        reply(Boom.create(error.status, error.message))
+        reply(Boom.wrap(error, error.status, error.message))
       })
     }
   }

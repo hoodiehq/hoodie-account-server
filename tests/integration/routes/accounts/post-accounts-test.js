@@ -86,8 +86,8 @@ getServer(function (error, server) {
         }
       }, function (response) {
         t.is(response.statusCode, 401, 'returns 401 status')
-        t.is(response.result.error, 'Unauthorized', 'returns "Unauthorized" error')
-        t.is(response.result.message, 'Session invalid', 'returns "Authorization header missing" error')
+        t.is(response.result.errors[0].title, 'Unauthorized', 'returns "Unauthorized" error')
+        t.is(response.result.errors[0].detail, 'Session invalid', 'returns "Session invalid" error')
         t.end()
       })
     })
