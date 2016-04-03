@@ -53,9 +53,9 @@ test('GET /session', function (group) {
 
       server.inject(routeOptions, function (response) {
         t.is(couchdb.pendingMocks()[0], undefined, 'CouchDB received request')
-        t.is(response.statusCode, 404, 'returns 404 status')
+        t.is(response.statusCode, 401, 'returns 401 status')
         t.is(response.result.errors.length, 1, 'returns one error')
-        t.is(response.result.errors[0].title, 'Not Found', 'returns "Not Found" error')
+        t.is(response.result.errors[0].title, 'Unauthorized', 'returns "Session invalid" error')
         t.end()
       })
     })
@@ -97,9 +97,10 @@ test('GET /session', function (group) {
         }, routeOptions)
 
         server.inject(requestOptions, function (response) {
-          t.is(response.statusCode, 404, 'returns 404 status')
+          t.is(response.statusCode, 401, 'returns 401 status')
           t.is(response.result.errors.length, 1, 'returns one error')
-          t.is(response.result.errors[0].title, 'Not Found', 'returns "Not Found" error')
+          t.is(response.result.errors[0].title, 'Unauthorized', 'returns "Unauthorized" error')
+          t.is(response.result.errors[0].detail, 'Session invalid', 'returns "Session invalid" message')
           t.end()
         })
       })
