@@ -116,6 +116,12 @@ function sessionRoutes (server, options, next) {
           return sessions.find(sessionId, {
             include: request.query.include
           })
+          .catch(function (error) {
+            if (error.status === 401 || error.status === 404) {
+              throw errors.INVALID_SESSION
+            }
+            throw error
+          })
         }
 
         throw error
