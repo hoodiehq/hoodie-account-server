@@ -41,7 +41,7 @@ function accountRoutes (server, options, next) {
         password: password,
         include: query.include,
         id: id
-      })
+      }, options, request)
 
       .then(serialise)
 
