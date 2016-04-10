@@ -3,7 +3,7 @@ var PouchDB = require('pouchdb').defaults({
 })
 var test = require('tap').test
 
-var usersDesignDoc = require('../../../plugin/couchdb/users-design-doc.js')
+var usersDesignDoc = require('../../../plugin/couchdb/users-design-doc')
 var getApi = require('../../../api')
 
 PouchDB.plugin(require('pouchdb-users'))
