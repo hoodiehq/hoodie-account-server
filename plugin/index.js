@@ -44,6 +44,9 @@ function hapiAccount (server, options, next) {
   var plugins = [{
     register: require('@gar/hapi-json-api'),
     options: {}
+  }, {
+    register: require('./remove-cookie-header'),
+    options: {'sandbox': 'plugin'}
   }].concat(routePlugins.map(function (plugin) {
     return {
       register: plugin,
