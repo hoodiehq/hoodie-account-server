@@ -38,37 +38,40 @@ function sessionRoutes (server, options, next) {
       // check for admin. If not found, check for user
       admins.validatePassword(username, password)
 
-      .then(function () {
-        if (query.include) {
-          throw errors.FORBIDDEN_ADMIN_ACCOUNT
-        }
+      .then(
+        // if admin
+        function () {
+          if (query.include) {
+            throw errors.FORBIDDEN_ADMIN_ACCOUNT
+          }
 
-        return admins.calculateSessionId(username)
-      })
+          return admins.calculateSessionId(username)
 
-      .then(function (sessionId) {
-        return {
-          id: sessionId
-        }
-      })
-
-      .catch(function (error) {
-        if (error.name === 'not_found') {
-          return sessions.add({
-            username: username,
-            password: password,
-            include: query.include
-          })
-          .catch(function (error) {
-            if (error.status === 404) {
-              throw errors.INVALID_CREDENTIALS
+          .then(function (sessionId) {
+            return {
+              id: sessionId
             }
-            throw error
           })
-        }
+        },
 
-        throw error
-      })
+        // if not admin
+        function (error) {
+          if (error.status === 404) {
+            return sessions.add({
+              username: username,
+              password: password,
+              include: query.include
+            })
+            .catch(function (error) {
+              if (error.status === 404) {
+                throw errors.INVALID_CREDENTIALS
+              }
+              throw error
+            })
+          }
+
+          throw error
+        })
 
       .then(serialise)
 
@@ -101,31 +104,34 @@ function sessionRoutes (server, options, next) {
       // check for admin. If not found, check for user
       admins.validateSession(sessionId)
 
-      .then(function (doc) {
-        if (query.include) {
-          throw errors.FORBIDDEN_ADMIN_ACCOUNT
-        }
+      .then(
+        // if admin
+        function (doc) {
+          if (query.include) {
+            throw errors.FORBIDDEN_ADMIN_ACCOUNT
+          }
 
-        return {
-          id: sessionId
-        }
-      })
+          return {
+            id: sessionId
+          }
+        },
 
-      .catch(function (error) {
-        if (error.name === 'not_found') {
-          return sessions.find(sessionId, {
-            include: request.query.include
-          })
-          .catch(function (error) {
-            if (error.status === 401 || error.status === 404) {
-              throw errors.INVALID_SESSION
-            }
-            throw error
-          })
-        }
+        // if not admin
+        function (error) {
+          if (error.status === 404) {
+            return sessions.find(sessionId, {
+              include: request.query.include
+            })
+            .catch(function (error) {
+              if (error.status === 401 || error.status === 404) {
+                throw errors.INVALID_SESSION
+              }
+              throw error
+            })
+          }
 
-        throw error
-      })
+          throw error
+        })
 
       .then(serialise)
 
@@ -156,27 +162,30 @@ function sessionRoutes (server, options, next) {
       // check for admin. If not found, check for user
       admins.validateSession(sessionId)
 
-      .then(function (doc) {
-        if (query.include) {
-          throw errors.FORBIDDEN_ADMIN_ACCOUNT
-        }
-      })
+      .then(
+        // if admin
+        function (doc) {
+          if (query.include) {
+            throw errors.FORBIDDEN_ADMIN_ACCOUNT
+          }
+        },
 
-      .catch(function (error) {
-        if (error.name === 'not_found') {
-          return sessions.remove(sessionId, {
-            include: request.query.include
-          })
-          .catch(function (error) {
-            if (error.status === 404 || error.status === 401) {
-              throw errors.INVALID_SESSION
-            }
-            throw error
-          })
-        }
+        // if not admin
+        function (error) {
+          if (error.status === 404) {
+            return sessions.remove(sessionId, {
+              include: request.query.include
+            })
+            .catch(function (error) {
+              if (error.status === 404 || error.status === 401) {
+                throw errors.INVALID_SESSION
+              }
+              throw error
+            })
+          }
 
-        throw error
-      })
+          throw error
+        })
 
       .then(function (session) {
         if (!session) {

@@ -57,7 +57,7 @@ function accountRoutes (server, options, next) {
       })
 
       .catch(function (error) {
-        if (error.message === 'Name or password is incorrect.') {
+        if (error.status === 401) {
           error.message = 'Session invalid'
         }
         if (error.message === 'missing') {

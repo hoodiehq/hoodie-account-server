@@ -36,24 +36,27 @@ function profileRoutes (server, options, next) {
       // check for admin. If not found, check for user
       admins.validateSession(sessionId)
 
-      .then(function (doc) {
-        throw errors.NO_PROFILE_ACCOUNT
-      })
+      .then(
+        // if admin
+        function (doc) {
+          throw errors.NO_PROFILE_ACCOUNT
+        },
 
-      .catch(function (error) {
-        if (error.name === 'not_found') {
-          return sessions.find(sessionId, {
-            include: 'account.profile'
-          })
-          .catch(function (error) {
-            if (error.status === 404) {
-              throw errors.INVALID_SESSION
-            }
-          })
-        }
+        // if not admin
+        function (error) {
+          if (error.status === 404) {
+            return sessions.find(sessionId, {
+              include: 'account.profile'
+            })
+            .catch(function (error) {
+              if (error.status === 404) {
+                throw errors.INVALID_SESSION
+              }
+            })
+          }
 
-        throw error
-      })
+          throw error
+        })
 
       .then(function (session) {
         return session.account
@@ -90,24 +93,27 @@ function profileRoutes (server, options, next) {
       // check for admin. If not found, check for user
       admins.validateSession(sessionId)
 
-        .then(function (doc) {
-          throw errors.NO_PROFILE_ACCOUNT
-        })
+        .then(
+          // if admin
+          function (doc) {
+            throw errors.NO_PROFILE_ACCOUNT
+          },
 
-        .catch(function (error) {
-          if (error.name === 'not_found') {
-            return sessions.find(sessionId, {
-              include: 'account.profile'
-            })
-              .catch(function (error) {
-                if (error.status === 404) {
-                  throw errors.INVALID_SESSION
-                }
+          // if not admin
+          function (error) {
+            if (error.status === 404) {
+              return sessions.find(sessionId, {
+                include: 'account.profile'
               })
-          }
+                .catch(function (error) {
+                  if (error.status === 404) {
+                    throw errors.INVALID_SESSION
+                  }
+                })
+            }
 
-          throw error
-        })
+            throw error
+          })
 
         .then(function (session) {
           if (session.account.id + '-profile' !== id) {
