@@ -35,7 +35,7 @@ function hapiAccount (server, options, next) {
   delete routeOptions.secret
 
   routeOptions.notifications = options.notifications
-
+  routeOptions.hooks = options.hooks
   server.expose({
     api: users
   })

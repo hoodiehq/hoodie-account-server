@@ -5,7 +5,7 @@ var randomstring = require('randomstring')
 var errors = require('../utils/errors')
 var toAccount = require('../utils/doc-to-account')
 
-function addAccount (state, properties, options) {
+function addAccount (state, properties, options, request) {
   if (!options) {
     options = {}
   }
@@ -23,6 +23,13 @@ function addAccount (state, properties, options) {
     roles: [
       'id:' + accountId
     ].concat(properties.roles || [])
+  }
+
+  var hooks = options.hooks || {}
+
+  if (hooks.account && hooks.account.beforeAdd &&
+    typeof hooks.account.beforeAdd === 'function') {
+    doc = hooks.account.beforeAdd(doc, request)
   }
 
   return state.db.put(doc)
