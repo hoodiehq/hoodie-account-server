@@ -151,7 +151,7 @@ admin.sessions.add(options)
   <tr>
     <th align="left"><code>options.auth</code></th>
     <td>Object</td>
-    <td>Can be <code>username</code> and <code>password</code> or <code>session</code>. If not set, will use <code>options.auth</code> from <a href="#constructor">Constructor</a></td>
+    <td>Object with property <code>password</code>, a String that will be validated in the user document. If not included, admin access is assumed (no authentication)</td>
     <td>No</td>
   </tr>
 </table>
