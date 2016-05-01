@@ -10,9 +10,14 @@ function addSession (state, options) {
   return state.db.get('org.couchdb.user:' + options.username)
 
   .then(function (doc) {
+    // no auth, skip authentication (act as admin)
+    if (!options.auth) {
+      return doc
+    }
+
     return new Promise(function (resolve, reject) {
       validatePassword(
-        options.password,
+        options.auth.password,
         doc.salt,
         doc.iterations,
         doc.derived_key,

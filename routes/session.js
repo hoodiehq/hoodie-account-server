@@ -59,7 +59,9 @@ function sessionRoutes (server, options, next) {
           if (error.status === 404) {
             return sessions.add({
               username: username,
-              password: password,
+              auth: {
+                password: password
+              },
               include: query.include
             })
             .catch(function (error) {
