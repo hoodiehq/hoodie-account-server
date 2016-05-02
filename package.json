@@ -13,7 +13,6 @@
     "postsemantic-release": "npm run coverage"
   },
   "nyc": {
-    "//": "don't let nyc instrument users-design-doc.js because it will be executed inside PouchDB",
     "//": "since we override the default excludes, we have to also (re)exclude the tests directory",
     "exclude": [
       "tests",
@@ -49,7 +48,7 @@
     "pouchdb": "^5.2.0",
     "pouchdb-users": "^1.0.3",
     "semantic-release": "^6.1.0",
-    "standard": "^6.0.4",
+    "standard": "^7.0.0",
     "tap": "^5.2.0",
     "tap-min": "^1.0.0"
   },
