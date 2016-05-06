@@ -144,7 +144,7 @@ getServer(function (error, server) {
         t.is(couchdb.pendingMocks()[0], undefined, 'all mocks satisfied')
 
         t.is(response.statusCode, 204, 'returns 204 status')
-        // t.is(response.headers['x-set-session'], 'cGF0LWRvZToxMjc1MDA6zEZsQ1BuO-W8SthDSrg8KXQ8OlQ', 'returns new session id in x-set-session header')
+        t.is(response.headers['x-set-session'], 'cGF0LWRvZToxMjc1MDA6zEZsQ1BuO-W8SthDSrg8KXQ8OlQ', 'returns new session id in x-set-session header')
         t.is(response.result, null, 'returns no body')
 
         t.end()
