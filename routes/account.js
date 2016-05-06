@@ -160,8 +160,17 @@ function accountRoutes (server, options, next) {
         })
       })
 
-      .then(function () {
-        reply().code(204)
+      .then(function (account) {
+        // no auth param, act as 'admin' (we already validated the old session above)
+        return sessions.add({
+          username: account.username
+        })
+      })
+
+      .then(function (session) {
+        reply()
+          .code(204)
+          .header('x-set-session', session.id)
       })
 
       .catch(function (error) {
