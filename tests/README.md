@@ -5,7 +5,7 @@
 Local setup
 
 ```
-git clone git@github.com:hoodiehq/hoodie-account-server.git
+git clone https://github.com/hoodiehq/hoodie-account-server.git
 cd hoodie-account-server
 npm install
 ```
