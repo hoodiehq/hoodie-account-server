@@ -1,6 +1,6 @@
 [back to hoodie-account-server](../README.md)
 
-# @hoodie/account-server/api
+# hoodie-account-server/api
 
 `@hoodie/account-server/api` is a JavaScript API for all things account
 on top of CouchDB’s REST API.
@@ -10,7 +10,7 @@ becomes available at `server.plugins.account.api`. It can also be directly
 required using
 
 ```js
-var api = require ('@hoodie/server-account/api')({
+var api = require ('@hoodie/account-server/api')({
   url: couchdbUrl
 })
 ```
@@ -18,7 +18,7 @@ var api = require ('@hoodie/server-account/api')({
 ## Example
 
 ```js
-var AccountApi = require('@hoodie/server-account/api')
+var AccountApi = require('@hoodie/account-server/api')
 var PouchDB = require('pouchdb')
 
 PouchDB.plugin(require('pouchdb-users'))

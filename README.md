@@ -3,7 +3,7 @@
 > Account JSON API backed by PouchDB
 
 [![Build Status](https://api.travis-ci.org/hoodiehq/hoodie-account-server.svg?branch=master)](https://travis-ci.org/hoodiehq/hoodie-account-server)
-[![Coverage Status](https://coveralls.io/repos/hoodiehq/hoodie-server-account/badge.svg?branch=master)](https://coveralls.io/r/hoodiehq/hoodie-server-account?branch=master)
+[![Coverage Status](https://coveralls.io/repos/hoodiehq/hoodie-account-server/badge.svg?branch=master)](https://coveralls.io/r/hoodiehq/hoodie-account-server?branch=master)
 [![Dependency Status](https://david-dm.org/hoodiehq/hoodie-account-server.svg)](https://david-dm.org/hoodiehq/hoodie-account-server)
 [![devDependency Status](https://david-dm.org/hoodiehq/hoodie-account-server/dev-status.svg)](https://david-dm.org/hoodiehq/hoodie-account-server#info=devDependencies)
 
@@ -12,12 +12,12 @@ the [Account JSON API](http://docs.accountjsonapi.apiary.io) routes and exposes
 a corresponding API at `server.plugins.account.api.*`, persisting user accounts
 using [PouchDB](https://pouchdb.com).
 
-## Usage
+## Example
 
 ```js
 var Hapi = require('hapi')
 var PouchDB = require('PouchDB')
-var hapiAccount = require('@hoodie/server-account')
+var hapiAccount = require('@hoodie/account-server')
 
 PouchDB.plugin(require('pouchdb-users'))
 
@@ -46,6 +46,11 @@ db.installUsersBehavior().then(function () {
 - [API](api/README.md)
 - [How it works](how-it-works.md)
 - [Testing](tests/README.md)
+
+## Contributing
+
+Have a look at the Hoodie project's [contribution guidelines](https://github.com/hoodiehq/hoodie/blob/master/CONTRIBUTING.md).
+If you want to hang out you can join our [Hoodie Community Chat](http://hood.ie/chat/).
 
 ## License
 
