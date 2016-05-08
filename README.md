@@ -1,11 +1,16 @@
 # hoodie-account-server
 
-> Account REST API backed by CouchDB
+> Account JSON API backed by PouchDB
 
 [![Build Status](https://api.travis-ci.org/hoodiehq/hoodie-account-server.svg?branch=master)](https://travis-ci.org/hoodiehq/hoodie-account-server)
 [![Coverage Status](https://coveralls.io/repos/hoodiehq/hoodie-server-account/badge.svg?branch=master)](https://coveralls.io/r/hoodiehq/hoodie-server-account?branch=master)
 [![Dependency Status](https://david-dm.org/hoodiehq/hoodie-account-server.svg)](https://david-dm.org/hoodiehq/hoodie-account-server)
 [![devDependency Status](https://david-dm.org/hoodiehq/hoodie-account-server/dev-status.svg)](https://david-dm.org/hoodiehq/hoodie-account-server#info=devDependencies)
+
+`hoodie-account-server` is a [Hapi](http://hapijs.com/) plugin that implements
+the [Account JSON API](http://docs.accountjsonapi.apiary.io) routes and exposes
+a corresponding API at `server.plugins.account.api.*`, persisting user accounts
+using [PouchDB](https://pouchdb.com).
 
 ## Usage
 
