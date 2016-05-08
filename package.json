@@ -1,7 +1,7 @@
 {
   "name": "@hoodie/account-server",
   "version": "0.0.0-semantically-released",
-  "description": "Account REST API backed by CouchDB",
+  "description": "Account JSON API backed by PouchDB",
   "main": "plugin/index.js",
   "scripts": {
     "coverage": "nyc report --reporter=text-lcov | coveralls",
