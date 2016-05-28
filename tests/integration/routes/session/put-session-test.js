@@ -264,3 +264,44 @@ test('PUT /session?include=account.profile', function (group) {
     group.end()
   })
 })
+
+test('PUT /session', function (group) {
+  getServer(function (error, server) {
+    if (error) {
+      group.error(error)
+      group.end()
+      return
+    }
+
+    var options = defaultsDeep({
+      payload: {
+        data: {
+          attributes: {
+            username: 'Pat-doe'
+
+          }
+        }
+      }
+    }, routeOptions)
+
+    group.test('User Found', function (subGroup) {
+      var sessionResponse = require('../../fixtures/session-response.json')
+
+      subGroup.test('Valid password', function (t) {
+        var clock = lolex.install(0, ['Date'])
+        mockCouchDbUserDocFound()
+
+        server.inject(options, function (response) {
+          delete response.result.meta
+          t.is(response.statusCode, 201, 'returns 201 status')
+          t.deepEqual(response.result.data.id, sessionResponse.data.id, 'returns the right content')
+
+          clock.uninstall()
+          t.end()
+        })
+      })
+      subGroup.end()
+    })
+    group.end()
+  })
+})
