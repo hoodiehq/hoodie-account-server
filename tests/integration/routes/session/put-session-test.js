@@ -264,3 +264,36 @@ test('PUT /session?include=account.profile', function (group) {
     group.end()
   })
 })
+
+test('PUT /session with uppercase letter (hoodiehq/hoodie#499)', function (t) {
+  getServer(function (error, server) {
+    if (error) {
+      t.error(error)
+      t.end()
+      return
+    }
+
+    var options = defaultsDeep({
+      payload: {
+        data: {
+          attributes: {
+            username: 'Pat-doe'
+
+          }
+        }
+      }
+    }, routeOptions)
+
+    var sessionResponse = require('../../fixtures/session-response.json')
+    var clock = lolex.install(0, ['Date'])
+    mockCouchDbUserDocFound()
+
+    server.inject(options, function (response) {
+      delete response.result.meta
+      t.is(response.statusCode, 201, 'returns 201 status')
+      t.deepEqual(response.result.data.id, sessionResponse.data.id, 'returns the right content')
+      clock.uninstall()
+      t.end()
+    })
+  })
+})

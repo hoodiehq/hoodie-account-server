@@ -31,7 +31,7 @@ function sessionRoutes (server, options, next) {
       }
     },
     handler: function (request, reply) {
-      var username = request.payload.data.attributes.username
+      var username = request.payload.data.attributes.username.toLowerCase()
       var password = request.payload.data.attributes.password
       var query = request.query
 
