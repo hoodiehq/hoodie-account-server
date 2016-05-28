@@ -265,7 +265,7 @@ test('PUT /session?include=account.profile', function (group) {
   })
 })
 
-test('PUT /session', function (t) {
+test('PUT /session with uppercase letter (hoodiehq/hoodie#499)', function (t) {
   getServer(function (error, server) {
     if (error) {
       t.error(error)
