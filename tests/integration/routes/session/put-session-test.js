@@ -265,7 +265,7 @@ test('PUT /session?include=account.profile', function (group) {
   })
 })
 
-test('PUT /session uppercase', function (t) {
+test('PUT /session', function (t) {
   getServer(function (error, server) {
     if (error) {
       t.error(error)
@@ -285,12 +285,14 @@ test('PUT /session uppercase', function (t) {
     }, routeOptions)
 
     var sessionResponse = require('../../fixtures/session-response.json')
+    var clock = lolex.install(0, ['Date'])
+    mockCouchDbUserDocFound()
 
     server.inject(options, function (response) {
       delete response.result.meta
       t.is(response.statusCode, 201, 'returns 201 status')
       t.deepEqual(response.result.data.id, sessionResponse.data.id, 'returns the right content')
-
+      clock.uninstall()
       t.end()
     })
   })
