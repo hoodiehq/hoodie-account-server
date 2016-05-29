@@ -12,7 +12,7 @@ requirements:
 {
    // Properties required by CouchDB
    // _id MUST consist of "org.couchdb.user:" + username
-   "_id": "org.couchdb.user:test",
+   "_id": "org.couchdb.user:pat",
    // _rev is required by CouchDB for every document
    "_rev": "1-c7eb42781549d144e6a42814376686e0",
    // name MUST be the username
