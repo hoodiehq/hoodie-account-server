@@ -1,5 +1,7 @@
 module.exports = findUser
 
+var PouchDBErrors = require('pouchdb-errors')
+
 function findUser (db, idOrObject) {
   var id = idOrObject
   var username
@@ -18,7 +20,7 @@ function findUser (db, idOrObject) {
     include_docs: true
   }).then(function (response) {
     if (response.rows.length === 0) {
-      throw db.constructor.Errors.MISSING_DOC
+      throw PouchDBErrors.MISSING_DOC
     }
 
     return response.rows[0].doc
