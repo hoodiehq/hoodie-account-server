@@ -16,8 +16,11 @@ function toAccount (doc, options) {
   var account = {
     id: accountId,
     username: username,
-    profile: doc.profile || {},
     roles: findCustomRoles(roles)
+  }
+
+  if (options.includeProfile) {
+    account.profile = doc.profile || {}
   }
 
   return account
