@@ -34,7 +34,7 @@ function accountRoutes (server, options, next) {
     handler: function (request, reply) {
       var username = request.payload.data.attributes.username
       var password = request.payload.data.attributes.password
-      var profile = request.payload.data.attributes.profile || {}
+      var profile = request.payload.data.attributes.profile
       var id = request.payload.data.id
       var query = request.query
       accounts.add({
