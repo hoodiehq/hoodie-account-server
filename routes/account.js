@@ -4,6 +4,7 @@ module.exports.attributes = {
 }
 
 var Boom = require('boom')
+var log = require('npmlog')
 
 var errors = require('./utils/errors')
 var joiFailAction = require('./utils/joi-fail-action')
@@ -128,6 +129,7 @@ function accountRoutes (server, options, next) {
 
       var newUsername = request.payload.data.attributes.username
       var newPassword = request.payload.data.attributes.password
+      var newProfile = request.payload.data.attributes.profile
       var id = request.payload.data.id
 
       admins.validateSession(sessionId)
@@ -156,7 +158,8 @@ function accountRoutes (server, options, next) {
         }
         return accounts.update(session.account, {
           username: newUsername,
-          password: newPassword
+          password: newPassword,
+          profile: newProfile
         }, {
           include: request.query.include
         })
