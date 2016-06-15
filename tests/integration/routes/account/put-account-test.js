@@ -77,6 +77,36 @@ getServer(function (error, server) {
       })
     })
 
+    group.test('User added with profile', function (t) {
+      var couchdb = mockCouchDbPutUser
+        .reply(201, [{
+          id: 'org.couchdb.user:pat-doe',
+          rev: '1-234'
+        }])
+
+      var options = _.defaultsDeep({
+        url: '/session/account?include=profile'
+      }, routeOptions)
+
+      var accountWithProfileFixture = require('../../fixtures/account-with-profile.json')
+
+      server.inject(options, function (response) {
+        t.is(couchdb.pendingMocks()[0], undefined, 'CouchDB received request')
+        delete response.result.meta
+
+        t.is(response.statusCode, 201, 'returns 201 status')
+        response.result.data.id = 'userid123'
+        response.result.data.relationships.profile.data.id = 'userid123-profile'
+        response.result.included[0].id = 'userid123-profile'
+        response.result.included[0].attributes = {
+          fullName: 'pat Doe',
+          email: 'pat@example.com'
+        }
+        t.deepEqual(response.result, accountWithProfileFixture, 'returns account in right format')
+        t.end()
+      })
+    })
+
     group.test('CouchDB User already exists', function (t) {
       var couchdb = mockCouchDbPutUser
         .reply(201, [{
