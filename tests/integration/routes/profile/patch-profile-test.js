@@ -15,9 +15,9 @@ var routeOptions = {
   },
   payload: {
     data: {
+      id: 'userid123-profile',
       type: 'profile',
       attributes: {
-        id: 'userid123-profile',
         email: 'pat@doe.com'
       }
     }
@@ -119,9 +119,7 @@ getServer(function (error, server) {
       var options = _.defaultsDeep({
         payload: {
           data: {
-            attributes: {
-              id: 'foobar-profile'
-            }
+            id: 'foobar-profile'
           }
         }
       }, routeOptions)
