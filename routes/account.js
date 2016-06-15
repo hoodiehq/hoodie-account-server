@@ -4,7 +4,6 @@ module.exports.attributes = {
 }
 
 var Boom = require('boom')
-var log = require('npmlog')
 
 var errors = require('./utils/errors')
 var joiFailAction = require('./utils/joi-fail-action')
