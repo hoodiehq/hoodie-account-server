@@ -88,7 +88,6 @@ function profileRoutes (server, options, next) {
     handler: function (request, reply) {
       var sessionId = toBearerToken(request)
       var givenProfile = request.payload.data.attributes
-      var id = request.payload.data.id
 
       // check for admin. If not found, check for user
       admins.validateSession(sessionId)
@@ -116,7 +115,7 @@ function profileRoutes (server, options, next) {
           })
 
         .then(function (session) {
-          if (session.account.id + '-profile' !== id) {
+          if (session.account.id + '-profile' !== givenProfile.id) {
             throw errors.accountIdConflict(session.account.id + '-profile')
           }
           return accounts.update({username: session.account.username}, {
