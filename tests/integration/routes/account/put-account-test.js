@@ -85,7 +85,17 @@ getServer(function (error, server) {
         }])
 
       var options = _.defaultsDeep({
-        url: '/session/account?include=profile'
+        url: '/session/account?include=profile',
+        payload: {
+          data: {
+            attributes: {
+              profile: {
+                fullName: 'pat Doe',
+                email: 'pat@example.com'
+              }
+            }
+          }
+        }
       }, routeOptions)
 
       var accountWithProfileFixture = require('../../fixtures/account-with-profile.json')
@@ -98,10 +108,6 @@ getServer(function (error, server) {
         response.result.data.id = 'userid123'
         response.result.data.relationships.profile.data.id = 'userid123-profile'
         response.result.included[0].id = 'userid123-profile'
-        response.result.included[0].attributes = {
-          fullName: 'pat Doe',
-          email: 'pat@example.com'
-        }
         t.deepEqual(response.result, accountWithProfileFixture, 'returns account in right format')
         t.end()
       })
