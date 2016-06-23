@@ -11,7 +11,7 @@ var routeOptions = {
   url: '/session',
   headers: {
     accept: 'application/vnd.api+json',
-    authorization: 'Bearer cGF0LWRvZToxMjc1MDA6zEZsQ1BuO-W8SthDSrg8KXQ8OlQ',
+    authorization: 'Session cGF0LWRvZToxMjc1MDA6zEZsQ1BuO-W8SthDSrg8KXQ8OlQ',
     'content-type': 'application/vnd.api+json'
   }
 }
@@ -92,7 +92,7 @@ test('GET /session', function (group) {
         var requestOptions = defaultsDeep({
           headers: {
             // Token calculated with invalid salt (salt456)
-            authorization: 'Bearer cGF0LWRvZToxMjc1MDA6YMtzOJDSC7iTA4cB2kjfjqbfk1Y'
+            authorization: 'Session cGF0LWRvZToxMjc1MDA6YMtzOJDSC7iTA4cB2kjfjqbfk1Y'
           }
         }, routeOptions)
 
@@ -112,7 +112,7 @@ test('GET /session', function (group) {
       var requestOptions = defaultsDeep({
         headers: {
           // calculateSessionId('admin', '1081b31861bd1e91611341da16c11c16a12c13718d1f712e', 'secret', 1209600)
-          authorization: 'Bearer YWRtaW46MTI3NTAwOh08V1EljPqAPAnv8mtxWNF87zdW'
+          authorization: 'Session YWRtaW46MTI3NTAwOh08V1EljPqAPAnv8mtxWNF87zdW'
         }
       }, routeOptions)
 

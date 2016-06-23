@@ -7,7 +7,7 @@ var couchdbErrorTests = require('../../utils/couchdb-error-tests')
 
 var headers = {
   accept: 'application/vnd.api+json',
-  authorization: 'Bearer YWRtaW46MTI3NTAwOh08V1EljPqAPAnv8mtxWNF87zdW',
+  authorization: 'Session YWRtaW46MTI3NTAwOh08V1EljPqAPAnv8mtxWNF87zdW',
   'content-type': 'application/vnd.api+json'
 }
 
@@ -59,7 +59,7 @@ getServer(function (error, server) {
       var requestOptions = _.defaultsDeep({
         headers: {
           // Session ID based on 'pat-doe', 'salt123', 'secret', 1209600
-          authorization: 'Bearer cGF0LWRvZToxMjc1MDA6zEZsQ1BuO-W8SthDSrg8KXQ8OlQ'
+          authorization: 'Session cGF0LWRvZToxMjc1MDA6zEZsQ1BuO-W8SthDSrg8KXQ8OlQ'
         }
       }, routeOptions)
 

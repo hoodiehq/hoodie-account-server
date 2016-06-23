@@ -5,7 +5,7 @@ var merge = require('lodash/merge')
 function authorizationHeaderNotAllowedError (server, group, routeOptions) {
   var options = merge({}, routeOptions, {
     headers: {
-      authorization: 'Bearer sessionid123'
+      authorization: 'Session sessionid123'
     }
   })
 

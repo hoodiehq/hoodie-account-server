@@ -39,7 +39,7 @@ var passwordChangeOptions = {
   url: '/session/account',
   headers: {
     accept: 'application/vnd.api+json',
-    authorization: 'Bearer cGF0LWRvZToxMjc1MDA6zEZsQ1BuO-W8SthDSrg8KXQ8OlQ',
+    authorization: 'Session cGF0LWRvZToxMjc1MDA6zEZsQ1BuO-W8SthDSrg8KXQ8OlQ',
     'content-type': 'application/vnd.api+json'
   },
   payload: {
@@ -58,7 +58,7 @@ var usernameChangeOptions = {
   url: '/session/account',
   headers: {
     accept: 'application/vnd.api+json',
-    authorization: 'Bearer cGF0LWRvZToxMjc1MDA6zEZsQ1BuO-W8SthDSrg8KXQ8OlQ',
+    authorization: 'Session cGF0LWRvZToxMjc1MDA6zEZsQ1BuO-W8SthDSrg8KXQ8OlQ',
     'content-type': 'application/vnd.api+json'
   },
   payload: {

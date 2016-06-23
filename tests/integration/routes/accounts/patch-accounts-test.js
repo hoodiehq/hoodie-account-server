@@ -12,7 +12,7 @@ var routeOptions = {
   headers: {
     accept: 'application/vnd.api+json',
     // calculateSessionId('admin', '1081b31861bd1e91611341da16c11c16a12c13718d1f712e', 'secret', 1209600)
-    authorization: 'Bearer YWRtaW46MTI3NTAwOh08V1EljPqAPAnv8mtxWNF87zdW',
+    authorization: 'Session YWRtaW46MTI3NTAwOh08V1EljPqAPAnv8mtxWNF87zdW',
     'content-type': 'application/vnd.api+json'
   },
   payload: {

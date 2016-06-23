@@ -12,7 +12,7 @@ var routeOptions = {
   url: '/session',
   headers: {
     accept: 'application/vnd.api+json',
-    authorization: 'Bearer cGF0LWRvZToxMjc1MDA6zEZsQ1BuO-W8SthDSrg8KXQ8OlQ',
+    authorization: 'Session cGF0LWRvZToxMjc1MDA6zEZsQ1BuO-W8SthDSrg8KXQ8OlQ',
     'content-type': 'application/vnd.api+json'
   }
 }
@@ -82,7 +82,7 @@ test('DELETE /session', function (group) {
         var requestOptions = defaultsDeep({
           headers: {
             // Token calculated with invalid salt (salt456)
-            authorization: 'Bearer cGF0LWRvZToxMjc1MDA6YMtzOJDSC7iTA4cB2kjfjqbfk1Y'
+            authorization: 'Session cGF0LWRvZToxMjc1MDA6YMtzOJDSC7iTA4cB2kjfjqbfk1Y'
           }
         }, routeOptions)
 

@@ -14,7 +14,7 @@ var routeOptions = {
   headers: {
     accept: 'application/vnd.api+json',
     // calculateSessionId('admin', '1081b31861bd1e91611341da16c11c16a12c13718d1f712e', 'secret', 1209600)
-    authorization: 'Bearer YWRtaW46MTI3NTAwOh08V1EljPqAPAnv8mtxWNF87zdW',
+    authorization: 'Session YWRtaW46MTI3NTAwOh08V1EljPqAPAnv8mtxWNF87zdW',
     'content-type': 'application/vnd.api+json'
   },
   payload: {
@@ -71,7 +71,7 @@ getServer(function (error, server) {
         url: '/accounts',
         headers: {
           accept: 'application/vnd.api+json',
-          authorization: 'Bearer cGF0LWRvZToxMjc1MDA6zEZsQ1BuO-W8SthDSrg8KXQ8OlQ',
+          authorization: 'Session cGF0LWRvZToxMjc1MDA6zEZsQ1BuO-W8SthDSrg8KXQ8OlQ',
           'content-type': 'application/vnd.api+json'
         },
         payload: {
@@ -94,7 +94,7 @@ getServer(function (error, server) {
     // prepared test for https://github.com/hoodiehq/hoodie-account-server/issues/125
     group.test('Session cannot be found', function (t) {
       var requestOptions = cloneDeep(routeOptions)
-      requestOptions.headers.authorization = 'Bearer YWRtaW46__BOGUS'
+      requestOptions.headers.authorization = 'Session YWRtaW46__BOGUS'
 
       server.inject(requestOptions, function (response) {
         t.is(response.statusCode, 401, 'returns 401 status')
