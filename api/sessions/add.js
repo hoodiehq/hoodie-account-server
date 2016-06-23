@@ -38,7 +38,7 @@ function addSession (state, options) {
 
   .then(function (doc) {
     var sessionTimeout = 1209600 // 14 days
-    var bearerToken = calculateSessionId(
+    var sessionId = calculateSessionId(
       doc.name,
       doc.salt,
       state.secret,
@@ -46,7 +46,7 @@ function addSession (state, options) {
     )
 
     var session = {
-      id: bearerToken,
+      id: sessionId,
       account: toAccount(doc, {
         includeProfile: options.include === 'account.profile'
       })

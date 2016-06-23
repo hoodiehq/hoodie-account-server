@@ -8,7 +8,7 @@ var Boom = require('boom')
 var errors = require('./utils/errors')
 var joiFailAction = require('./utils/joi-fail-action')
 var serialiseProfile = require('./utils/serialise-profile')
-var toBearerToken = require('./utils/request-to-bearer-token')
+var toSessionId = require('./utils/request-to-session-id')
 var validations = require('./utils/validations')
 
 function profileRoutes (server, options, next) {
@@ -25,13 +25,13 @@ function profileRoutes (server, options, next) {
     config: {
       auth: false,
       validate: {
-        headers: validations.bearerTokenHeader,
+        headers: validations.sessionIdHeader,
         query: validations.profileQuery,
         failAction: joiFailAction
       }
     },
     handler: function (request, reply) {
-      var sessionId = toBearerToken(request)
+      var sessionId = toSessionId(request)
 
       // check for admin. If not found, check for user
       admins.validateSession(sessionId)
@@ -79,14 +79,14 @@ function profileRoutes (server, options, next) {
     config: {
       auth: false,
       validate: {
-        headers: validations.bearerTokenHeader,
+        headers: validations.sessionIdHeader,
         payload: validations.profilePayload,
         query: validations.profileQuery,
         failAction: joiFailAction
       }
     },
     handler: function (request, reply) {
-      var sessionId = toBearerToken(request)
+      var sessionId = toSessionId(request)
       var givenProfile = request.payload.data.attributes
       var id = request.payload.data.id
 

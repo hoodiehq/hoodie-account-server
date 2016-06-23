@@ -8,7 +8,7 @@ var Boom = require('boom')
 var errors = require('./utils/errors')
 var joiFailAction = require('./utils/joi-fail-action')
 var serialise = require('./utils/serialise-account')
-var toBearerToken = require('./utils/request-to-bearer-token')
+var toSessionId = require('./utils/request-to-session-id')
 var validations = require('./utils/validations')
 
 function accountRoutes (server, options, next) {
@@ -21,7 +21,7 @@ function accountRoutes (server, options, next) {
     config: {
       auth: false,
       validate: {
-        headers: validations.bearerTokenHeader,
+        headers: validations.sessionIdHeader,
         query: validations.accountQuery,
         payload: validations.accountPayload,
         failAction: joiFailAction
@@ -32,7 +32,7 @@ function accountRoutes (server, options, next) {
       var password = request.payload.data.attributes.password
       var query = request.query
 
-      var sessionId = toBearerToken(request)
+      var sessionId = toSessionId(request)
 
       // check for admin. If not found, check for user
       admins.validateSession(sessionId)
@@ -76,12 +76,12 @@ function accountRoutes (server, options, next) {
     config: {
       auth: false,
       validate: {
-        headers: validations.bearerTokenHeader,
+        headers: validations.sessionIdHeader,
         failAction: joiFailAction
       }
     },
     handler: function (request, reply) {
-      var sessionId = toBearerToken(request)
+      var sessionId = toSessionId(request)
 
       admins.validateSession(sessionId)
 
@@ -97,7 +97,7 @@ function accountRoutes (server, options, next) {
       .then(function () {
         return accounts.findAll({
           db: options.db,
-          bearerToken: sessionId,
+          sessionId: sessionId,
           include: request.query.include
         })
       })
@@ -124,15 +124,15 @@ function accountRoutes (server, options, next) {
     config: {
       auth: false,
       validate: {
-        headers: validations.bearerTokenHeader,
+        headers: validations.sessionIdHeader,
         failAction: joiFailAction
       }
     },
     handler: function (request, reply) {
-      var sessionId = toBearerToken(request)
+      var sessionId = toSessionId(request)
 
       return accounts.find(request.params.id, {
-        bearerToken: sessionId,
+        sessionId: sessionId,
         include: request.query.include
       })
 
@@ -158,13 +158,13 @@ function accountRoutes (server, options, next) {
     config: {
       auth: false,
       validate: {
-        headers: validations.bearerTokenHeader,
+        headers: validations.sessionIdHeader,
         payload: validations.accountPayload,
         failAction: joiFailAction
       }
     },
     handler: function (request, reply) {
-      var sessionId = toBearerToken(request)
+      var sessionId = toSessionId(request)
       var username = request.payload.data.attributes.username
       var password = request.payload.data.attributes.password
       var profile = request.payload.data.attributes.profile
@@ -174,7 +174,7 @@ function accountRoutes (server, options, next) {
         password: password,
         profile: profile
       }, {
-        bearerToken: sessionId,
+        sessionId: sessionId,
         include: request.query.include
       })
 
@@ -200,15 +200,15 @@ function accountRoutes (server, options, next) {
     config: {
       auth: false,
       validate: {
-        headers: validations.bearerTokenHeader,
+        headers: validations.sessionIdHeader,
         failAction: joiFailAction
       }
     },
     handler: function (request, reply) {
-      var sessionId = toBearerToken(request)
+      var sessionId = toSessionId(request)
 
       return accounts.remove(request.params.id, {
-        bearerToken: sessionId
+        sessionId: sessionId
       })
 
       .then(function (/* json */) {

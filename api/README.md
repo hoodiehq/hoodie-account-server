@@ -200,7 +200,7 @@ Example
 admin.sessions.add({
   username: 'pat'
 }).then(function (sessionProperties) {
-  var bearer = sessionProperties.id
+  var sessionId = sessionProperties.id
   var username = sessionProperties.account.username
 }).catch(function (error) {
   console.error(error)

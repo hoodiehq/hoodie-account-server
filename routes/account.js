@@ -8,7 +8,7 @@ var Boom = require('boom')
 var errors = require('./utils/errors')
 var joiFailAction = require('./utils/joi-fail-action')
 var serialiseAccount = require('./utils/serialise-account')
-var toBearerToken = require('./utils/request-to-bearer-token')
+var toSessionId = require('./utils/request-to-session-id')
 var validations = require('./utils/validations')
 
 function accountRoutes (server, options, next) {
@@ -25,7 +25,7 @@ function accountRoutes (server, options, next) {
     config: {
       auth: false,
       validate: {
-        headers: validations.bearerTokenHeaderForbidden,
+        headers: validations.sessionIdHeaderForbidden,
         query: validations.accountQuery,
         payload: validations.accountPayload,
         failAction: joiFailAction
@@ -62,13 +62,13 @@ function accountRoutes (server, options, next) {
     config: {
       auth: false,
       validate: {
-        headers: validations.bearerTokenHeader,
+        headers: validations.sessionIdHeader,
         query: validations.accountQuery,
         failAction: joiFailAction
       }
     },
     handler: function (request, reply) {
-      var sessionId = toBearerToken(request)
+      var sessionId = toSessionId(request)
 
       // check for admin. If not found, check for user
       admins.validateSession(sessionId)
@@ -115,14 +115,14 @@ function accountRoutes (server, options, next) {
     config: {
       auth: false,
       validate: {
-        headers: validations.bearerTokenHeader,
+        headers: validations.sessionIdHeader,
         payload: validations.accountPayload,
         query: validations.accountQuery,
         failAction: joiFailAction
       }
     },
     handler: function (request, reply) {
-      var sessionId = toBearerToken(request)
+      var sessionId = toSessionId(request)
 
       var newUsername = request.payload.data.attributes.username
       var newPassword = request.payload.data.attributes.password
@@ -192,7 +192,7 @@ function accountRoutes (server, options, next) {
       }
     },
     handler: function (request, reply) {
-      var sessionId = toBearerToken(request)
+      var sessionId = toSessionId(request)
 
       // check for admin. If not found, check for user
       admins.validateSession(sessionId)

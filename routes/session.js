@@ -8,7 +8,7 @@ var Boom = require('boom')
 var errors = require('./utils/errors')
 var joiFailAction = require('./utils/joi-fail-action')
 var serialiseSession = require('./utils/serialise-session')
-var toBearerToken = require('./utils/request-to-bearer-token')
+var toSessionId = require('./utils/request-to-session-id')
 var validations = require('./utils/validations')
 
 function sessionRoutes (server, options, next) {
@@ -24,7 +24,7 @@ function sessionRoutes (server, options, next) {
     config: {
       auth: false,
       validate: {
-        headers: validations.bearerTokenHeaderForbidden,
+        headers: validations.sessionIdHeaderForbidden,
         query: validations.sessionQuery,
         payload: validations.sessionPayload,
         failAction: joiFailAction
@@ -94,14 +94,14 @@ function sessionRoutes (server, options, next) {
     config: {
       auth: false,
       validate: {
-        headers: validations.bearerTokenHeader,
+        headers: validations.sessionIdHeader,
         query: validations.sessionQuery,
         failAction: joiFailAction
       }
     },
     handler: function (request, reply) {
       var query = request.query
-      var sessionId = toBearerToken(request)
+      var sessionId = toSessionId(request)
 
       // check for admin. If not found, check for user
       admins.validateSession(sessionId)
@@ -152,14 +152,14 @@ function sessionRoutes (server, options, next) {
     config: {
       auth: false,
       validate: {
-        headers: validations.bearerTokenHeader,
+        headers: validations.sessionIdHeader,
         query: validations.sessionQuery,
         failAction: joiFailAction
       }
     },
     handler: function (request, reply) {
       var query = request.query
-      var sessionId = toBearerToken(request)
+      var sessionId = toSessionId(request)
 
       // check for admin. If not found, check for user
       admins.validateSession(sessionId)
