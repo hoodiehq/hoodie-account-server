@@ -3,7 +3,7 @@
 # hoodie-account-server/api
 
 `@hoodie/account-server/api` is a JavaScript API for all things account
-on top of CouchDB’s REST API.
+using a PouchDB instance for persistence.
 
 After registering the `@hoodie/account-server` hapi plugin, the account API
 becomes available at `server.plugins.account.api`. It can also be directly
