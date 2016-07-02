@@ -10,9 +10,7 @@ becomes available at `server.plugins.account.api`. It can also be directly
 required using
 
 ```js
-var api = require ('@hoodie/account-server/api')({
-  url: couchdbUrl
-})
+var api = require ('@hoodie/account-server/api')(options)
 ```
 
 ## Example
