@@ -56,7 +56,7 @@
   },
   "dependencies": {
     "@gar/hapi-json-api": "^2.0.1",
-    "async": "^1.5.1",
+    "async": "^2.0.0",
     "base64url": "^1.0.5",
     "boom": "^3.1.2",
     "couchdb-calculate-session-id": "^1.1.0",
