@@ -14,8 +14,9 @@
     "postpublish": "greenkeeper-postpublish"
   },
   "nyc": {
-    "//": "since we override the default excludes, we have to also (re)exclude the tests directory",
+    "//": "since we override the default excludes, we have to also (re)exclude the tests directory and node_modules",
     "exclude": [
+      "node_modules",
       "tests",
       "plugin/couchdb/users-design-doc.js"
     ]
