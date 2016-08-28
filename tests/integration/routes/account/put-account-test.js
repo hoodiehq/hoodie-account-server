@@ -36,7 +36,8 @@ var mockCouchDbPutUser = nock('http://localhost:5984')
       derived_key: Joi.string().required(),
       iterations: Joi.any().only(10).required(),
       password_scheme: Joi.any().only('pbkdf2').required(),
-      roles: Joi.array().items(Joi.string().regex(/^id:[0-9a-f]{12}$/)).max(1).min(1)
+      roles: Joi.array().items(Joi.string().regex(/^id:[0-9a-f]{12}$/)).max(1).min(1),
+      profile: Joi.object().required()
     }).validate(body.docs[0]).error === null
   })
   .query(true)
@@ -72,6 +73,42 @@ getServer(function (error, server) {
         response.result.data.id = 'userid123'
         response.result.data.relationships.profile.data.id = 'userid123-profile'
         t.deepEqual(response.result, accountFixture, 'returns account in right format')
+        t.end()
+      })
+    })
+
+    group.test('User added with profile', function (t) {
+      var couchdb = mockCouchDbPutUser
+        .reply(201, [{
+          id: 'org.couchdb.user:pat-doe',
+          rev: '1-234'
+        }])
+
+      var options = _.defaultsDeep({
+        url: '/session/account?include=profile',
+        payload: {
+          data: {
+            attributes: {
+              profile: {
+                fullName: 'pat Doe',
+                email: 'pat@example.com'
+              }
+            }
+          }
+        }
+      }, routeOptions)
+
+      var accountWithProfileFixture = require('../../fixtures/account-with-profile.json')
+
+      server.inject(options, function (response) {
+        t.is(couchdb.pendingMocks()[0], undefined, 'CouchDB received request')
+        delete response.result.meta
+
+        t.is(response.statusCode, 201, 'returns 201 status')
+        response.result.data.id = 'userid123'
+        response.result.data.relationships.profile.data.id = 'userid123-profile'
+        response.result.included[0].id = 'userid123-profile'
+        t.deepEqual(response.result, accountWithProfileFixture, 'returns account in right format')
         t.end()
       })
     })

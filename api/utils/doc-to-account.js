@@ -20,7 +20,7 @@ function toAccount (doc, options) {
   }
 
   if (options.includeProfile) {
-    account.profile = doc.profile
+    account.profile = doc.profile || {}
   }
 
   return account

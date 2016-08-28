@@ -20,6 +20,7 @@ function addAccount (state, properties, options) {
     type: 'user',
     name: properties.username,
     password: properties.password,
+    profile: properties.profile || {},
     roles: [
       'id:' + accountId
     ].concat(properties.roles || [])

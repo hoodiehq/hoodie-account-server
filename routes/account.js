@@ -34,13 +34,16 @@ function accountRoutes (server, options, next) {
     handler: function (request, reply) {
       var username = request.payload.data.attributes.username
       var password = request.payload.data.attributes.password
+      var profile = request.payload.data.attributes.profile
       var id = request.payload.data.id
       var query = request.query
       accounts.add({
         username: username,
         password: password,
-        include: query.include,
+        profile: profile,
         id: id
+      }, {
+        include: query.include || null
       })
 
       .then(serialise)
@@ -126,6 +129,7 @@ function accountRoutes (server, options, next) {
 
       var newUsername = request.payload.data.attributes.username
       var newPassword = request.payload.data.attributes.password
+      var newProfile = request.payload.data.attributes.profile
       var id = request.payload.data.id
 
       admins.validateSession(sessionId)
@@ -154,7 +158,8 @@ function accountRoutes (server, options, next) {
         }
         return accounts.update(session.account, {
           username: newUsername,
-          password: newPassword
+          password: newPassword,
+          profile: newProfile
         }, {
           include: request.query.include
         })
