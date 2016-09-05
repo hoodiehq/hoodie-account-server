@@ -48,7 +48,7 @@
     "nock": "^8.0.0",
     "nodemailer-stub-transport": "^1.0.0",
     "nyc": "^8.1.0",
-    "pouchdb": "^5.4.0",
+    "pouchdb": "^6.0.3",
     "pouchdb-users": "^1.0.3",
     "semantic-release": "^6.1.0",
     "standard": "^8.0.0",
