@@ -76,7 +76,7 @@ test('POST /requests', function (group) {
 
     group.test('user found', function (t) {
       var couchdb = mockUserFound()
-        .post('/_users/_bulk_docs', function (body) {
+        .put('/_users/org.couchdb.user%3Apat%40example.com', function (body) {
           var error = Joi.object({
             _id: Joi.any().only('org.couchdb.user:pat@example.com').required(),
             _rev: Joi.any().only('1-234').required(),
@@ -87,15 +87,16 @@ test('POST /requests', function (group) {
             iterations: Joi.any().only(10).required(),
             password_scheme: Joi.any().only('pbkdf2').required(),
             roles: Joi.array().items(Joi.string())
-          }).validate(body.docs[0]).error
+          }).validate(body).error
 
           return error === null
         })
         .query(true)
-        .reply(201, [{
+        .reply(201, {
+          ok: true,
           id: 'org.couchdb.user:pat-doe',
           rev: '2-345'
-        }])
+        })
 
       server.inject(routeOptions, function (response) {
         t.is(couchdb.pendingMocks()[0], undefined, 'all mocks satisfied')

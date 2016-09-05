@@ -82,7 +82,7 @@ function mockPasswordChange () {
   // account.update()
   mockGetUser()
 
-  couchdbMock.post('/_users/_bulk_docs', function (body) {
+  couchdbMock.put('/_users/org.couchdb.user%3Apat-doe', function (body) {
     var error = Joi.object({
       _id: Joi.any().only('org.couchdb.user:pat-doe').required(),
       _rev: Joi.any().only('1-234').required(),
@@ -93,15 +93,16 @@ function mockPasswordChange () {
       iterations: Joi.any().only(10).required(),
       password_scheme: Joi.any().only('pbkdf2').required(),
       roles: Joi.array().items(Joi.string())
-    }).validate(body.docs[0]).error
+    }).validate(body).error
 
     return error === null
   })
   .query(true)
-  .reply(201, [{
+  .reply(201, {
+    ok: true,
     id: 'org.couchdb.user:pat-doe',
     rev: '2-3456'
-  }])
+  })
 
   // session.add()
   mockGetUser()
@@ -120,7 +121,7 @@ function mockUsernameChange () {
   mockGetUser('pat-doe')
 
   // account.update(): new doc with new user name
-  couchdbMock.post('/_users/_bulk_docs', function (body) {
+  couchdbMock.put('/_users/org.couchdb.user%3AnewName', function (body) {
     var error = Joi.object().keys({
       _id: Joi.any().only('org.couchdb.user:newName').required(),
       name: Joi.any().only('newName').required(),
@@ -131,18 +132,19 @@ function mockUsernameChange () {
       iterations: Joi.any().only(10).required(),
       password_scheme: Joi.any().only('pbkdf2').required(),
       roles: Joi.array().items(Joi.string())
-    }).validate(body.docs[0]).error
+    }).validate(body).error
 
     return error === null
   })
   .query(true)
-  .reply(201, [{
+  .reply(201, {
+    ok: true,
     id: 'org.couchdb.user:newName',
     rev: '2-3456'
-  }])
+  })
 
   // account.update(): deleted old doc
-  couchdbMock.post('/_users/_bulk_docs', function (body) {
+  couchdbMock.put('/_users/org.couchdb.user%3Apat-doe', function (body) {
     var error = Joi.object().keys({
       _deleted: Joi.boolean().only(true).required(),
       renamedTo: Joi.any().only('newName').required(),
@@ -155,15 +157,15 @@ function mockUsernameChange () {
       iterations: Joi.any().only(10).required(),
       password_scheme: Joi.any().only('pbkdf2').required(),
       roles: Joi.array().items(Joi.string())
-    }).validate(body.docs[0]).error
+    }).validate(body).error
 
     return error === null
   })
   .query(true)
-  .reply(201, [{
+  .reply(201, {
     id: 'org.couchdb.user:pat-doe',
     rev: '2-3456'
-  }])
+  })
 
   // session.add()
   mockGetUser('newName')

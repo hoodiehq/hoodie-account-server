@@ -29,7 +29,7 @@ var routeOptions = {
 }
 
 var mockCouchDbCreateUserDoc = nock('http://localhost:5984')
-  .post('/_users/_bulk_docs', function (body) {
+  .put('/_users/org.couchdb.user%3Apat-doe', function (body) {
     return Joi.object({
       _id: Joi.any().only('org.couchdb.user:pat-doe').required(),
       name: Joi.any().only('pat-doe').required(),
@@ -39,7 +39,7 @@ var mockCouchDbCreateUserDoc = nock('http://localhost:5984')
       iterations: Joi.any().only(10).required(),
       password_scheme: Joi.any().only('pbkdf2').required(),
       roles: Joi.array().items(Joi.string().regex(/^id:[0-9a-f]{12}$/)).max(1).min(1)
-    }).validate(body.docs[0]).error === null
+    }).validate(body).error === null
   })
   .query(true)
 
@@ -107,10 +107,11 @@ getServer(function (error, server) {
 
     group.test('CouchDB Session valid', function (t) {
       var couchdb = mockCouchDbCreateUserDoc
-        .reply(201, [{
+        .reply(201, {
+          ok: true,
           id: 'org.couchdb.user:pat-doe',
           rev: '1-234'
-        }])
+        })
 
       server.inject(routeOptions, function (response) {
         t.is(couchdb.pendingMocks()[0], undefined, 'all mocks satisfied')

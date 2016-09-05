@@ -47,7 +47,7 @@ function mockCouchDbDeleteResponse () {
         }
       }]
     })
-    .post('/_users/_bulk_docs', function (body) {
+    .put('/_users/org.couchdb.user%3Apat-doe', function (body) {
       return Joi.object({
         _id: Joi.any().only('org.couchdb.user:pat-doe').required(),
         _rev: Joi.any().only('1-234').required(),
@@ -59,7 +59,7 @@ function mockCouchDbDeleteResponse () {
         iterations: Joi.any().only(10).required(),
         password_scheme: Joi.any().only('pbkdf2').required(),
         roles: Joi.array().items(Joi.string())
-      }).validate(body.docs[0]).error === null
+      }).validate(body).error === null
     })
     .query(true)
 }
@@ -96,10 +96,11 @@ getServer(function (error, server) {
 
     group.test('account exists', {only: true}, function (t) {
       var couchdb = mockCouchDbDeleteResponse()
-        .reply(201, [{
+        .reply(201, {
+          ok: true,
           id: 'org.couchdb.user:pat-doe',
           rev: '2-3456'
-        }])
+        })
 
       server.inject(routeOptions, function (response) {
         t.is(couchdb.pendingMocks()[0], undefined, 'all mocks satisfied')

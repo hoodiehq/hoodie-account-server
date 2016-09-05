@@ -58,11 +58,12 @@ getServer(function (error, server) {
     group.test('Session does exist', function (t) {
       // Mock the update
       nock('http://localhost:5984')
-        .post('/_users/_bulk_docs')
-        .reply(201, [{
+        .put('/_users/org.couchdb.user%3Apat-doe')
+        .reply(201, {
+          ok: true,
           id: 'org.couchdb.user:pat-doe',
           rev: '2-3456'
-        }])
+        })
       // Need to mock 2 times the found, one for the session, one before the update
       mockUserFound()
       var couch = mockUserFound({

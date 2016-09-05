@@ -28,13 +28,8 @@ function getServer (options, callback) {
     // mocks for bootstrapping design dock
     .put('/_users')
     .reply(201, {})
-    .post('/_users/_bulk_docs', function (body) {
-      return body.docs[0]._id === '_design/byId'
-    })
-    .reply(201, [{
-      id: '_design/byId',
-      rev: '1-234'
-    }])
+    .put('/_users/_design%2FbyId')
+    .reply(201)
 
   PouchDB.plugin(require('pouchdb-users'))
 
