@@ -28,7 +28,7 @@ function getServer (options, callback) {
     // mocks for bootstrapping design dock
     .put('/_users')
     .reply(201, {})
-    .put('/_users/_design%2FbyId')
+    .put('/_users/_design/byId')
     .reply(201)
 
   PouchDB.plugin(require('pouchdb-users'))
