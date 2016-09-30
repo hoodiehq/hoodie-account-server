@@ -38,7 +38,7 @@ var mockCouchDbCreateUserDoc = nock('http://localhost:5984')
       derived_key: Joi.string().required(),
       iterations: Joi.any().only(10).required(),
       password_scheme: Joi.any().only('pbkdf2').required(),
-      roles: Joi.array().items(Joi.string().regex(/^id:[0-9a-f]{12}$/)).max(1).min(1)
+      roles: Joi.array().items(Joi.string().regex(/^id:[0-9a-f-]{36}$/)).max(1).min(1)
     }).validate(body).error === null
   })
   .query(true)

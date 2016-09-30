@@ -36,7 +36,7 @@ var mockCouchDbPutUser = nock('http://localhost:5984')
       derived_key: Joi.string().required(),
       iterations: Joi.any().only(10).required(),
       password_scheme: Joi.any().only('pbkdf2').required(),
-      roles: Joi.array().items(Joi.string().regex(/^id:[0-9a-f]{12}$/)).max(1).min(1)
+      roles: Joi.array().items(Joi.string().regex(/^id:[0-9a-f-]{36}$/)).max(1).min(1)
     }).validate(body).error === null
   })
   .query(true)
@@ -69,7 +69,7 @@ getServer(function (error, server) {
         delete response.result.meta
 
         t.is(response.statusCode, 201, 'returns 201 status')
-        t.ok(/^[0-9a-f]{12}$/.test(response.result.data.id), 'sets id')
+        t.ok(/^[0-9a-f-]{36}$/.test(response.result.data.id), 'sets id')
         response.result.data.id = 'userid123'
         response.result.data.relationships.profile.data.id = 'userid123-profile'
         t.deepEqual(response.result, accountFixture, 'returns account in right format')
