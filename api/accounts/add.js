@@ -1,6 +1,6 @@
 module.exports = addAccount
 
-var randomstring = require('randomstring')
+var uuid = require('uuid')
 
 var errors = require('../utils/errors')
 var toAccount = require('../utils/doc-to-account')
@@ -10,10 +10,7 @@ function addAccount (state, properties, options) {
     options = {}
   }
   var accountKey = 'org.couchdb.user:' + properties.username
-  var accountId = properties.id || randomstring.generate({
-    length: 12,
-    charset: 'hex'
-  })
+  var accountId = properties.id || uuid.v4()
 
   var doc = {
     _id: accountKey,
