@@ -3,8 +3,8 @@ hapiAccount.attributes = {
   name: 'account'
 }
 
-var async = require('async')
-var getApi = require('../api')
+// var getApi = require('../api')
+var getApi = require('@hoodie/account-server-api')
 var _ = require('lodash')
 
 var routePlugins = [
@@ -40,7 +40,6 @@ function hapiAccount (server, options, next) {
     api: users
   })
 
-  var usersDesignDoc = require('./couchdb/users-design-doc.js')
   var plugins = [{
     register: require('@gar/hapi-json-api'),
     options: {}
@@ -54,20 +53,5 @@ function hapiAccount (server, options, next) {
     }
   }))
 
-  async.parallel([
-    putUsersDesignDoc.bind(null, options.usersDb, usersDesignDoc),
-    server.register.bind(server, plugins)
-  ], next)
-}
-
-function putUsersDesignDoc (db, designDoc, callback) {
-  db.put(designDoc)
-
-  .catch(function (error) {
-    if (error.name !== 'conflict') {
-      throw error
-    }
-  })
-
-  .then(callback.bind(null, null), callback)
+  server.register(plugins, next)
 }
