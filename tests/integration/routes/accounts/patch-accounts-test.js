@@ -18,6 +18,7 @@ var routeOptions = {
   payload: {
     data: {
       type: 'account',
+      id: 'abc4567',
       attributes: {
         password: 'newsecret'
       }
@@ -87,6 +88,22 @@ getServer(function (error, server) {
       })
     })
 
+    group.test('CouchDB Session invalid', {todo: true}, function (t) {
+      t.end()
+    })
+
+    group.test('Not an admin', {todo: true}, function (t) {
+      t.end()
+    })
+
+    group.test('Not found', {todo: true}, function (t) {
+      t.end()
+    })
+
+    group.test('data.type & data.id don’t match existing document', {todo: true}, function (t) {
+      t.end()
+    })
+
     group.test('changing password', function (t) {
       var couchdb = mockCouchDbUpdateAccountResponse()
         .reply(201, {
@@ -105,6 +122,14 @@ getServer(function (error, server) {
     })
 
     group.test('changing username', {todo: true}, function (t) {
+      t.end()
+    })
+
+    group.test('with ?include=profile', {todo: true}, function (t) {
+      t.end()
+    })
+
+    group.test('with ?include=foobar', {todo: true}, function (t) {
       t.end()
     })
 
