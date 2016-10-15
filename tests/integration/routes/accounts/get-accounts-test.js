@@ -237,11 +237,15 @@ getServer(function (error, server) {
       })
     })
 
-    group.end()
-  })
+    group.test('CouchDB Session invalid', {todo: true}, function (t) {
+      t.end()
+    })
 
-  test('GET /accounts/abc4567?include=profile', function (group) {
-    group.test('Account found', function (t) {
+    group.test('Not an admin', {todo: true}, function (t) {
+      t.end()
+    })
+
+    group.test('with ?include=profile', function (t) {
       var couchdb = nock('http://localhost:5984')
         .get('/_users/_design/byId/_view/byId')
         .query({
@@ -277,6 +281,10 @@ getServer(function (error, server) {
         t.deepEqual(response.result, accountWithProfile, 'returns the right content')
         t.end()
       })
+    })
+
+    group.test('with ?include=foobar', {todo: true}, function (t) {
+      t.end()
     })
 
     group.end()
