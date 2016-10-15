@@ -155,6 +155,10 @@ getServer(function (error, server) {
       })
     })
 
+    group.test('with ?include=foobar', {todo: true}, function (t) {
+      t.end()
+    })
+
     couchdbErrorTests(server, group, mockCouchDbGetAccounts, routeOptions)
 
     group.end()
