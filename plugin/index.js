@@ -3,9 +3,9 @@ hapiAccount.attributes = {
   name: 'account'
 }
 
-// var getApi = require('../api')
-var getApi = require('@hoodie/account-server-api')
 var _ = require('lodash')
+var admins = require('pouchdb-admins').admins
+var getApi = require('@hoodie/account-server-api')
 
 var routePlugins = [
   require('../routes/account'),
@@ -20,14 +20,13 @@ function hapiAccount (server, options, next) {
   var routeOptions = _.cloneDeep({}, options)
   routeOptions.sessionTimeout = options.sessionTimeout || TIMEOUT_14_DAYS
 
-  options.usersDb.constructor.plugin(require('pouchdb-admins'))
-
   var users = getApi({
-    db: options.usersDb,
+    PouchDB: options.PouchDB,
+    usersDb: options.usersDb,
     secret: options.secret,
     sessionTimeout: routeOptions.sessionTimeout
   })
-  routeOptions.admins = options.usersDb.admins({
+  routeOptions.admins = admins({
     secret: options.secret,
     admins: options.admins,
     sessionTimeout: routeOptions.sessionTimeout

@@ -2,7 +2,7 @@
 
 # hapi CouchDB Account Plugin
 
-Exposes a [REST API](../routes/README.md) and [JavaScript API](../api/README.md) at
+Exposes a [REST API](../routes/README.md) and [JavaScript API](https://github.com/hoodiehq/hoodie-account-server-api) at
 `server.plugins.account.api`.
 
 This plugin also creates `_users/_design/byId` in your CouchDB, which has one
@@ -15,11 +15,11 @@ var Hapi = require('hapi')
 var hapiAccount = require('@hoodie/account-server')
 
 var PouchDB = require('pouchdb')
-PouchDB.plugin(require('pouchdb-users'))
-PouchDB.plugin(require('pouchdb-admins'))
+  .plugin(require('pouchdb-admins'))
 
-var db = new PouchDB('http://localhost:5984/_users')
 var options = {
+  PouchDB: PouchDB,
+  usersDb: 'my-users-db',
   admins: {
     admin: '-pbkdf2-a2ca9d3ee921c26d2e9d61e03a0801b11b8725c6,1081b31861bd1e91611341da16c11c16a12c13718d1f712e,10'
   },
@@ -71,37 +71,35 @@ var options = {
   }
 })
 
-db.useAsAuthenticationDB().then(function () {
-  options.usersDb = db
+server.register({
+  register: hapiAccount,
+  options: options
+}, function (error) {
+  if (error) {
+    throw error
+  }
 
-  server.register({
-    register: hapiAccount,
-    options: options
-  }, function (error) {
-    if (error) {
-      throw error
-    }
+  // plugin account api, see below
+});
 
-    // plugin account api, see below
-  });
+server.connection({
+  port: 8000
+});
 
-  server.connection({
-    port: 8000
-  });
-
-  server.start(function () {
-    console.log('Server running at %s', server.info.uri);
-  });
-})
+server.start(function () {
+  console.log('Server running at %s', server.info.uri);
+});
 ```
 
 ## Options
 
+### options.PouchDB
+
+[PouchDB](https://pouchdb.com/) constructor
+
 ### options.usersDb
 
-PouchDB instance with the
-[pouchdb-users](https://github.com/hoodiehq/pouchdb-users) and
-[pouchdb-admins](https://github.com/hoodiehq/pouchdb-admins) plugin.
+Name of users database. Defaults to `_users`
 
 ### options.admins
 
