@@ -94,7 +94,7 @@ getServer(function (error, server) {
       t.end()
     })
 
-    group.test('account exists', {only: true}, function (t) {
+    group.test('account exists', function (t) {
       var couchdb = mockCouchDbDeleteResponse()
         .reply(201, {
           ok: true,

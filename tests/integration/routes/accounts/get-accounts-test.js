@@ -164,7 +164,7 @@ getServer(function (error, server) {
     group.end()
   })
 
-  test('GET /accounts/abc4567', {only: true}, function (group) {
+  test('GET /accounts/abc4567', function (group) {
     group.test('No Authorization header sent', function (t) {
       server.inject({
         method: 'GET',
@@ -240,7 +240,7 @@ getServer(function (error, server) {
     group.end()
   })
 
-  test('GET /accounts/abc4567?include=profile', {only: true}, function (group) {
+  test('GET /accounts/abc4567?include=profile', function (group) {
     group.test('Account found', function (t) {
       var couchdb = nock('http://localhost:5984')
         .get('/_users/_design/byId/_view/byId')

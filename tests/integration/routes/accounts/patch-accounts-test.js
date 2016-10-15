@@ -87,7 +87,7 @@ getServer(function (error, server) {
       })
     })
 
-    group.test('changing password', {only: true}, function (t) {
+    group.test('changing password', function (t) {
       var couchdb = mockCouchDbUpdateAccountResponse()
         .reply(201, {
           ok: true,
