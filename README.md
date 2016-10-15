@@ -27,11 +27,11 @@ var options = {
   secret: 'secret123'
 })
 
-server.register({register: hapiAccount, options: options}, function (error) {});
-server.connection({ port: 8000 });
+server.register({register: hapiAccount, options: options}, function (error) {})
+server.connection({ port: 8000 })
 server.start(function () {
-  console.log('Server running at %s', server.info.uri);
-});
+  console.log('Server running at %s', server.info.uri)
+})
 ```
 
 ## More
