@@ -48,14 +48,13 @@
     "nodemailer-stub-transport": "^1.0.0",
     "nyc": "^8.1.0",
     "pouchdb": "^6.0.5",
-    "pouchdb-users": "^1.0.3",
     "semantic-release": "^6.1.0",
     "standard": "^8.0.0",
     "tap": "^7.0.0"
   },
   "dependencies": {
     "@gar/hapi-json-api": "^2.0.1",
-    "@hoodie/account-server-api": "^1.0.0",
+    "@hoodie/account-server-api": "^2.0.0",
     "base64url": "^2.0.0",
     "boom": "^4.0.0",
     "couchdb-calculate-session-id": "^1.1.0",
