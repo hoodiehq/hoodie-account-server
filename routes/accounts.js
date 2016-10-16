@@ -132,9 +132,22 @@ function accountRoutes (server, options, next) {
     handler: function (request, reply) {
       var sessionId = toSessionId(request)
 
-      return accounts.find(request.params.id, {
-        sessionId: sessionId,
-        include: request.query.include
+      admins.validateSession(sessionId)
+
+      .catch(function (error) {
+        // pouchdb-admins throws MISSING_DOC with status 404 if the admin doc is not found
+        if (error.status === 404) {
+          throw errors.INVALID_SESSION
+        }
+
+        throw error
+      })
+
+      .then(function () {
+        return accounts.find(request.params.id, {
+          sessionId: sessionId,
+          include: request.query.include
+        })
       })
 
       .then(function (account) {

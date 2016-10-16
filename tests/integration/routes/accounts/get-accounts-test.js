@@ -267,8 +267,20 @@ getServer(function (error, server) {
       })
     })
 
-    group.test('CouchDB Session invalid', {todo: true}, function (t) {
-      t.end()
+    group.test('CouchDB Session invalid', function (t) {
+      var options = _.defaultsDeep({
+        url: '/accounts/abc1234',
+        headers: {
+          authorization: 'Session InvalidKey'
+        }
+      }, routeOptions)
+      server.inject(options, function (response) {
+        t.is(response.statusCode, 401, 'returns 401 status')
+        t.is(response.result.errors.length, 1, 'returns one error')
+        t.is(response.result.errors[0].title, 'Unauthorized', 'returns "Unauthorized" error')
+        t.is(response.result.errors[0].detail, 'Session invalid', 'returns "Session invalid" message')
+        t.end()
+      })
     })
 
     group.test('Not an admin', {todo: true}, function (t) {
