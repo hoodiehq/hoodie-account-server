@@ -41,7 +41,7 @@ function mockCouchDbDeleteResponse () {
           iterations: 10,
           type: 'user',
           name: 'pat-doe',
-          roles: ['id:userid123', 'mycustomrole'],
+          roles: ['id:abc4567', 'mycustomrole'],
           derived_key: '4b5c9721ab77dd2faf06a36785fd0a30f0bf0d27',
           salt: 'salt123'
         }
