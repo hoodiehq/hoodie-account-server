@@ -54,7 +54,6 @@ getServer(function (error, server) {
     group.test('CouchDB Session invalid', function (t) {
       var requestOptions = _.defaultsDeep({
         headers: {
-          // Session ID based on 'pat-doe', 'salt123', 'secret', 1209600
           authorization: 'Session someInvalidSession'
         }
       }, routeOptions)
