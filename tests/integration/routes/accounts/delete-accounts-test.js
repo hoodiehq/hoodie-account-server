@@ -94,6 +94,10 @@ getServer(function (error, server) {
       t.end()
     })
 
+    group.test('account not found', {todo: true}, function (t) {
+      t.end()
+    })
+
     group.test('account exists', function (t) {
       var couchdb = mockCouchDbDeleteResponse()
         .reply(201, {
@@ -108,6 +112,14 @@ getServer(function (error, server) {
         t.is(response.result, null, 'returns no content')
         t.end()
       })
+    })
+
+    group.test('with ?include=profile', {todo: true}, function (t) {
+      t.end()
+    })
+
+    group.test('with ?include=foobar', {todo: true}, function (t) {
+      t.end()
     })
 
     group.end()
