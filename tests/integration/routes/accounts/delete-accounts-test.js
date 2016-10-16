@@ -2,6 +2,7 @@ var _ = require('lodash')
 var Joi = require('joi')
 var nock = require('nock')
 var test = require('tap').test
+var cloneDeep = require('lodash/cloneDeep') 
 
 var getServer = require('../../utils/get-server')
 
