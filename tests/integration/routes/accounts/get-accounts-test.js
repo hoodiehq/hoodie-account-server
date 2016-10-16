@@ -51,8 +51,21 @@ getServer(function (error, server) {
       })
     })
 
-    group.test('CouchDB Session invalid', {todo: true}, function (t) {
-      t.end()
+    group.test('CouchDB Session invalid', function (t) {
+      var requestOptions = _.defaultsDeep({
+        headers: {
+          // Session ID based on 'pat-doe', 'salt123', 'secret', 1209600
+          authorization: 'Session someInvalidSession'
+        }
+      }, routeOptions)
+
+      server.inject(requestOptions, function (response) {
+        t.is(response.statusCode, 401, 'returns 401 status')
+        t.is(response.result.errors.length, 1, 'returns one error')
+        t.is(response.result.errors[0].title, 'Unauthorized', 'returns "Unauthorized" error')
+        t.is(response.result.errors[0].detail, 'Session invalid', 'returns Invalid session message')
+        t.end()
+      })
     })
 
     group.test('Not an admin', function (t) {
