@@ -39,12 +39,11 @@ function accountRoutes (server, options, next) {
       var query = request.query
 
       var currentTime = new Date().toISOString()
-      var createdAt = createdAt || currentTime
 
       accounts.add({
         username: username,
         password: password,
-        createdAt: createdAt,
+        createdAt: createdAt || currentTime,
         signedUpAt: currentTime,
         include: query.include,
         id: id
