@@ -61,7 +61,7 @@ function serialiseSession (options, session) {
       json.included.push({
         id: session.account.id + '-profile',
         type: 'profile',
-        attributes: session.account.profile || {}
+        attributes: session.account.profile
       })
     }
   }
