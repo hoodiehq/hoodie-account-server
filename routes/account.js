@@ -34,11 +34,17 @@ function accountRoutes (server, options, next) {
     handler: function (request, reply) {
       var username = request.payload.data.attributes.username
       var password = request.payload.data.attributes.password
+      var createdAt = request.payload.data.attributes.createdAt
       var id = request.payload.data.id
       var query = request.query
+
+      var currentTime = new Date().toISOString()
+
       accounts.add({
         username: username,
         password: password,
+        createdAt: createdAt || currentTime,
+        signedUpAt: currentTime,
         include: query.include,
         id: id
       })
