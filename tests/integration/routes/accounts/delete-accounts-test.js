@@ -95,7 +95,7 @@ getServer(function (error, server) {
       t.end()
     })
 
-    group.test('account not found', {todo: true}, function (t) {
+    group.test('account not found', function (t) {
       var couchdb = nock('http://localhost:5984')
         .get('/_users/_design/byId/_view/byId')
         .query({
