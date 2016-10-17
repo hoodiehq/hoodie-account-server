@@ -190,7 +190,10 @@ function accountRoutes (server, options, next) {
         reply(json).code(201)
       })
 
-      .catch(reply)
+      .catch(function (error) {
+        error = errors.parse(error)
+        reply(Boom.create(error.status, error.message))
+      })
     }
   }
 
@@ -215,7 +218,10 @@ function accountRoutes (server, options, next) {
         reply().code(204)
       })
 
-      .catch(reply)
+      .catch(function (error) {
+        error = errors.parse(error)
+        reply(Boom.create(error.status, error.message))
+      })
     }
   }
 
