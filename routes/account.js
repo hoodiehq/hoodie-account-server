@@ -36,9 +36,17 @@ function accountRoutes (server, options, next) {
       var password = request.payload.data.attributes.password
       var id = request.payload.data.id
       var query = request.query
+
+      var currentTime = new Date().toISOString()
+      var createdAt = request.payload.data.attributes.createdAt
+      if (!createdAt) { // If createdAt is not assigned, use current time
+        createdAt = currentTime
+      }
       accounts.add({
         username: username,
         password: password,
+        createdAt: createdAt,
+        signedUpAt: currentTime,
         include: query.include,
         id: id
       })

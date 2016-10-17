@@ -82,6 +82,8 @@ getServer(function (error, server) {
             _id: 'org.couchdb.user:pat-doe',
             _rev: '1-234',
             name: 'pat-doe',
+            createdAt: '1970-01-01T00:00:00.000Z',
+            signedUpAt: '1970-01-01T00:00:00.000Z',
             roles: ['id:abc4567']
           }
         }, {
@@ -92,6 +94,8 @@ getServer(function (error, server) {
             _id: 'org.couchdb.user:sam',
             _rev: '1-567',
             name: 'sam',
+            createdAt: '1970-01-01T00:00:00.000Z',
+            signedUpAt: '1970-01-01T00:00:00.000Z',
             roles: ['id:def678']
           }
         }]
@@ -119,6 +123,8 @@ getServer(function (error, server) {
             _id: 'org.couchdb.user:pat-doe',
             _rev: '1-234',
             name: 'pat-doe',
+            createdAt: '1970-01-01T00:00:00.000Z',
+            signedUpAt: '1970-01-01T00:00:00.000Z',
             roles: ['id:abc4567'],
             profile: {
               fullname: 'Dr Pat Hook'
@@ -132,6 +138,8 @@ getServer(function (error, server) {
             _id: 'org.couchdb.user:sam',
             _rev: '1-567',
             name: 'sam',
+            createdAt: '1970-01-01T00:00:00.000Z',
+            signedUpAt: '1970-01-01T00:00:00.000Z',
             roles: ['id:def678'],
             profile: {
               fullname: 'Mrs. Saminent'
@@ -192,6 +200,8 @@ getServer(function (error, server) {
                 'id:abc1234'
               ],
               name: 'pat-doe',
+              createdAt: '1970-01-01T00:00:00.000Z',
+              signedUpAt: '1970-01-01T00:00:00.000Z',
               profile: {
                 fullname: 'Dr. Pat Hook'
               }
@@ -261,6 +271,8 @@ getServer(function (error, server) {
                 'id:abc1234'
               ],
               name: 'pat-doe',
+              createdAt: '1970-01-01T00:00:00.000Z',
+              signedUpAt: '1970-01-01T00:00:00.000Z',
               profile: {
                 fullname: 'Dr Pat Hook'
               }

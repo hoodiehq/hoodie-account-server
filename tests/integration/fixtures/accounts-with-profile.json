@@ -12,7 +12,9 @@
         "self": "http://localhost:80/accounts/abc4567"
       },
       "attributes": {
-        "username": "pat-doe"
+        "username": "pat-doe",
+        "createdAt": "1970-01-01T00:00:00.000Z",
+        "signedUpAt": "1970-01-01T00:00:00.000Z"
       },
       "relationships": {
         "profile": {
@@ -33,7 +35,9 @@
         "self": "http://localhost:80/accounts/def678"
       },
       "attributes": {
-        "username": "sam"
+        "username": "sam",
+        "createdAt": "1970-01-01T00:00:00.000Z",
+        "signedUpAt": "1970-01-01T00:00:00.000Z"
       },
       "relationships": {
         "profile": {
