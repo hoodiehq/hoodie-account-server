@@ -96,7 +96,19 @@ getServer(function (error, server) {
     })
 
     group.test('account not found', {todo: true}, function (t) {
-      t.end()
+      var couchdb = nock('http://localhost:5984')
+        .get('/_users/_design/byId/_view/byId')
+        .query({
+          key: '"abc4567"',
+          include_docs: true
+        })
+        .reply(200, {total_rows: 1, offset: 0, rows: []})
+
+      server.inject(routeOptions, function (response) {
+        t.is(couchdb.pendingMocks()[0], undefined, 'all mocks satisfied')
+        t.is(response.statusCode, 404, 'returns 404 status')
+        t.end()
+      })
     })
 
     group.test('account exists', function (t) {
