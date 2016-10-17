@@ -2,6 +2,7 @@ var _ = require('lodash')
 var Joi = require('joi')
 var nock = require('nock')
 var test = require('tap').test
+var lolex = require('lolex')
 
 var authorizationHeaderNotAllowedErrorTest = require('../../utils/authorization-header-not-allowed-error')
 var couchdbErrorTests = require('../../utils/couchdb-error-tests')
@@ -20,6 +21,7 @@ var routeOptions = {
       type: 'account',
       attributes: {
         username: 'pat-doe',
+        createdAt: '1970-01-01T00:00:00.000Z',
         password: 'secret'
       }
     }
@@ -32,6 +34,8 @@ var mockCouchDbPutUser = nock('http://localhost:5984')
       _id: Joi.any().only('org.couchdb.user:pat-doe').required(),
       name: Joi.any().only('pat-doe').required(),
       type: Joi.any().only('user').required(),
+      createdAt: Joi.any().only('1970-01-01T00:00:00.000Z').required(),
+      signedUpAt: Joi.any().only('1970-01-01T00:00:00.000Z').required(),
       salt: Joi.string().required(),
       derived_key: Joi.string().required(),
       iterations: Joi.any().only(10).required(),
@@ -64,7 +68,9 @@ getServer(function (error, server) {
 
       var accountFixture = require('../../fixtures/account.json')
 
+      var clock = lolex.install(0, ['Date'])
       server.inject(routeOptions, function (response) {
+        clock.uninstall()
         t.is(couchdb.pendingMocks()[0], undefined, 'CouchDB received request')
         delete response.result.meta
 
@@ -73,6 +79,8 @@ getServer(function (error, server) {
         response.result.data.id = 'userid123'
         response.result.data.relationships.profile.data.id = 'userid123-profile'
         t.deepEqual(response.result, accountFixture, 'returns account in right format')
+        t.is(response.result.data.attributes.createdAt, new Date(0).toISOString(), 'createdAt is epoch 0')
+        t.is(response.result.data.attributes.signedUpAt, new Date(0).toISOString(), 'signedUpAt is epoch 0')
         t.end()
       })
     })
@@ -84,7 +92,9 @@ getServer(function (error, server) {
           reason: 'Document update conflict'
         })
 
+      var clock = lolex.install(0, ['Date'])
       server.inject(routeOptions, function (response) {
+        clock.uninstall()
         t.is(couchdb.pendingMocks()[0], undefined, 'CouchDB received request')
 
         t.is(response.statusCode, 409, 'returns 409 status')

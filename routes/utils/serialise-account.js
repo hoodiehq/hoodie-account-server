@@ -18,7 +18,9 @@ function serialiseOne (options, account) {
       id: account.id,
       type: 'account',
       attributes: {
-        username: account.username
+        username: account.username,
+        createdAt: account.createdAt,
+        signedUpAt: account.signedUpAt
       },
       relationships: {
         profile: {
@@ -63,7 +65,9 @@ function serialiseMany (options, accounts) {
           self: options.baseUrl + '/accounts/' + account.id
         },
         attributes: {
-          username: account.username
+          username: account.username,
+          createdAt: account.createdAt,
+          signedUpAt: account.signedUpAt
         },
         relationships: {
           profile: {

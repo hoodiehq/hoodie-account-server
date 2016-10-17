@@ -28,6 +28,8 @@ function mockCouchDbUserFound (docChange) {
       iterations: 10,
       type: 'user',
       name: 'pat-doe',
+      createdAt: '1970-01-01T00:00:00.000Z',
+      signedUpAt: '1970-01-01T00:00:00.000Z',
       roles: ['id:userid123', 'mycustomrole'],
       derived_key: '4b5c9721ab77dd2faf06a36785fd0a30f0bf0d27',
       salt: 'salt123'
