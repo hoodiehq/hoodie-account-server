@@ -26,12 +26,22 @@ function getServer (options, callback) {
   nock('http://localhost:5984')
     // PouchDB sends a request to see if db exists
     .get('/_users/')
-    .reply(200, {})
-    // mocks for bootstrapping design dock
-    .put('/_users')
-    .reply(201, {})
-    .put('/_users/_design/byId')
-    .reply(201)
+    .query({})
+    .reply(200, {db_name: '_users'})
+    // design docs
+    .post('/_users/_bulk_docs')
+    .reply(201, [
+      {
+        ok: true,
+        id: '_design/byId',
+        rev: '1-234'
+      },
+      {
+        ok: true,
+        id: '_design/byToken',
+        rev: '1-234'
+      }
+    ])
 
   server.register({
     register: hapiAccount,
