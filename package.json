@@ -54,7 +54,7 @@
   },
   "dependencies": {
     "@gar/hapi-json-api": "^2.0.1",
-    "@hoodie/account-server-api": "^2.0.0",
+    "@hoodie/account-server-api": "^3.0.3",
     "base64url": "^2.0.0",
     "boom": "^4.0.0",
     "couchdb-calculate-session-id": "^1.1.0",
