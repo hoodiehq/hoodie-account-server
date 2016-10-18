@@ -11,7 +11,6 @@ test('fail action', function (t) {
   } }
 
   function test (e) {
-    console.log(error)
     t.is(e.message, error.message, 'return status code 400')
     t.end()
   }
