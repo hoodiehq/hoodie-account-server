@@ -1,5 +1,6 @@
 module.exports = {
-  parse: parse
+  parse: parse,
+  hoodieError: hoodieError
 }
 
 function hoodieError (options) {
