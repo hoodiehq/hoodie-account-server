@@ -169,7 +169,9 @@ function accountRoutes (server, options, next) {
       .then(function (account) {
         // no auth param, act as 'admin' (we already validated the old session above)
         return sessions.add({
-          username: account.username
+          account: {
+            username: account.username
+          }
         })
       })
 
