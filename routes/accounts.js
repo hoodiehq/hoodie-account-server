@@ -160,6 +160,7 @@ function accountRoutes (server, options, next) {
       auth: false,
       validate: {
         headers: validations.sessionIdHeader,
+        query: validations.accountQuery,
         payload: validations.accountPayload,
         failAction: joiFailAction
       }
