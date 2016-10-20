@@ -185,8 +185,24 @@ test('PATCH /accounts/abc4567', function (group) {
     t.end()
   })
 
-  group.test('with ?include=profile', {todo: true}, function (t) {
-    t.end()
+  group.test('with ?include=profile', function (t) {
+    var options = _.defaultsDeep({
+      url: '/accounts/abc4567?include=profile'
+    }, routeOptions)
+
+    var couchdb = mockCouchDbUpdateAccountResponse()
+      .reply(201, {
+        ok: true,
+        id: 'org.couchdb.user:pat-doe',
+        rev: '2-3456'
+      })
+
+    this.server.inject(options, function (response) {
+      t.is(couchdb.pendingMocks()[0], undefined, 'all mocks satisfied')
+      t.is(response.statusCode, 204, 'returns 204 status')
+      t.is(response.result, null, 'returns no content')
+      t.end()
+    })
   })
 
   group.test('with ?include=foobar', function (t) {
