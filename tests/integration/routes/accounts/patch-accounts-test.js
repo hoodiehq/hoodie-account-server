@@ -100,8 +100,18 @@ getServer(function (error, server) {
       t.end()
     })
 
-    group.test('data.type & data.id don’t match existing document', {todo: true}, function (t) {
-      t.end()
+    group.test('data.type & data.id don’t match existing document', function (t) {
+      server.inject(Object.assign({}, routeOptions, {
+        payload: {
+          data: {
+            type: 'not-account',
+            id: 'not-abc456'
+          }
+        }
+      }), function (response) {
+        t.is(response.statusCode, 409, 'returns 409 status')
+        t.end()
+      })
     })
 
     group.test('changing password', function (t) {
