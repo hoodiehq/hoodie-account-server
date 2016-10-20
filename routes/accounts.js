@@ -132,9 +132,15 @@ function accountRoutes (server, options, next) {
     handler: function (request, reply) {
       var sessionId = toSessionId(request)
 
-      return accounts.find(request.params.id, {
-        sessionId: sessionId,
-        include: request.query.include
+      
+
+      return admins.validateSession(sessionId)
+
+      .then(function () {
+        return accounts.find(request.params.id, {
+          sessionId: sessionId,
+          include: request.query.include
+        })
       })
 
       .then(function (account) {
@@ -148,6 +154,12 @@ function accountRoutes (server, options, next) {
       .then(reply)
 
       .catch(function (error) {
+        if (error.status === 401) {
+          error.message = 'Session invalid'
+        }
+
+        error = errors.parse(error)
+
         reply(Boom.wrap(error, error.status))
       })
     }
