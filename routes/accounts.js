@@ -161,6 +161,12 @@ function accountRoutes (server, options, next) {
       .then(reply)
 
       .catch(function (error) {
+        if (error.status === 401) {
+          error.message = 'Session invalid'
+        }
+
+        error = errors.parse(error)
+
         reply(Boom.wrap(error, error.status))
       })
     }
