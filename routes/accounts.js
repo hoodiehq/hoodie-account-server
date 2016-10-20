@@ -143,6 +143,15 @@ function accountRoutes (server, options, next) {
         throw error
       })
 
+      .catch(function (error) {
+        // pouchdb-admins throws MISSING_DOC with status 404 if the admin doc is not found
+        if (error.status === 404) {
+          throw errors.INVALID_SESSION
+        }
+
+        throw error
+      })
+
       .then(function () {
         return accounts.find(request.params.id, {
           sessionId: sessionId,
@@ -167,7 +176,7 @@ function accountRoutes (server, options, next) {
 
         error = errors.parse(error)
 
-        reply(Boom.wrap(error, error.status))
+        reply(Boom.create(error.status, error.message))
       })
     }
   }
