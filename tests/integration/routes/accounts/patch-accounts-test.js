@@ -2,6 +2,7 @@ var _ = require('lodash')
 var Joi = require('joi')
 var nock = require('nock')
 var test = require('tap').test
+var cloneDeep = require('lodash/cloneDeep')
 
 var getServer = require('../../utils/get-server')
 // var couchdbErrorTests = require('../../utils/couchdb-error-tests')
@@ -97,8 +98,38 @@ getServer(function (error, server) {
       t.end()
     })
 
-    group.test('Not found', {todo: true}, function (t) {
-      t.end()
+    group.test('Not found', function (t) {
+      var couchdb = nock('http://localhost:5984')
+          .get('/_users/_design/byId/_view/byId')
+          .query({
+            key: '"xyz1234"',
+            include_docs: true
+          })
+          .reply(200, {
+            total_rows: 1,
+            offset: 0,
+            rows: []
+          })
+
+      server.inject({
+        method: 'PATCH',
+        url: '/accounts/xyz1234',
+        headers: cloneDeep(routeOptions.headers),
+        payload: {
+          data: {
+            type: 'account',
+            id: 'xyz1234',
+            attributes: {
+              password: 'newsecret'
+            }
+          }
+        }
+      }, function (response) {
+        t.is(couchdb.pendingMocks()[0], undefined, 'all mocks satisfied')
+        t.is(response.statusCode, 404, 'returns 404 status')
+        t.is(response.result.error, 'Not Found', 'returns "Not Found" error')
+        t.end()
+      })
     })
 
     group.test('data.type & data.id don’t match existing document', function (t) {
