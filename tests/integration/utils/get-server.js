@@ -10,7 +10,7 @@ var PouchDB = require('pouchdb-core').defaults({
 PouchDB.plugin(require('pouchdb-admins'))
   .plugin(require('pouchdb-errors'))
   .plugin(require('pouchdb-mapreduce'))
-  .plugin(require('pouchdb-adapter-memory'))
+  .plugin(require('pouchdb-adapter-http'))
 
 var hapiAccount = require('../../../plugin')
 
