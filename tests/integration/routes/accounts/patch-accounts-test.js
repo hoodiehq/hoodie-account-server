@@ -2,7 +2,6 @@ var _ = require('lodash')
 var Joi = require('joi')
 var nock = require('nock')
 var test = require('tap').test
-var cloneDeep = require('lodash/cloneDeep')
 
 var getServer = require('../../utils/get-server')
 // var couchdbErrorTests = require('../../utils/couchdb-error-tests')
@@ -114,7 +113,7 @@ getServer(function (error, server) {
       server.inject({
         method: 'PATCH',
         url: '/accounts/xyz1234',
-        headers: cloneDeep(routeOptions.headers),
+        headers: routeOptions.headers,
         payload: {
           data: {
             type: 'account',
