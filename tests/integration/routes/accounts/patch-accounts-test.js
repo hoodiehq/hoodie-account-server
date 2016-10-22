@@ -98,8 +98,8 @@ getServer(function (error, server) {
       server.inject(routeOptions, function (response) {
         t.is(couchdb.pendingMocks()[0], undefined, 'all mocks satisfied')
         delete response.result.meta
-        t.is(response.statusCode, 201, 'returns 201 status')
-        t.is(response.result.data.attributes.username, 'pat-doe', 'returns the right content')
+        t.is(response.statusCode, 204, 'returns 204 status')
+        t.is(response.result, null, 'returns no content')
         t.end()
       })
     })
