@@ -199,13 +199,21 @@ function accountRoutes (server, options, next) {
       var password = request.payload.data.attributes.password
       var profile = request.payload.data.attributes.profile
 
-      return accounts.update(request.params.id, {
-        username: username,
-        password: password,
-        profile: profile
-      }, {
-        sessionId: sessionId,
-        include: request.query.include
+      return admins.validateSession(sessionId)
+
+      .catch(function () {
+        throw errors.INVALID_SESSION
+      })
+
+      .then(function () {
+        return accounts.update(request.params.id, {
+          username: username,
+          password: password,
+          profile: profile
+        }, {
+          sessionId: sessionId,
+          include: request.query.include
+        })
       })
 
       .then(function (account) {
