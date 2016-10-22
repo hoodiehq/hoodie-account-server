@@ -3,9 +3,14 @@ module.exports = getServer
 var defaults = require('lodash/defaultsDeep')
 var Hapi = require('hapi')
 var nock = require('nock')
-var PouchDB = require('pouchdb').defaults({
+var PouchDB = require('pouchdb-core').defaults({
   prefix: 'http://localhost:5984/'
 })
+
+PouchDB.plugin(require('pouchdb-admins'))
+  .plugin(require('pouchdb-errors'))
+  .plugin(require('pouchdb-mapreduce'))
+  .plugin(require('pouchdb-adapter-http'))
 
 var hapiAccount = require('../../../plugin')
 
