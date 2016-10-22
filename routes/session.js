@@ -190,7 +190,7 @@ function sessionRoutes (server, options, next) {
         })
 
       .then(function (session) {
-        if (!session) {
+        if (!request.query.include) {
           return reply().code(204)
         }
         reply(serialise(session)).code(200)
