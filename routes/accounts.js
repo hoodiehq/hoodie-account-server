@@ -186,7 +186,14 @@ function accountRoutes (server, options, next) {
           include: request.query.include,
           admin: true
         }, account)
-      })
+      },
+        function (error) {
+          if (error.status === 404) {
+            throw errors.ACCOUNT_ID_NOT_FOUND
+          }
+
+          throw error
+        })
 
       .then(function (json) {
         reply(json).code(201)

@@ -41,6 +41,12 @@ module.exports.NO_PROFILE_ACCOUNT = hoodieError({
   status: 404
 })
 
+module.exports.ACCOUNT_ID_NOT_FOUND = hoodieError({
+  name: 'Not Found',
+  message: 'Account Id Not Found',
+  status: 404
+})
+
 module.exports.accountIdConflict = function (id) {
   return hoodieError({
     name: 'Conflict',
