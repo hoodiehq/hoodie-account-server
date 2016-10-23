@@ -51,8 +51,20 @@ getServer(function (error, server) {
       })
     })
 
-    group.test('CouchDB Session invalid', {todo: true}, function (t) {
-      t.end()
+    group.test('CouchDB Session invalid', function (t) {
+      var requestOptions = _.defaultsDeep({
+        headers: {
+          authorization: 'Session someInvalidSession'
+        }
+      }, routeOptions)
+
+      server.inject(requestOptions, function (response) {
+        t.is(response.statusCode, 401, 'returns 401 status')
+        t.is(response.result.errors.length, 1, 'returns one error')
+        t.is(response.result.errors[0].title, 'Unauthorized', 'returns "Unauthorized" error')
+        t.is(response.result.errors[0].detail, 'Session invalid', 'returns Invalid session message')
+        t.end()
+      })
     })
 
     group.test('Not an admin', function (t) {
@@ -82,6 +94,8 @@ getServer(function (error, server) {
             _id: 'org.couchdb.user:pat-doe',
             _rev: '1-234',
             name: 'pat-doe',
+            createdAt: '1970-01-01T00:00:00.000Z',
+            signedUpAt: '1970-01-01T00:00:00.000Z',
             roles: ['id:abc4567']
           }
         }, {
@@ -92,6 +106,8 @@ getServer(function (error, server) {
             _id: 'org.couchdb.user:sam',
             _rev: '1-567',
             name: 'sam',
+            createdAt: '1970-01-01T00:00:00.000Z',
+            signedUpAt: '1970-01-01T00:00:00.000Z',
             roles: ['id:def678']
           }
         }]
@@ -119,6 +135,8 @@ getServer(function (error, server) {
             _id: 'org.couchdb.user:pat-doe',
             _rev: '1-234',
             name: 'pat-doe',
+            createdAt: '1970-01-01T00:00:00.000Z',
+            signedUpAt: '1970-01-01T00:00:00.000Z',
             roles: ['id:abc4567'],
             profile: {
               fullname: 'Dr Pat Hook'
@@ -132,6 +150,8 @@ getServer(function (error, server) {
             _id: 'org.couchdb.user:sam',
             _rev: '1-567',
             name: 'sam',
+            createdAt: '1970-01-01T00:00:00.000Z',
+            signedUpAt: '1970-01-01T00:00:00.000Z',
             roles: ['id:def678'],
             profile: {
               fullname: 'Mrs. Saminent'
@@ -155,12 +175,24 @@ getServer(function (error, server) {
       })
     })
 
+    group.test('with ?include=foobar', function (t) {
+      var options = _.defaultsDeep({
+        url: '/accounts?include=foobar'
+      }, routeOptions)
+
+      server.inject(options, function (response) {
+        t.is(response.statusCode, 400, 'returns 400 status')
+        t.deepEqual(response.result.errors[0].detail, 'Allowed value for ?include is \'profile\'', 'returns error message')
+        t.end()
+      })
+    })
+
     couchdbErrorTests(server, group, mockCouchDbGetAccounts, routeOptions)
 
     group.end()
   })
 
-  test('GET /accounts/abc4567', {only: true}, function (group) {
+  test('GET /accounts/abc4567', function (group) {
     group.test('No Authorization header sent', function (t) {
       server.inject({
         method: 'GET',
@@ -188,6 +220,8 @@ getServer(function (error, server) {
                 'id:abc1234'
               ],
               name: 'pat-doe',
+              createdAt: '1970-01-01T00:00:00.000Z',
+              signedUpAt: '1970-01-01T00:00:00.000Z',
               profile: {
                 fullname: 'Dr. Pat Hook'
               }
@@ -233,11 +267,42 @@ getServer(function (error, server) {
       })
     })
 
-    group.end()
-  })
+    group.test('CouchDB Session invalid', function (t) {
+      var options = _.defaultsDeep({
+        url: '/accounts/abc1234',
+        headers: {
+          authorization: 'Session someInvalidSession',
+          accept: 'application/vnd.api+json'
+        }
+      }, routeOptions)
+      server.inject(options, function (response) {
+        t.is(response.statusCode, 401, 'returns 401 status')
+        t.is(response.result.errors.length, 1, 'returns one error')
+        t.is(response.result.errors[0].title, 'Unauthorized', 'returns "Unauthorized" error')
+        t.is(response.result.errors[0].detail, 'Session invalid', 'returns "Session invalid" message')
+        t.end()
+      })
+    })
 
-  test('GET /accounts/abc4567?include=profile', {only: true}, function (group) {
-    group.test('Account found', function (t) {
+    group.test('Not an admin', function (t) {
+      server.inject({
+        method: 'GET',
+        url: '/accounts/abc1234',
+        headers: {
+          // Session ID based on 'pat-doe', 'salt123', 'secret', 1209600
+          authorization: 'Session cGF0LWRvZToxMjc1MDA6zEZsQ1BuO-W8SthDSrg8KXQ8OlQ',
+          accept: 'application/vnd.api+json'
+        }
+      }, function (response) {
+        t.is(response.statusCode, 401, 'returns 401 status')
+        t.is(response.result.errors.length, 1, 'returns one error')
+        t.is(response.result.errors[0].title, 'Unauthorized', 'returns "Unauthorized" error')
+        t.is(response.result.errors[0].detail, 'Session invalid', 'returns Invalid session message')
+        t.end()
+      })
+    })
+
+    group.test('with ?include=profile', function (t) {
       var couchdb = nock('http://localhost:5984')
         .get('/_users/_design/byId/_view/byId')
         .query({
@@ -253,6 +318,8 @@ getServer(function (error, server) {
                 'id:abc1234'
               ],
               name: 'pat-doe',
+              createdAt: '1970-01-01T00:00:00.000Z',
+              signedUpAt: '1970-01-01T00:00:00.000Z',
               profile: {
                 fullname: 'Dr Pat Hook'
               }
@@ -273,6 +340,10 @@ getServer(function (error, server) {
         t.deepEqual(response.result, accountWithProfile, 'returns the right content')
         t.end()
       })
+    })
+
+    group.test('with ?include=foobar', {todo: true}, function (t) {
+      t.end()
     })
 
     group.end()

@@ -77,6 +77,7 @@ function accountRoutes (server, options, next) {
       auth: false,
       validate: {
         headers: validations.sessionIdHeader,
+        query: validations.accountQuery,
         failAction: joiFailAction
       }
     },
@@ -131,9 +132,31 @@ function accountRoutes (server, options, next) {
     handler: function (request, reply) {
       var sessionId = toSessionId(request)
 
-      return accounts.find(request.params.id, {
-        sessionId: sessionId,
-        include: request.query.include
+      admins.validateSession(sessionId)
+
+      .catch(function (error) {
+        // pouchdb-admins throws MISSING_DOC with status 404 if the admin doc is not found
+        if (error.status === 404) {
+          throw errors.INVALID_SESSION
+        }
+
+        throw error
+      })
+
+      .catch(function (error) {
+        // pouchdb-admins throws MISSING_DOC with status 404 if the admin doc is not found
+        if (error.status === 404) {
+          throw errors.INVALID_SESSION
+        }
+
+        throw error
+      })
+
+      .then(function () {
+        return accounts.find(request.params.id, {
+          sessionId: sessionId,
+          include: request.query.include
+        })
       })
 
       .then(function (account) {
@@ -147,7 +170,13 @@ function accountRoutes (server, options, next) {
       .then(reply)
 
       .catch(function (error) {
-        reply(Boom.wrap(error, error.status))
+        if (error.status === 401) {
+          error.message = 'Session invalid'
+        }
+
+        error = errors.parse(error)
+
+        reply(Boom.create(error.status, error.message))
       })
     }
   }
@@ -159,6 +188,7 @@ function accountRoutes (server, options, next) {
       auth: false,
       validate: {
         headers: validations.sessionIdHeader,
+        query: validations.accountQuery,
         payload: validations.accountPayload,
         failAction: joiFailAction
       }
@@ -169,13 +199,21 @@ function accountRoutes (server, options, next) {
       var password = request.payload.data.attributes.password
       var profile = request.payload.data.attributes.profile
 
-      return accounts.update(request.params.id, {
-        username: username,
-        password: password,
-        profile: profile
-      }, {
-        sessionId: sessionId,
-        include: request.query.include
+      return admins.validateSession(sessionId)
+
+      .catch(function () {
+        throw errors.INVALID_SESSION
+      })
+
+      .then(function () {
+        return accounts.update(request.params.id, {
+          username: username,
+          password: password,
+          profile: profile
+        }, {
+          sessionId: sessionId,
+          include: request.query.include
+        })
       })
 
       .then(function (account) {
@@ -184,7 +222,14 @@ function accountRoutes (server, options, next) {
           include: request.query.include,
           admin: true
         }, account)
-      })
+      },
+        function (error) {
+          if (error.status === 404) {
+            throw errors.ACCOUNT_ID_NOT_FOUND
+          }
+
+          throw error
+        })
 
       .then(function (json) {
         if (profile) {
@@ -194,7 +239,10 @@ function accountRoutes (server, options, next) {
         }
       })
 
-      .catch(reply)
+      .catch(function (error) {
+        error = errors.parse(error)
+        reply(Boom.create(error.status, error.message))
+      })
     }
   }
 
@@ -219,7 +267,10 @@ function accountRoutes (server, options, next) {
         reply().code(204)
       })
 
-      .catch(reply)
+      .catch(function (error) {
+        error = errors.parse(error)
+        reply(Boom.create(error.status, error.message))
+      })
     }
   }
 

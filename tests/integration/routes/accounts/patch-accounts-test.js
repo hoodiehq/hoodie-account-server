@@ -1,3 +1,4 @@
+var _ = require('lodash')
 var Joi = require('joi')
 var nock = require('nock')
 var test = require('tap').test
@@ -18,6 +19,7 @@ var routeOptions = {
   payload: {
     data: {
       type: 'account',
+      id: 'abc4567',
       attributes: {
         password: 'newsecret'
       }
@@ -87,7 +89,76 @@ getServer(function (error, server) {
       })
     })
 
-    group.test('changing password', {only: true}, function (t) {
+    group.test('CouchDB Session invalid', function (t) {
+      var options = _.defaultsDeep({
+        headers: {
+          authorization: 'Session InvalidKey'
+        }
+      }, routeOptions)
+      server.inject(options, function (response) {
+        t.is(response.statusCode, 401, 'returns 401 status')
+        t.is(response.result.errors.length, 1, 'returns one error')
+        t.is(response.result.errors[0].title, 'Unauthorized', 'returns "Unauthorized" error')
+        t.is(response.result.errors[0].detail, 'Session invalid', 'returns "Session invalid" message')
+        t.end()
+      })
+    })
+
+    group.test('Not an admin', {todo: true}, function (t) {
+      t.end()
+    })
+
+    group.test('Not found', function (t) {
+      var couchdb = nock('http://localhost:5984')
+          .get('/_users/_design/byId/_view/byId')
+          .query({
+            key: '"xyz1234"',
+            include_docs: true
+          })
+          .reply(200, {
+            total_rows: 1,
+            offset: 0,
+            rows: []
+          })
+
+      server.inject({
+        method: 'PATCH',
+        url: '/accounts/xyz1234',
+        headers: routeOptions.headers,
+        payload: {
+          data: {
+            type: 'account',
+            id: 'xyz1234',
+            attributes: {
+              password: 'newsecret'
+            }
+          }
+        }
+      }, function (response) {
+        t.is(couchdb.pendingMocks()[0], undefined, 'all mocks satisfied')
+        t.is(response.statusCode, 404, 'returns 404 status')
+        t.is(response.result.errors.length, 1, 'returns one error')
+        t.is(response.result.errors[0].title, 'Not Found', 'returns "Not Found" error')
+        t.is(response.result.errors[0].detail, 'Account Id Not Found', 'returns "Account Id Not Found" message')
+        t.end()
+      })
+    })
+
+    group.test('data.type & data.id don’t match existing document', function (t) {
+      server.inject(Object.assign({}, routeOptions, {
+        payload: {
+          data: {
+            type: 'not-account',
+            id: 'not-abc456'
+          }
+        }
+      }), function (response) {
+        t.is(response.statusCode, 409, 'returns 409 status')
+        t.end()
+      })
+    })
+
+    group.test('changing password', function (t) {
       var couchdb = mockCouchDbUpdateAccountResponse()
         .reply(201, {
           ok: true,
@@ -106,6 +177,22 @@ getServer(function (error, server) {
 
     group.test('changing username', {todo: true}, function (t) {
       t.end()
+    })
+
+    group.test('with ?include=profile', {todo: true}, function (t) {
+      t.end()
+    })
+
+    group.test('with ?include=foobar', function (t) {
+      var options = _.defaultsDeep({
+        url: '/accounts/abcd4567?include=foobar'
+      }, routeOptions)
+
+      server.inject(options, function (response) {
+        t.is(response.statusCode, 400, 'returns 400 status')
+        t.deepEqual(response.result.errors[0].detail, 'Allowed value for ?include is \'profile\'', 'returns error message')
+        t.end()
+      })
     })
 
     // TOOD: test server error handling

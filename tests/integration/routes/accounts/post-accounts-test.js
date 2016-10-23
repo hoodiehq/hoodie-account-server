@@ -129,7 +129,6 @@ getServer(function (error, server) {
     group.end()
   })
 
-  // prepared test for https://github.com/hoodiehq/hoodie-account-server/issues/126
   test('POST /accounts?include=foobar', function (t) {
     var options = _.defaultsDeep({
       url: '/accounts?include=foobar'

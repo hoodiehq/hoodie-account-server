@@ -1,3 +1,4 @@
+var _ = require('lodash')
 var Joi = require('joi')
 var nock = require('nock')
 var test = require('tap').test
@@ -41,7 +42,7 @@ function mockCouchDbDeleteResponse () {
           iterations: 10,
           type: 'user',
           name: 'pat-doe',
-          roles: ['id:userid123', 'mycustomrole'],
+          roles: ['id:abc4567', 'mycustomrole'],
           derived_key: '4b5c9721ab77dd2faf06a36785fd0a30f0bf0d27',
           salt: 'salt123'
         }
@@ -94,7 +95,23 @@ getServer(function (error, server) {
       t.end()
     })
 
-    group.test('account exists', {only: true}, function (t) {
+    group.test('account not found', function (t) {
+      var couchdb = nock('http://localhost:5984')
+        .get('/_users/_design/byId/_view/byId')
+        .query({
+          key: '"abc4567"',
+          include_docs: true
+        })
+        .reply(200, {total_rows: 1, offset: 0, rows: []})
+
+      server.inject(routeOptions, function (response) {
+        t.is(couchdb.pendingMocks()[0], undefined, 'all mocks satisfied')
+        t.is(response.statusCode, 404, 'returns 404 status')
+        t.end()
+      })
+    })
+
+    group.test('account exists', function (t) {
       var couchdb = mockCouchDbDeleteResponse()
         .reply(201, {
           ok: true,
@@ -106,6 +123,22 @@ getServer(function (error, server) {
         t.is(couchdb.pendingMocks()[0], undefined, 'all mocks satisfied')
         t.is(response.statusCode, 204, 'returns 204 status')
         t.is(response.result, null, 'returns no content')
+        t.end()
+      })
+    })
+
+    group.test('with ?include=profile', {todo: true}, function (t) {
+      t.end()
+    })
+
+    group.test('with ?include=foobar', {todo: true}, function (t) {
+      var options = _.defaultsDeep({
+        url: '/accounts/123?include=foobar'
+      }, routeOptions)
+
+      server.inject(options, function (response) {
+        t.is(response.statusCode, 400, 'returns 400 status')
+        t.deepEqual(response.result.errors[0].detail, 'Allowed value for ?include is \'profile\'', 'returns error message')
         t.end()
       })
     })

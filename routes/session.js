@@ -58,8 +58,8 @@ function sessionRoutes (server, options, next) {
         function (error) {
           if (error.status === 404) {
             return sessions.add({
-              username: username,
-              auth: {
+              account: {
+                username: username,
                 password: password
               },
               include: query.include
@@ -190,7 +190,7 @@ function sessionRoutes (server, options, next) {
         })
 
       .then(function (session) {
-        if (!session) {
+        if (!request.query.include) {
           return reply().code(204)
         }
         reply(serialise(session)).code(200)

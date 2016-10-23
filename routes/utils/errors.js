@@ -1,5 +1,6 @@
 module.exports = {
-  parse: parse
+  parse: parse,
+  hoodieError: hoodieError
 }
 
 function hoodieError (options) {
@@ -37,6 +38,12 @@ module.exports.NO_ADMIN_ACCOUNT = hoodieError({
 module.exports.NO_PROFILE_ACCOUNT = hoodieError({
   name: 'Not Found',
   message: 'Admins have no profiles',
+  status: 404
+})
+
+module.exports.ACCOUNT_ID_NOT_FOUND = hoodieError({
+  name: 'Not Found',
+  message: 'Account Id Not Found',
   status: 404
 })
 
