@@ -342,8 +342,16 @@ getServer(function (error, server) {
       })
     })
 
-    group.test('with ?include=foobar', {todo: true}, function (t) {
-      t.end()
+    group.test('with ?include=foobar', function (t) {
+      server.inject({
+        method: 'GET',
+        url: '/accounts/abc1234?include=foobar',
+        headers: headers
+      }, function (response) {
+        t.is(response.statusCode, 400, 'returns 400 status')
+        t.deepEqual(response.result.errors[0].detail, 'Allowed value for ?include is \'profile\'', 'returns error message')
+        t.end()
+      })
     })
 
     group.end()
