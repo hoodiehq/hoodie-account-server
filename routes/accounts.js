@@ -270,6 +270,44 @@ function accountRoutes (server, options, next) {
     }
   }
 
+  var postAccountsSessionRoute = {
+    method: 'POST',
+    path: '/accounts/{id}/sessions',
+    config: {
+      auth: false,
+      validate: {
+        headers: validations.sessionIdHeader,
+        query: validations.accountQuery,
+        payload: validations.accountPayload,
+        failAction: joiFailAction
+      }
+    },
+    handler: function (request, reply) {
+      var username = request.payload.data.attributes.username
+      var password = request.payload.data.attributes.password
+      var query = request.query
+
+      var sessionId = toSessionId(request)
+
+      admins.validateSession(sessionId)
+
+      .then(function (_) {
+        console.log(_);
+      })
+      .catch(function (error) {
+        if (error.status === 401) {
+          error.message = 'Session invalid'
+        }
+        if (error.message === 'missing') {
+          error = errors.INVALID_SESSION
+        }
+        error = errors.parse(error)
+
+        reply(Boom.wrap(error, error.status, error.message))
+      })
+    }
+  }
+
   server.route([
     postAccountsRoute,
     getAccountsRoute,
