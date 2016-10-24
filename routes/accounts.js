@@ -233,7 +233,11 @@ function accountRoutes (server, options, next) {
         })
 
       .then(function (json) {
-        reply(json).code(201)
+        if (profile) {
+          reply(json).code(201)
+        } else {
+          reply(json).code(204)
+        }
       })
 
       .catch(function (error) {
