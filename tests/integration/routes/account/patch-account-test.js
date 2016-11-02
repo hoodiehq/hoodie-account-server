@@ -124,6 +124,10 @@ function mockUsernameChange () {
   couchdbMock.put('/_users/org.couchdb.user%3AnewName', function (body) {
     var error = Joi.object().keys({
       _id: Joi.any().only('org.couchdb.user:newName').required(),
+      renamed: Joi.object().keys({
+        _id: Joi.any().only('org.couchdb.user:pat-doe').required(),
+        _rev: Joi.any().only('1-234').required()
+      }),
       name: Joi.any().only('newName').required(),
       username: Joi.any().forbidden(),
       type: Joi.any().only('user').required(),
@@ -147,9 +151,12 @@ function mockUsernameChange () {
   couchdbMock.put('/_users/org.couchdb.user%3Apat-doe', function (body) {
     var error = Joi.object().keys({
       _deleted: Joi.boolean().only(true).required(),
-      renamedTo: Joi.any().only('newName').required(),
       _id: Joi.any().only('org.couchdb.user:pat-doe').required(),
       _rev: Joi.any().only('1-234').required(),
+      renamed: Joi.object().keys({
+        _id: Joi.any().only('org.couchdb.user:newName').required(),
+        _rev: Joi.any().only('2-3456').required()
+      }),
       name: Joi.any().only('pat-doe').required(),
       type: Joi.any().only('user').required(),
       salt: Joi.string().required(),
