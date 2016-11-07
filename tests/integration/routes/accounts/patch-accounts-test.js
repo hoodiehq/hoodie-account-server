@@ -104,8 +104,21 @@ getServer(function (error, server) {
       })
     })
 
-    group.test('Not an admin', {todo: true}, function (t) {
-      t.end()
+    group.test('Not an admin', function (t) {
+      var options = _.defaultsDeep({
+        headers: {
+          // Session ID based on 'pat-doe', 'salt123', 'secret', 1209600
+          authorization: 'Session cGF0LWRvZToxMjc1MDA6zEZsQ1BuO-W8SthDSrg8KXQ8OlQ'
+        }
+      }, routeOptions)
+
+      server.inject(options, function (response) {
+        t.is(response.statusCode, 401, 'returns 401 status')
+        t.is(response.result.errors.length, 1, 'returns one error')
+        t.is(response.result.errors[0].title, 'Unauthorized', 'returns "Unauthorized" error')
+        t.is(response.result.errors[0].detail, 'Session invalid', 'returns Invalid session message')
+        t.end()
+      })
     })
 
     group.test('Not found', function (t) {
