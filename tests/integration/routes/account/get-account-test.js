@@ -61,17 +61,16 @@ getServer(function (error, server) {
       })
     })
 
-    group.test('Session does not exist', {todo: true}, function (t) {
+    group.test('Session does not exist', function (t) {
       var couch = couchdbGetUserMock
         .reply(404, {error: 'Not Found'})
 
       server.inject(routeOptions, function (response) {
         t.is(couch.pendingMocks()[0], undefined, 'all mocks satisfied')
-
         t.is(response.statusCode, 401, 'returns 401 status')
         t.is(response.result.errors.length, 1, 'returns one error')
         t.is(response.result.errors[0].title, 'Unauthorized', 'returns "Unauthorized" error')
-        t.is(response.result.errors[0].detail, 'Invalid session', 'returns Invalid session message')
+        t.is(response.result.errors[0].detail, 'Session invalid', 'returns Invalid session message')
         t.end()
       })
     })
