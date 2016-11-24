@@ -3,7 +3,7 @@ var Joi = require('joi')
 var validations = module.exports = {}
 
 validations.sessionIdHeader = Joi.object({
-  authorization: Joi.string().required().regex(/^Session [a-zA-Z0-9_\-]+$/)
+  authorization: Joi.string().required().regex(/^Session [a-zA-Z0-9_-]+$/)
 }).unknown().required().meta({
   statusCode: 401,
   message: 'Authorization header missing'
