@@ -3,7 +3,7 @@
 > Account JSON API backed by PouchDB
 
 [![Build Status](https://api.travis-ci.org/hoodiehq/hoodie-account-server.svg?branch=master)](https://travis-ci.org/hoodiehq/hoodie-account-server)
-[![Coverage Status](https://coveralls.io/repos/hoodiehq/hoodie-account-server/badge.svg?branch=master)](https://coveralls.io/r/hoodiehq/hoodie-account-server?branch=master)
+[![Coverage Status](https://coveralls.io/repos/hoodiehq/hoodie-account-server/badge.svg?branch=master)](https://coveralls.io/github/hoodiehq/hoodie-account-server?branch=master)
 [![Dependency Status](https://david-dm.org/hoodiehq/hoodie-account-server.svg)](https://david-dm.org/hoodiehq/hoodie-account-server)
 [![devDependency Status](https://david-dm.org/hoodiehq/hoodie-account-server/dev-status.svg)](https://david-dm.org/hoodiehq/hoodie-account-server#info=devDependencies)
 
