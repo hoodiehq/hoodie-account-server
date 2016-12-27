@@ -4,9 +4,10 @@
 
 ## CouchDB `_users` doc specification & custom properties used by `hoodie-account-server`
 
-`hoodie-account-server` works directly against [CouchDB’s Authentication System](http://docs.couchdb.org/en/latest/api/server/authn.html).
-User accounts are docs in the `_users` database, and they have the following
-requirements:
+`hoodie-account-server` is using PouchDB for persisting user accounts and does
+not require a CouchDB to be used as its backend. But all account documents
+are compatible with [CouchDB’s Authentication System](http://docs.couchdb.org/en/latest/api/server/authn.html)
+and can be stored in CouchDB’s `_users` database. They have the following requirements:
 
 ```js
 {
@@ -29,6 +30,9 @@ requirements:
    // roles must be an array of strings. Roles can be used to give access
    // to databases. It must include an "id:..." role, see below
    "roles": ["id:abc4567"],
+   // see "Profile" and "Tokens" sections below
+   "profile": {},
+   "tokens": {}
 }
 ```
 
@@ -66,7 +70,7 @@ As no other properties from the `_users` docs will be exposed by
 `hoodie-account-server`’s API by default, you can securely store sensitive
 information like API keys, or password reset tokens.
 
-### Account Profile
+### Profile
 
 Custom user properties like full name, address, etc are stored in the `"profile"`
 property of the `_users` doc. The properties can be accessed / changed using the
@@ -84,20 +88,21 @@ property of the `_users` doc. The properties can be accessed / changed using the
 
 ### Tokens
 
-Tokens are stored for flexible usage in the `tokens` property. It's an array
-of objects, in which all objects have an id, timestamp, expiration date and
-a name. More meta properties can be added as needed.
+Tokens are stored for flexible usage in the `tokens` property. It's a hash
+in which keys are the unique token IDs the the value are the token properties,
+which include creation and expiration timestamp.
+More meta properties can be added as needed.
 
 ```js
 {
   "_id": "org.couchdb.user:pat"
   //...
-  "tokens": [
-    {
-      "id": "token123",
-      "name": "password reset",
+  "tokens": {
+    "token123": {
+      "type": "passwordreset",
       "createdAt": "2015-11-01T00:00:00.000Z",
       "expiresAt": "2015-11-15T00:00:00.000Z",
+      "contact": "pat@example.com"
     }
   ]
 }
