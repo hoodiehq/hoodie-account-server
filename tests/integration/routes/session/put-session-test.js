@@ -1,4 +1,3 @@
-var defaultsDeep = require('lodash/defaultsDeep')
 var lolex = require('lolex')
 var _ = require('lodash')
 var nock = require('nock')
@@ -47,6 +46,58 @@ function mockCouchDbUserDocFound (docChange) {
     }, docChange))
 }
 
+function mockCouchDbUserDocFoundByToken () {
+  return nock('http://localhost:5984')
+    .get('/_users/_design/byToken/_view/byToken')
+    .query({
+      include_docs: true,
+      key: '"token123"'
+    })
+    .reply(200, {
+      total_rows: 1,
+      offset: 0,
+      rows: [
+        {
+          id: 'org.couchdb.user:pat-doe',
+          key: 'token123',
+          value: {
+            type: 'login',
+            createdAt: '2015-11-01T00:00:00.000Z',
+            expiresAt: '2015-11-15T00:00:00.000Z'
+          },
+          doc: {
+            _id: 'org.couchdb.user:pat-doe',
+            _rev: '1-234',
+            password_scheme: 'pbkdf2',
+            iterations: 10,
+            type: 'user',
+            name: 'pat-doe',
+            roles: ['id:userid123', 'mycustomrole'],
+            derived_key: '4b5c9721ab77dd2faf06a36785fd0a30f0bf0d27',
+            salt: 'salt123',
+            tokens: {
+              token123: {
+                type: 'login',
+                createdAt: '2015-11-01T00:00:00.000Z',
+                expiresAt: '2017-11-15T00:00:00.000Z',
+                contact: 'pat@example.com'
+              }
+            }
+          }
+        }
+      ]
+    })
+    .put('/_users/org.couchdb.user%3Apat-doe', function (body) {
+      return !body.tokens.token123
+    })
+    .query(true)
+    .reply(201, {
+      ok: true,
+      id: 'org.couchdb.user:pat-doe',
+      rev: '2-3456'
+    })
+}
+
 test('PUT /session', function (group) {
   getServer(function (error, server) {
     if (error) {
@@ -59,7 +110,33 @@ test('PUT /session', function (group) {
     couchdbErrorTests(server, group, couchdbGetUserMock, routeOptions)
     invalidTypeErrors(server, group, routeOptions, 'session')
 
-    group.test('User Found', function (subGroup) {
+    group.test('token', function (subGroup) {
+      var sessionResponse = require('../../fixtures/session-response.json')
+
+      subGroup.test('valid', function (t) {
+        var clock = lolex.install(0, ['Date'])
+        mockCouchDbUserDocFoundByToken()
+        // nock.recorder.rec
+
+        var options = _.cloneDeep(routeOptions)
+        options.payload.data.attributes = {
+          token: 'token123'
+        }
+
+        server.inject(options, function (response) {
+          delete response.result.meta
+          t.is(response.statusCode, 201, 'returns 201 status')
+          t.deepEqual(response.result.data.id, sessionResponse.data.id, 'returns the right content')
+
+          clock.uninstall()
+          t.end()
+        })
+      })
+
+      subGroup.end()
+    })
+
+    group.test('User Found by username', function (subGroup) {
       var sessionResponse = require('../../fixtures/session-response.json')
 
       subGroup.test('Valid password', function (t) {
@@ -80,7 +157,7 @@ test('PUT /session', function (group) {
         var clock = lolex.install(0, ['Date'])
         var couchdb = mockCouchDbUserDocFound()
 
-        var options = defaultsDeep({
+        var options = _.defaultsDeep({
           payload: {
             data: {
               attributes: {
@@ -140,7 +217,7 @@ test('PUT /session', function (group) {
       subGroup.test('Valid password', function (t) {
         var clock = lolex.install(0, ['Date'])
 
-        var options = defaultsDeep({
+        var options = _.defaultsDeep({
           payload: {
             data: {
               attributes: {
@@ -166,7 +243,7 @@ test('PUT /session', function (group) {
       subGroup.test('Invalid password', function (t) {
         var clock = lolex.install(0, ['Date'])
 
-        var options = defaultsDeep({
+        var options = _.defaultsDeep({
           payload: {
             data: {
               attributes: {
@@ -203,7 +280,7 @@ test('PUT /session?include=account.profile', function (group) {
       return
     }
 
-    var putSessionRouteWithProfileOptions = defaultsDeep({
+    var putSessionRouteWithProfileOptions = _.defaultsDeep({
       url: '/session?include=account.profile'
     }, routeOptions)
 
@@ -236,7 +313,7 @@ test('PUT /session?include=account.profile', function (group) {
       subGroup.test('Valid password', function (t) {
         var clock = lolex.install(0, ['Date'])
 
-        var options = defaultsDeep({
+        var options = _.defaultsDeep({
           payload: {
             data: {
               attributes: {
@@ -273,7 +350,7 @@ test('PUT /session with uppercase letter (hoodiehq/hoodie#499)', function (t) {
       return
     }
 
-    var options = defaultsDeep({
+    var options = _.defaultsDeep({
       payload: {
         data: {
           attributes: {
