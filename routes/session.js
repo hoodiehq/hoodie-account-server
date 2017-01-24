@@ -3,6 +3,7 @@ module.exports.attributes = {
   name: 'account-routes-session'
 }
 
+var _ = require('lodash')
 var Boom = require('boom')
 
 var errors = require('./utils/errors')
@@ -31,51 +32,64 @@ function sessionRoutes (server, options, next) {
       }
     },
     handler: function (request, reply) {
-      var username = request.payload.data.attributes.username.toLowerCase()
-      var password = request.payload.data.attributes.password
+      var username = _.get(request.payload, 'data.attributes.username')
+      var password = _.get(request.payload, 'data.attributes.password')
+      var token = _.get(request.payload, 'data.attributes.token')
       var query = request.query
+      var promise
 
-      // check for admin. If not found, check for user
-      admins.validatePassword(username, password)
+      if (username) {
+        username = username.toLowerCase()
 
-      .then(
-        // if admin
-        function () {
-          if (query.include) {
-            throw errors.FORBIDDEN_ADMIN_ACCOUNT
-          }
+        // check for admin. If not found, check for user
+        promise = admins.validatePassword(username, password)
 
-          return admins.calculateSessionId(username)
-
-          .then(function (sessionId) {
-            return {
-              id: sessionId
+        .then(
+          // if admin
+          function () {
+            if (query.include) {
+              throw errors.FORBIDDEN_ADMIN_ACCOUNT
             }
-          })
-        },
 
-        // if not admin
-        function (error) {
-          if (error.status === 404) {
-            return sessions.add({
-              account: {
-                username: username,
-                password: password
-              },
-              include: query.include
-            })
-            .catch(function (error) {
-              if (error.status === 404) {
-                throw errors.INVALID_CREDENTIALS
+            return admins.calculateSessionId(username)
+
+            .then(function (sessionId) {
+              return {
+                id: sessionId
               }
-              throw error
             })
-          }
+          },
 
-          throw error
+          // if not admin
+          function (error) {
+            if (error.status === 404) {
+              return sessions.add({
+                account: {
+                  username: username,
+                  password: password
+                },
+                include: query.include
+              })
+              .catch(function (error) {
+                if (error.status === 404) {
+                  throw errors.INVALID_CREDENTIALS
+                }
+                throw error
+              })
+            }
+
+            throw error
+          })
+      } else {
+        promise = sessions.add({
+          account: {
+            token: token
+          },
+          include: query.include
         })
+      }
 
-      .then(serialise)
+      promise.then(serialise)
 
       .then(function (json) {
         reply(json).code(201)
