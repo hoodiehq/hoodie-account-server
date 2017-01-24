@@ -104,6 +104,6 @@ More meta properties can be added as needed.
       "expiresAt": "2015-11-15T00:00:00.000Z",
       "contact": "pat@example.com"
     }
-  ]
+  }
 }
 ```
