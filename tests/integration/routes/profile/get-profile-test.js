@@ -10,7 +10,7 @@ var routeOptions = {
   url: '/session/account/profile',
   headers: {
     accept: 'application/vnd.api+json',
-    authorization: 'Session cGF0LWRvZToxMjc1MDA6zEZsQ1BuO-W8SthDSrg8KXQ8OlQ',
+    authorization: 'Session cGF0LWRvZTpCQkZFMzg4MDqp7ppCNngda1JMi7XcyhtaUxf2nA',
     'content-type': 'application/vnd.api+json'
   }
 }

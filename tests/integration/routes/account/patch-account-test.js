@@ -39,7 +39,7 @@ var passwordChangeOptions = {
   url: '/session/account',
   headers: {
     accept: 'application/vnd.api+json',
-    authorization: 'Session cGF0LWRvZToxMjc1MDA6zEZsQ1BuO-W8SthDSrg8KXQ8OlQ',
+    authorization: 'Session cGF0LWRvZTpCQkZFMzg4MDqp7ppCNngda1JMi7XcyhtaUxf2nA',
     'content-type': 'application/vnd.api+json'
   },
   payload: {
@@ -58,7 +58,7 @@ var usernameChangeOptions = {
   url: '/session/account',
   headers: {
     accept: 'application/vnd.api+json',
-    authorization: 'Session cGF0LWRvZToxMjc1MDA6zEZsQ1BuO-W8SthDSrg8KXQ8OlQ',
+    authorization: 'Session cGF0LWRvZTpCQkZFMzg4MDqp7ppCNngda1JMi7XcyhtaUxf2nA',
     'content-type': 'application/vnd.api+json'
   },
   payload: {
@@ -256,7 +256,7 @@ getServer(function (error, server) {
         t.is(couchdb.pendingMocks()[0], undefined, 'all mocks satisfied')
 
         t.is(response.statusCode, 204, 'returns 204 status')
-        t.is(response.headers['x-set-session'], 'cGF0LWRvZToxMjc1MDA6zEZsQ1BuO-W8SthDSrg8KXQ8OlQ', 'returns new session id in x-set-session header')
+        t.is(response.headers['x-set-session'], 'cGF0LWRvZTpCQkZFMzg4MDqp7ppCNngda1JMi7XcyhtaUxf2nA', 'returns new session id in x-set-session header')
         t.is(response.result, null, 'returns no body')
 
         t.end()
@@ -271,7 +271,7 @@ getServer(function (error, server) {
 
         t.is(couchdb.pendingMocks()[0], undefined, 'all mocks satisfied')
 
-        t.is(response.headers['x-set-session'], 'bmV3TmFtZToxMjc1MDA6qEoYxvyylNhd0HhOkAT9A4eUefg', 'returns new session id in x-set-session header')
+        t.is(response.headers['x-set-session'], 'bmV3TmFtZTpCQkZFMzg4MDpTPkWlPIu-ZhT_Ghmvh4zmqVpGLQ', 'returns new session id in x-set-session header')
         t.is(response.statusCode, 204, 'returns 204 status')
         t.is(response.result, null, 'returns no body')
 

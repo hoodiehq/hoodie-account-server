@@ -71,7 +71,7 @@ getServer(function (error, server) {
       var requestOptions = _.defaultsDeep({
         headers: {
           // Session ID based on 'pat-doe', 'salt123', 'secret', 1209600
-          authorization: 'Session cGF0LWRvZToxMjc1MDA6zEZsQ1BuO-W8SthDSrg8KXQ8OlQ'
+          authorization: 'Session cGF0LWRvZTpCQkZFMzg4MDqp7ppCNngda1JMi7XcyhtaUxf2nA'
         }
       }, routeOptions)
 
@@ -290,7 +290,7 @@ getServer(function (error, server) {
         url: '/accounts/abc1234',
         headers: {
           // Session ID based on 'pat-doe', 'salt123', 'secret', 1209600
-          authorization: 'Session cGF0LWRvZToxMjc1MDA6zEZsQ1BuO-W8SthDSrg8KXQ8OlQ',
+          authorization: 'Session cGF0LWRvZTpCQkZFMzg4MDqp7ppCNngda1JMi7XcyhtaUxf2nA',
           accept: 'application/vnd.api+json'
         }
       }, function (response) {
