@@ -234,6 +234,8 @@ function accountRoutes (server, options, next) {
 
       .then(function (account) {
         if (request.query.include) {
+          console.log(account)
+
           return reply(serialise(account)).code(200)
         }
 
