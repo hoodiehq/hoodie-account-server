@@ -98,8 +98,39 @@ getServer(function (error, server) {
     group.end()
   })
 
-  test('DELETE /session/account?include=profile', {todo: true}, function (t) {
-    t.end()
+  test('DELETE /session/account?include=profile', function (t) {
+    mockCouchDbUserFound()
+    var couch = mockCouchDbUserFound({_rev: '1-234'})
+      .put('/_users/org.couchdb.user%3Apat-doe', function (body) {
+        return Joi.object({
+          _id: Joi.any().only('org.couchdb.user:pat-doe').required(),
+          _rev: '1-234',
+          _deleted: true,
+          name: Joi.any().only('pat-doe').required(),
+          type: Joi.any().only('user').required(),
+          salt: Joi.string().required(),
+          derived_key: Joi.string().required(),
+          iterations: Joi.any().only(10).required(),
+          password_scheme: Joi.any().only('pbkdf2').required(),
+          roles: Joi.array().items(Joi.string())
+        }).validate(body).error === null
+      })
+      .query(true)
+      .reply(201, {
+        ok: true,
+        id: 'org.couchdb.user:pat-doe',
+        rev: '2-3456'
+      })
+
+    var options = _.defaultsDeep({
+      url: '/session/account?include=profile'
+    }, routeOptions)
+
+    server.inject(options, function (response) {
+      t.is(couch.pendingMocks()[0], undefined, 'all mocks satisfied')
+      t.is(response.statusCode, 200, 'returns 200 status')
+      t.end()
+    })
   })
 
   test('DELETE /session/account?include=foobar', function (t) {
