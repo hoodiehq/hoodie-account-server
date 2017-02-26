@@ -70,5 +70,10 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "greenkeeper": {
+    "ignore": [
+      "nodemailer"
+    ]
   }
 }
