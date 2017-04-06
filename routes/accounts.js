@@ -260,8 +260,21 @@ function accountRoutes (server, options, next) {
     handler: function (request, reply) {
       var sessionId = toSessionId(request)
 
-      return accounts.remove(request.params.id, {
-        sessionId: sessionId
+      // check for admin. If not found, check for user
+      admins.validateSession(sessionId)
+
+      .catch(function (error) {
+        if (error.status === 404) {
+          throw errors.INVALID_SESSION
+        }
+
+        throw error
+      })
+
+      .then(function (doc) {
+        return accounts.remove(request.params.id, {
+          sessionId: sessionId
+        })
       })
 
       .then(function (/* json */) {

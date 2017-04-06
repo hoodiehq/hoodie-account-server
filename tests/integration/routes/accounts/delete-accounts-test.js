@@ -91,8 +91,21 @@ getServer(function (error, server) {
       t.end()
     })
 
-    group.test('Not an admin', {todo: true}, function (t) {
-      t.end()
+    group.test('Not an admin', function (t) {
+      server.inject({
+        method: 'DELETE',
+        url: '/accounts/abc4567',
+        headers: {
+          accept: 'application/vnd.api+json',
+          authorization: 'Session cGF0LWRvZToxMjc1MDA6zEZsQ1BuO-W8SthDSrg8KXQ8OlQ',
+          'content-type': 'application/vnd.api+json'
+        }
+      }, function (response) {
+        t.is(response.statusCode, 401, 'returns 401 status')
+        t.is(response.result.errors[0].title, 'Unauthorized', 'returns "Unauthorized" error')
+        t.is(response.result.errors[0].detail, 'Session invalid', 'returns "Session invalid" error')
+        t.end()
+      })
     })
 
     group.test('account not found', function (t) {
