@@ -41,7 +41,7 @@
     "coveralls": "^2.11.6",
     "gaze-cli": "^0.2.0",
     "greenkeeper-postpublish": "^1.0.0",
-    "hapi": "^16.0.0",
+    "hapi": "16.1.1",
     "lolex": "^1.4.0",
     "memdown": "^1.1.2",
     "nock": "^9.0.0",
