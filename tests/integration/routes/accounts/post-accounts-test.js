@@ -80,7 +80,7 @@ test('POST /accounts', function (group) {
     }, function (response) {
       t.is(response.statusCode, 401, 'returns 401 status')
       t.is(response.result.errors[0].title, 'Unauthorized', 'returns "Unauthorized" error')
-      t.is(response.result.errors[0].detail, 'Session invalid', 'returns "Session invalid" error')
+      t.is(response.result.errors[0].detail, 'Session invalid: Session invalid', 'returns "Session invalid" error')
       t.end()
     })
   })
@@ -94,7 +94,7 @@ test('POST /accounts', function (group) {
       t.is(response.statusCode, 401, 'returns 401 status')
       t.is(response.result.errors.length, 1, 'returns one error')
       t.is(response.result.errors[0].title, 'Unauthorized', 'returns "Unauthorized" error')
-      t.is(response.result.errors[0].detail, 'Session invalid', 'returns "Session invalid" error')
+      t.is(response.result.errors[0].detail, 'Session invalid: Session invalid', 'returns "Session invalid" error')
       t.end()
     })
   })
