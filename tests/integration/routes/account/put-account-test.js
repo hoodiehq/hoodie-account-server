@@ -28,87 +28,89 @@ var routeOptions = {
   }
 }
 
-var mockCouchDbPutUser = nock('http://localhost:5984')
-  .put('/_users/org.couchdb.user%3Apat-doe', function (body) {
-    return Joi.object({
-      _id: Joi.any().only('org.couchdb.user:pat-doe').required(),
-      name: Joi.any().only('pat-doe').required(),
-      type: Joi.any().only('user').required(),
-      createdAt: Joi.any().only('1970-01-01T00:00:00.000Z').required(),
-      signedUpAt: Joi.any().only('1970-01-01T00:00:00.000Z').required(),
-      salt: Joi.string().required(),
-      derived_key: Joi.string().required(),
-      iterations: Joi.any().only(10).required(),
-      password_scheme: Joi.any().only('pbkdf2').required(),
-      roles: Joi.array().items(Joi.string().regex(/^id:[0-9a-f-]{36}$/)).max(1).min(1)
-    }).validate(body).error === null
-  })
-  .query(true)
+function mockCouchDbPutUser () {
+  return nock('http://localhost:5984')
+    .put('/_users/org.couchdb.user%3Apat-doe', function (body) {
+      return Joi.object({
+        _id: Joi.any().only('org.couchdb.user:pat-doe').required(),
+        name: Joi.any().only('pat-doe').required(),
+        type: Joi.any().only('user').required(),
+        createdAt: Joi.any().only('1970-01-01T00:00:00.000Z').required(),
+        signedUpAt: Joi.any().only('1970-01-01T00:00:00.000Z').required(),
+        salt: Joi.string().required(),
+        derived_key: Joi.string().required(),
+        iterations: Joi.any().only(10).required(),
+        password_scheme: Joi.any().only('pbkdf2').required(),
+        roles: Joi.array().items(Joi.string().regex(/^id:[0-9a-f-]{36}$/)).max(1).min(1)
+      }).validate(body).error === null
+    })
+    .query(true)
+}
 
-getServer(function (error, server) {
-  if (error) {
-    return test('test setup', function (t) {
-      t.error(error)
+test('PUT /session/account', function (group) {
+  group.beforeEach(getServer)
+
+  couchdbErrorTests(group, mockCouchDbPutUser, routeOptions)
+  authorizationHeaderNotAllowedErrorTest(group, routeOptions)
+  invalidTypeErrors(group, routeOptions, 'account')
+
+  group.test('User not found', function (t) {
+    var couchdb = mockCouchDbPutUser()
+      .reply(201, {
+        ok: true,
+        id: 'org.couchdb.user:pat-doe',
+        rev: '1-234'
+      })
+
+    var accountFixture = require('../../fixtures/account.json')
+
+    var clock = lolex.install(0, ['Date'])
+    this.server.inject(routeOptions, function (response) {
+      clock.uninstall()
+
+      t.is(couchdb.pendingMocks()[0], undefined, 'CouchDB received request')
+      delete response.result.meta
+
+      t.is(response.statusCode, 201, 'returns 201 status')
+      t.ok(/^[0-9a-f-]{36}$/.test(response.result.data.id), 'sets id')
+      response.result.data.id = 'userid123'
+      response.result.data.relationships.profile.data.id = 'userid123-profile'
+      t.deepEqual(response.result, accountFixture, 'returns account in right format')
+      t.is(response.result.data.attributes.createdAt, new Date(0).toISOString(), 'createdAt is epoch 0')
+      t.is(response.result.data.attributes.signedUpAt, new Date(0).toISOString(), 'signedUpAt is epoch 0')
       t.end()
     })
-  }
-
-  test('PUT /session/account', function (group) {
-    couchdbErrorTests(server, group, mockCouchDbPutUser, routeOptions)
-    authorizationHeaderNotAllowedErrorTest(server, group, routeOptions)
-    invalidTypeErrors(server, group, routeOptions, 'account')
-
-    group.test('User not found', function (t) {
-      var couchdb = mockCouchDbPutUser
-        .reply(201, {
-          ok: true,
-          id: 'org.couchdb.user:pat-doe',
-          rev: '1-234'
-        })
-
-      var accountFixture = require('../../fixtures/account.json')
-
-      var clock = lolex.install(0, ['Date'])
-      server.inject(routeOptions, function (response) {
-        clock.uninstall()
-        t.is(couchdb.pendingMocks()[0], undefined, 'CouchDB received request')
-        delete response.result.meta
-
-        t.is(response.statusCode, 201, 'returns 201 status')
-        t.ok(/^[0-9a-f-]{36}$/.test(response.result.data.id), 'sets id')
-        response.result.data.id = 'userid123'
-        response.result.data.relationships.profile.data.id = 'userid123-profile'
-        t.deepEqual(response.result, accountFixture, 'returns account in right format')
-        t.is(response.result.data.attributes.createdAt, new Date(0).toISOString(), 'createdAt is epoch 0')
-        t.is(response.result.data.attributes.signedUpAt, new Date(0).toISOString(), 'signedUpAt is epoch 0')
-        t.end()
-      })
-    })
-
-    group.test('CouchDB User already exists', function (t) {
-      var couchdb = mockCouchDbPutUser
-        .reply(409, {
-          error: 'conflict',
-          reason: 'Document update conflict'
-        })
-
-      var clock = lolex.install(0, ['Date'])
-      server.inject(routeOptions, function (response) {
-        clock.uninstall()
-        t.is(couchdb.pendingMocks()[0], undefined, 'CouchDB received request')
-
-        t.is(response.statusCode, 409, 'returns 409 status')
-        t.is(response.result.errors.length, 1, 'returns one error')
-        t.is(response.result.errors[0].title, 'Conflict', 'returns "Conflict" error')
-        t.is(response.result.errors[0].detail, 'An account with that username already exists', 'returns "An account with that username already exists." error message')
-        t.end()
-      })
-    })
-
-    group.end()
   })
 
-  test('PUT /session/account?include=foobar', function (t) {
+  group.test('CouchDB User already exists', function (t) {
+    var couchdb = mockCouchDbPutUser()
+      .reply(409, {
+        error: 'conflict',
+        reason: 'Document update conflict'
+      })
+
+    var clock = lolex.install(0, ['Date'])
+
+    this.server.inject(routeOptions, function (response) {
+      clock.uninstall()
+
+      t.is(couchdb.pendingMocks()[0], undefined, 'CouchDB received request')
+
+      t.is(response.statusCode, 409, 'returns 409 status')
+      t.is(response.result.errors.length, 1, 'returns one error')
+      t.is(response.result.errors[0].title, 'Conflict', 'returns "Conflict" error')
+      t.is(response.result.errors[0].detail, 'An account with that username already exists', 'returns "An account with that username already exists." error message')
+      t.end()
+    })
+  })
+
+  group.end()
+})
+
+test('PUT /session/account?include=foobar', function (t) {
+  getServer(function (error, server) {
+    t.error(error)
+
     var options = _.defaultsDeep({
       url: '/session/account?include=foobar'
     }, routeOptions)

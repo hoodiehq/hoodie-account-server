@@ -61,107 +61,105 @@ test('POST /requests', function (group) {
     }
   })
 
-  getServer({
-    notifications: {
-      transport: transport,
-      from: 'notifications@example.com'
-    }
-  }, function (error, server) {
-    if (error) {
-      return test('test setup', function (t) {
-        t.error(error)
-        t.end()
-      })
-    }
-
-    group.test('user found', function (t) {
-      var couchdb = mockUserFound()
-        .put('/_users/org.couchdb.user%3Apat%40example.com', function (body) {
-          var error = Joi.object({
-            _id: Joi.any().only('org.couchdb.user:pat@example.com').required(),
-            _rev: Joi.any().only('1-234').required(),
-            name: Joi.any().only('pat@example.com').required(),
-            type: Joi.any().only('user').required(),
-            salt: Joi.string().required(),
-            derived_key: Joi.string().required(),
-            iterations: Joi.any().only(10).required(),
-            password_scheme: Joi.any().only('pbkdf2').required(),
-            roles: Joi.array().items(Joi.string())
-          }).validate(body).error
-
-          return error === null
-        })
-        .query(true)
-        .reply(201, {
-          ok: true,
-          id: 'org.couchdb.user:pat-doe',
-          rev: '2-345'
-        })
-
-      server.inject(routeOptions, function (response) {
-        t.is(couchdb.pendingMocks()[0], undefined, 'all mocks satisfied')
-        t.is(response.statusCode, 201, 'returns 201 status')
-        t.ok(response.result.data.id, 'returns with id')
-        t.is(response.result.data.attributes.username, 'pat@example.com', 'returns username attribute')
-        t.ok(response.result.data.attributes.messageId, 'returns messageId attribute')
-
-        t.is(sentEmails.length, 1, '1 email sent')
-        var email = sentEmails.pop()
-        t.is(email.from, 'notifications@example.com', 'sent from notifications@example.com')
-        t.deepEqual(email.to, ['pat@example.com'], 'sent to pat@example.com')
-        t.ok(/username: pat@example.com\npassword: [0-9a-f]{12}(\n|$)/.test(email.body), 'has new password')
-
-        t.end()
-      })
+  group.beforeEach(function (next) {
+    var self = this
+    getServer({
+      notifications: {
+        transport: transport,
+        from: 'notifications@example.com'
+      }
+    }, function (error, server) {
+      self.server = server
+      next(error)
     })
+  })
 
-    group.test('user not found', function (t) {
-      var couchdb = mockCouchDbGetUserDoc
-        .reply(404, {
-          error: 'not_found',
-          reason: 'missing'
-        })
+  group.test('user found', function (t) {
+    var couchdb = mockUserFound()
+      .put('/_users/org.couchdb.user%3Apat%40example.com', function (body) {
+        var error = Joi.object({
+          _id: Joi.any().only('org.couchdb.user:pat@example.com').required(),
+          _rev: Joi.any().only('1-234').required(),
+          name: Joi.any().only('pat@example.com').required(),
+          type: Joi.any().only('user').required(),
+          salt: Joi.string().required(),
+          derived_key: Joi.string().required(),
+          iterations: Joi.any().only(10).required(),
+          password_scheme: Joi.any().only('pbkdf2').required(),
+          roles: Joi.array().items(Joi.string())
+        }).validate(body).error
 
-      server.inject(routeOptions, function (response) {
-        t.is(couchdb.pendingMocks()[0], undefined, 'all mocks satisfied')
-        t.is(response.statusCode, 404, 'returns 404 status')
-
-        t.is(sentEmails.length, 0, 'no email sent')
-
-        t.end()
+        return error === null
       })
-    })
+      .query(true)
+      .reply(201, {
+        ok: true,
+        id: 'org.couchdb.user:pat-doe',
+        rev: '2-345'
+      })
 
-    group.test('username is not a valid email', function (t) {
-      var options = defaultsDeep({
-        payload: {
-          data: {
-            attributes: {
-              username: 'foo'
-            }
+    this.server.inject(routeOptions, function (response) {
+      t.is(couchdb.pendingMocks()[0], undefined, 'all mocks satisfied')
+      t.is(response.statusCode, 201, 'returns 201 status')
+      t.ok(response.result.data.id, 'returns with id')
+      t.is(response.result.data.attributes.username, 'pat@example.com', 'returns username attribute')
+      t.ok(response.result.data.attributes.messageId, 'returns messageId attribute')
+
+      t.is(sentEmails.length, 1, '1 email sent')
+      var email = sentEmails.pop()
+      t.is(email.from, 'notifications@example.com', 'sent from notifications@example.com')
+      t.deepEqual(email.to, ['pat@example.com'], 'sent to pat@example.com')
+      t.ok(/username: pat@example.com\npassword: [0-9a-f]{12}(\n|$)/.test(email.body), 'has new password')
+
+      t.end()
+    })
+  })
+
+  group.test('user not found', function (t) {
+    var couchdb = mockCouchDbGetUserDoc
+      .reply(404, {
+        error: 'not_found',
+        reason: 'missing'
+      })
+
+    this.server.inject(routeOptions, function (response) {
+      t.is(response.statusCode, 404, 'returns 404 status')
+      t.is(sentEmails.length, 0, 'no email sent')
+      t.is(couchdb.pendingMocks()[0], undefined, 'all mocks satisfied')
+
+      t.end()
+    })
+  })
+
+  group.test('username is not a valid email', function (t) {
+    var options = defaultsDeep({
+      payload: {
+        data: {
+          attributes: {
+            username: 'foo'
           }
         }
-      }, routeOptions)
+      }
+    }, routeOptions)
 
-      server.inject(options, function (response) {
-        t.is(response.statusCode, 409, 'returns 409 status')
+    this.server.inject(options, function (response) {
+      t.is(response.statusCode, 409, 'returns 409 status')
 
-        t.is(response.result.errors.length, 1, 'returns one error')
-        t.is(response.result.errors[0].title, 'Conflict', 'returns "Conflict" error')
+      t.is(response.result.errors.length, 1, 'returns one error')
+      t.is(response.result.errors[0].title, 'Conflict', 'returns "Conflict" error')
 
-        // TODO: fix Joi’s standard error messages. `.detail` currently is
-        //       child "data" fails because [child "attributes" fails because
-        //       [child "username" fails because ["username" must be a valid email]]]
-        // t.is(response.result.errors[0].detail, 'username (foo) is invalid email address')
-        t.end()
-      })
+      // TODO: fix Joi’s standard error messages. `.detail` currently is
+      //       child "data" fails because [child "attributes" fails because
+      //       [child "username" fails because ["username" must be a valid email]]]
+      // t.is(response.result.errors[0].detail, 'username (foo) is invalid email address')
+      t.end()
     })
-
-    couchdbErrorTests(server, group, mockCouchDbGetUserDoc, routeOptions)
-    invalidTypeErrors(server, group, routeOptions, 'request')
-
-    group.end()
   })
+
+  couchdbErrorTests(group, mockCouchDbGetUserDoc, routeOptions)
+  invalidTypeErrors(group, routeOptions, 'request')
+
+  group.end()
 })
 
 test('POST /requests?include=foobar', function (t) {
@@ -171,18 +169,13 @@ test('POST /requests?include=foobar', function (t) {
       from: 'notifications@example.com'
     }
   }, function (error, server) {
-    if (error) {
-      return test('test setup', function (t) {
-        t.error(error)
-        t.end()
-      })
-    }
+    t.error(error)
 
     var options = _.defaultsDeep({
       url: '/requests?include=foobar'
     }, routeOptions)
 
-    server.inject(options, function (response) {
+    this.server.inject(options, function (response) {
       t.is(response.statusCode, 400, 'returns 400 status')
       t.deepEqual(response.result.errors[0].detail, '?include not allowed', 'returns error message')
       t.end()
@@ -199,7 +192,7 @@ test('POST /requests?include=foobar', function (t) {
 //       t.end()
 //     }
 //
-//     server.inject(routeOptions, function (response) {
+//     this.server.inject(routeOptions, function (response) {
 //       t.is(response.statusCode, 503, 'returns 503 status')
 //       t.end()
 //     })

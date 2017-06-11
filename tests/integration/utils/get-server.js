@@ -19,7 +19,7 @@ function getServer (options, callback) {
     callback = options
     options = {}
   }
-  var server = new Hapi.Server({
+  var server = this.server = new Hapi.Server({
     // easy debug!
     // debug: {
     //   request: ['error'],
@@ -30,7 +30,9 @@ function getServer (options, callback) {
 
   nock('http://localhost:5984')
     // PouchDB sends a request to see if db exists
-    .get('/_users/')
+    // no idea why .twice is needed here but without it put-account-test.js fails
+    // with very weird errors. Probably some race condition :/
+    .get('/_users/').twice()
     .query({})
     .reply(200, {db_name: '_users'})
     // design docs

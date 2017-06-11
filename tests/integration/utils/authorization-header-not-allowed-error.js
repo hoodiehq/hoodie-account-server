@@ -1,16 +1,13 @@
 module.exports = authorizationHeaderNotAllowedError
 
-var merge = require('lodash/merge')
+var cloneDeep = require('lodash/cloneDeep')
 
-function authorizationHeaderNotAllowedError (server, group, routeOptions) {
-  var options = merge({}, routeOptions, {
-    headers: {
-      authorization: 'Session sessionid123'
-    }
-  })
-
+function authorizationHeaderNotAllowedError (group, routeOptions) {
   group.test('Authorization header provided', function (t) {
-    server.inject(options, function (response) {
+    var options = cloneDeep(routeOptions)
+    options.headers.authorization = 'Session sessionid123'
+
+    this.server.inject(options, function (response) {
       t.is(response.statusCode, 403, 'returns 403 status')
       t.is(response.result.errors.length, 1, 'returns one error')
       t.is(response.result.errors[0].title, 'Forbidden', 'returns "Forbidden" error')

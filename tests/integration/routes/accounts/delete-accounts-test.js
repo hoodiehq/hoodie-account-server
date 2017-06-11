@@ -65,84 +65,76 @@ function mockCouchDbDeleteResponse () {
     .query(true)
 }
 
-getServer(function (error, server) {
-  if (error) {
-    return test('test setup', function (t) {
-      t.error(error)
+test('DELETE /accounts/abc4567', function (group) {
+  group.beforeEach(getServer)
+  group.test('No Authorization header sent', function (t) {
+    this.server.inject({
+      method: 'DELETE',
+      url: '/accounts/abc4567',
+      headers: {}
+    }, function (response) {
+      t.is(response.statusCode, 401, 'returns 401 status')
+      t.is(response.result.error, 'Unauthorized', 'returns "Unauthorized" error')
+      t.is(response.result.message, 'Authorization header missing', 'returns "Authorization header missing" error')
       t.end()
     })
-  }
-
-  test('DELETE /accounts/abc4567', function (group) {
-    group.test('No Authorization header sent', function (t) {
-      server.inject({
-        method: 'DELETE',
-        url: '/accounts/abc4567',
-        headers: {}
-      }, function (response) {
-        t.is(response.statusCode, 401, 'returns 401 status')
-        t.is(response.result.error, 'Unauthorized', 'returns "Unauthorized" error')
-        t.is(response.result.message, 'Authorization header missing', 'returns "Authorization header missing" error')
-        t.end()
-      })
-    })
-
-    group.test('CouchDB Session invalid', {todo: true}, function (t) {
-      t.end()
-    })
-
-    group.test('Not an admin', {todo: true}, function (t) {
-      t.end()
-    })
-
-    group.test('account not found', function (t) {
-      var couchdb = nock('http://localhost:5984')
-        .get('/_users/_design/byId/_view/byId')
-        .query({
-          key: '"abc4567"',
-          include_docs: true
-        })
-        .reply(200, {total_rows: 1, offset: 0, rows: []})
-
-      server.inject(routeOptions, function (response) {
-        t.is(couchdb.pendingMocks()[0], undefined, 'all mocks satisfied')
-        t.is(response.statusCode, 404, 'returns 404 status')
-        t.end()
-      })
-    })
-
-    group.test('account exists', function (t) {
-      var couchdb = mockCouchDbDeleteResponse()
-        .reply(201, {
-          ok: true,
-          id: 'org.couchdb.user:pat-doe',
-          rev: '2-3456'
-        })
-
-      server.inject(routeOptions, function (response) {
-        t.is(couchdb.pendingMocks()[0], undefined, 'all mocks satisfied')
-        t.is(response.statusCode, 204, 'returns 204 status')
-        t.is(response.result, null, 'returns no content')
-        t.end()
-      })
-    })
-
-    group.test('with ?include=profile', {todo: true}, function (t) {
-      t.end()
-    })
-
-    group.test('with ?include=foobar', {todo: true}, function (t) {
-      var options = _.defaultsDeep({
-        url: '/accounts/123?include=foobar'
-      }, routeOptions)
-
-      server.inject(options, function (response) {
-        t.is(response.statusCode, 400, 'returns 400 status')
-        t.deepEqual(response.result.errors[0].detail, 'Allowed value for ?include is \'profile\'', 'returns error message')
-        t.end()
-      })
-    })
-
-    group.end()
   })
+
+  group.test('CouchDB Session invalid', {todo: true}, function (t) {
+    t.end()
+  })
+
+  group.test('Not an admin', {todo: true}, function (t) {
+    t.end()
+  })
+
+  group.test('account not found', function (t) {
+    var couchdb = nock('http://localhost:5984')
+      .get('/_users/_design/byId/_view/byId')
+      .query({
+        key: '"abc4567"',
+        include_docs: true
+      })
+      .reply(200, {total_rows: 1, offset: 0, rows: []})
+
+    this.server.inject(routeOptions, function (response) {
+      t.is(couchdb.pendingMocks()[0], undefined, 'all mocks satisfied')
+      t.is(response.statusCode, 404, 'returns 404 status')
+      t.end()
+    })
+  })
+
+  group.test('account exists', function (t) {
+    var couchdb = mockCouchDbDeleteResponse()
+      .reply(201, {
+        ok: true,
+        id: 'org.couchdb.user:pat-doe',
+        rev: '2-3456'
+      })
+
+    this.server.inject(routeOptions, function (response) {
+      t.is(couchdb.pendingMocks()[0], undefined, 'all mocks satisfied')
+      t.is(response.statusCode, 204, 'returns 204 status')
+      t.is(response.result, null, 'returns no content')
+      t.end()
+    })
+  })
+
+  group.test('with ?include=profile', {todo: true}, function (t) {
+    t.end()
+  })
+
+  group.test('with ?include=foobar', {todo: true}, function (t) {
+    var options = _.defaultsDeep({
+      url: '/accounts/123?include=foobar'
+    }, routeOptions)
+
+    this.server.inject(options, function (response) {
+      t.is(response.statusCode, 400, 'returns 400 status')
+      t.deepEqual(response.result.errors[0].detail, 'Allowed value for ?include is \'profile\'', 'returns error message')
+      t.end()
+    })
+  })
+
+  group.end()
 })
