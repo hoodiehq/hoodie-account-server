@@ -1,13 +1,13 @@
-var lodash = require('lodash')
+var cloneDeep = require('lodash/cloneDeep')
 
 module.exports = invalidTypeErrors
 
-function invalidTypeErrors (server, group, routeOptions, type) {
-  var options = lodash.cloneDeep(routeOptions)
-  delete options.payload.data.type
-
+function invalidTypeErrors (group, routeOptions, type) {
   group.test('type is not provided', function (t) {
-    server.inject(options, function (response) {
+    var options = cloneDeep(routeOptions)
+    delete options.payload.data.type
+
+    this.server.inject(options, function (response) {
       t.is(response.statusCode, 409, 'returns 409 status')
       t.is(response.result.errors.length, 1, 'returns one error')
       t.is(response.result.errors[0].title, 'Conflict', 'returns "Conflict" error')
@@ -17,9 +17,10 @@ function invalidTypeErrors (server, group, routeOptions, type) {
   })
 
   group.test('type is not supported', function (t) {
+    var options = cloneDeep(routeOptions)
     options.payload.data.type = 'foo'
 
-    server.inject(options, function (response) {
+    this.server.inject(options, function (response) {
       t.is(response.statusCode, 409, 'returns 409 status')
       t.is(response.result.errors.length, 1, 'returns one error')
       t.is(response.result.errors[0].title, 'Conflict', 'returns "Conflict" error')

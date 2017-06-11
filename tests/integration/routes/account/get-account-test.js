@@ -36,92 +36,91 @@ function mockCouchDbUserFound (docChange) {
     }, docChange))
 }
 
-getServer(function (error, server) {
-  if (error) {
-    return test('test setup', function (t) {
-      t.error(error)
+test('GET /session/account', function (group) {
+  group.beforeEach(getServer)
+
+  couchdbErrorTests(group, couchdbGetUserMock, routeOptions)
+
+  group.test('Session does exist', function (t) {
+    var couch = mockCouchDbUserFound()
+    var accountFixture = require('../../fixtures/account.json')
+
+    this.server.inject(routeOptions, function (response) {
+      t.is(couch.pendingMocks()[0], undefined, 'all mocks satisfied')
+
+      delete response.result.meta
+      t.is(response.statusCode, 200, 'returns 200 status')
+      t.deepEqual(response.result, accountFixture, 'returns account in right format')
       t.end()
     })
-  }
-
-  test('GET /session/account', function (group) {
-    couchdbErrorTests(server, group, couchdbGetUserMock, routeOptions)
-
-    group.test('Session does exist', function (t) {
-      var couch = mockCouchDbUserFound()
-      var accountFixture = require('../../fixtures/account.json')
-
-      server.inject(routeOptions, function (response) {
-        t.is(couch.pendingMocks()[0], undefined, 'all mocks satisfied')
-
-        delete response.result.meta
-        t.is(response.statusCode, 200, 'returns 200 status')
-        t.deepEqual(response.result, accountFixture, 'returns account in right format')
-        t.end()
-      })
-    })
-
-    group.test('Session does not exist', function (t) {
-      var couch = couchdbGetUserMock
-        .reply(404, {error: 'Not Found'})
-
-      server.inject(routeOptions, function (response) {
-        t.is(couch.pendingMocks()[0], undefined, 'all mocks satisfied')
-        t.is(response.statusCode, 401, 'returns 401 status')
-        t.is(response.result.errors.length, 1, 'returns one error')
-        t.is(response.result.errors[0].title, 'Unauthorized', 'returns "Unauthorized" error')
-        t.is(response.result.errors[0].detail, 'Session invalid', 'returns Invalid session message')
-        t.end()
-      })
-    })
-
-    group.test('User Is admin', function (t) {
-      var requestOptions = _.defaultsDeep({
-        headers: {
-          // calculateSessionId('admin', '1081b31861bd1e91611341da16c11c16a12c13718d1f712e', 'secret', 1209600)
-          authorization: 'Session YWRtaW46MTI3NTAwOh08V1EljPqAPAnv8mtxWNF87zdW'
-        }
-      }, routeOptions)
-
-      server.inject(requestOptions, function (response) {
-        delete response.result.meta
-        t.is(response.statusCode, 404, 'returns 404 status')
-
-        t.deepEqual(response.result.errors[0].detail, 'Admins have no accounts', 'returns "Admins have no accounts" error')
-        t.end()
-      })
-    })
-
-    group.end()
   })
 
-  test('GET /session/account?include=profile', function (group) {
-    group.test('Session does exist', function (t) {
-      var couch = mockCouchDbUserFound({
-        profile: {
-          fullName: 'pat Doe',
-          email: 'pat@example.com'
-        }
-      })
-      var accountWithProfileFixture = require('../../fixtures/account-with-profile.json')
-      var requestOptions = _.defaultsDeep({
-        url: '/session/account?include=profile'
-      }, routeOptions)
+  group.test('Session does not exist', function (t) {
+    var couch = couchdbGetUserMock
+      .reply(404, {error: 'Not Found'})
 
-      server.inject(requestOptions, function (response) {
-        t.is(couch.pendingMocks()[0], undefined, 'all mocks satisfied')
-
-        delete response.result.meta
-        t.is(response.statusCode, 200, 'returns 200 status')
-        t.deepEqual(response.result.included, accountWithProfileFixture.included, 'returns account in right format')
-        t.end()
-      })
+    this.server.inject(routeOptions, function (response) {
+      t.is(couch.pendingMocks()[0], undefined, 'all mocks satisfied')
+      t.is(response.statusCode, 401, 'returns 401 status')
+      t.is(response.result.errors.length, 1, 'returns one error')
+      t.is(response.result.errors[0].title, 'Unauthorized', 'returns "Unauthorized" error')
+      t.is(response.result.errors[0].detail, 'Session invalid', 'returns Invalid session message')
+      t.end()
     })
-
-    group.end()
   })
 
-  test('GET /session/account?include=foobar', function (t) {
+  group.test('User Is admin', function (t) {
+    var requestOptions = _.defaultsDeep({
+      headers: {
+        // calculateSessionId('admin', '1081b31861bd1e91611341da16c11c16a12c13718d1f712e', 'secret', 1209600)
+        authorization: 'Session YWRtaW46MTI3NTAwOh08V1EljPqAPAnv8mtxWNF87zdW'
+      }
+    }, routeOptions)
+
+    this.server.inject(requestOptions, function (response) {
+      delete response.result.meta
+      t.is(response.statusCode, 404, 'returns 404 status')
+
+      t.deepEqual(response.result.errors[0].detail, 'Admins have no accounts', 'returns "Admins have no accounts" error')
+      t.end()
+    })
+  })
+
+  group.end()
+})
+
+test('GET /session/account?include=profile', function (group) {
+  group.beforeEach(getServer)
+
+  group.test('Session does exist', function (t) {
+    var couch = mockCouchDbUserFound({
+      profile: {
+        fullName: 'pat Doe',
+        email: 'pat@example.com'
+      }
+    })
+    var accountWithProfileFixture = require('../../fixtures/account-with-profile.json')
+    var requestOptions = _.defaultsDeep({
+      url: '/session/account?include=profile'
+    }, routeOptions)
+
+    this.server.inject(requestOptions, function (response) {
+      t.is(couch.pendingMocks()[0], undefined, 'all mocks satisfied')
+
+      delete response.result.meta
+      t.is(response.statusCode, 200, 'returns 200 status')
+      t.deepEqual(response.result.included, accountWithProfileFixture.included, 'returns account in right format')
+      t.end()
+    })
+  })
+
+  group.end()
+})
+
+test('GET /session/account?include=foobar', function (t) {
+  getServer(function (error, server) {
+    t.error(error)
+
     var options = _.defaultsDeep({
       url: '/session/account?include=foobar'
     }, routeOptions)

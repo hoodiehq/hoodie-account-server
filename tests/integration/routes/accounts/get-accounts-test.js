@@ -29,331 +29,326 @@ function mockCouchDbGetAccounts () {
   })
 }
 
-getServer(function (error, server) {
-  if (error) {
-    return test('test setup', function (t) {
-      t.error(error)
+test('GET /accounts', function (group) {
+  group.beforeEach(getServer)
+
+  group.test('No Authorization header sent', function (t) {
+    this.server.inject({
+      method: 'GET',
+      url: '/accounts',
+      headers: {}
+    }, function (response) {
+      t.is(response.statusCode, 401, 'returns 401 status')
+      t.is(response.result.error, 'Unauthorized', 'returns "Unauthorized" error')
+      t.is(response.result.message, 'Authorization header missing', 'returns "Authorization header missing" error')
       t.end()
     })
-  }
+  })
 
-  test('GET /accounts', function (group) {
-    group.test('No Authorization header sent', function (t) {
-      server.inject({
-        method: 'GET',
-        url: '/accounts',
-        headers: {}
-      }, function (response) {
-        t.is(response.statusCode, 401, 'returns 401 status')
-        t.is(response.result.error, 'Unauthorized', 'returns "Unauthorized" error')
-        t.is(response.result.message, 'Authorization header missing', 'returns "Authorization header missing" error')
-        t.end()
-      })
+  group.test('CouchDB Session invalid', function (t) {
+    var requestOptions = _.defaultsDeep({
+      headers: {
+        authorization: 'Session someInvalidSession'
+      }
+    }, routeOptions)
+
+    this.server.inject(requestOptions, function (response) {
+      t.is(response.statusCode, 401, 'returns 401 status')
+      t.is(response.result.errors.length, 1, 'returns one error')
+      t.is(response.result.errors[0].title, 'Unauthorized', 'returns "Unauthorized" error')
+      t.is(response.result.errors[0].detail, 'Session invalid', 'returns Invalid session message')
+      t.end()
     })
+  })
 
-    group.test('CouchDB Session invalid', function (t) {
-      var requestOptions = _.defaultsDeep({
-        headers: {
-          authorization: 'Session someInvalidSession'
+  group.test('Not an admin', function (t) {
+    var requestOptions = _.defaultsDeep({
+      headers: {
+        // Session ID based on 'pat-doe', 'salt123', 'secret', 1209600
+        authorization: 'Session cGF0LWRvZTpCQkZFMzg4MDqp7ppCNngda1JMi7XcyhtaUxf2nA'
+      }
+    }, routeOptions)
+
+    this.server.inject(requestOptions, function (response) {
+      t.is(response.statusCode, 401, 'returns 401 status')
+      t.is(response.result.errors.length, 1, 'returns one error')
+      t.is(response.result.errors[0].title, 'Unauthorized', 'returns "Unauthorized" error')
+      t.is(response.result.errors[0].detail, 'Session invalid', 'returns Invalid session message')
+      t.end()
+    })
+  })
+
+  group.test('CouchDB Session valid', function (t) {
+    var couchdb = mockCouchDbGetAccounts().reply(200, {
+      rows: [{
+        id: 'org.couchdb.user:pat-doe',
+        key: 'org.couchdb.user:pat-doe',
+        value: { rev: '1-234' },
+        doc: {
+          _id: 'org.couchdb.user:pat-doe',
+          _rev: '1-234',
+          name: 'pat-doe',
+          createdAt: '1970-01-01T00:00:00.000Z',
+          signedUpAt: '1970-01-01T00:00:00.000Z',
+          roles: ['id:abc4567']
         }
-      }, routeOptions)
-
-      server.inject(requestOptions, function (response) {
-        t.is(response.statusCode, 401, 'returns 401 status')
-        t.is(response.result.errors.length, 1, 'returns one error')
-        t.is(response.result.errors[0].title, 'Unauthorized', 'returns "Unauthorized" error')
-        t.is(response.result.errors[0].detail, 'Session invalid', 'returns Invalid session message')
-        t.end()
-      })
-    })
-
-    group.test('Not an admin', function (t) {
-      var requestOptions = _.defaultsDeep({
-        headers: {
-          // Session ID based on 'pat-doe', 'salt123', 'secret', 1209600
-          authorization: 'Session cGF0LWRvZTpCQkZFMzg4MDqp7ppCNngda1JMi7XcyhtaUxf2nA'
+      }, {
+        id: 'org.couchdb.user:sam',
+        key: 'org.couchdb.user:sam',
+        value: { rev: '1-567' },
+        doc: {
+          _id: 'org.couchdb.user:sam',
+          _rev: '1-567',
+          name: 'sam',
+          createdAt: '1970-01-01T00:00:00.000Z',
+          signedUpAt: '1970-01-01T00:00:00.000Z',
+          roles: ['id:def678']
         }
-      }, routeOptions)
-
-      server.inject(requestOptions, function (response) {
-        t.is(response.statusCode, 401, 'returns 401 status')
-        t.is(response.result.errors.length, 1, 'returns one error')
-        t.is(response.result.errors[0].title, 'Unauthorized', 'returns "Unauthorized" error')
-        t.is(response.result.errors[0].detail, 'Session invalid', 'returns Invalid session message')
-        t.end()
-      })
+      }]
     })
 
-    group.test('CouchDB Session valid', function (t) {
-      var couchdb = mockCouchDbGetAccounts().reply(200, {
+    var accounts = require('../../fixtures/accounts.json')
+
+    this.server.inject(routeOptions, function (response) {
+      t.is(couchdb.pendingMocks()[0], undefined, 'all mocks satisfied')
+      delete response.result.meta
+      t.is(response.statusCode, 200, 'returns 200 status')
+
+      t.deepEqual(response.result.data, accounts.data, 'returns the right content')
+      t.end()
+    })
+  })
+
+  group.test('with ?include=profile', function (t) {
+    var couchdb = mockCouchDbGetAccounts().reply(200, {
+      rows: [{
+        id: 'org.couchdb.user:pat-doe',
+        key: 'org.couchdb.user:pat-doe',
+        value: { rev: '1-234' },
+        doc: {
+          _id: 'org.couchdb.user:pat-doe',
+          _rev: '1-234',
+          name: 'pat-doe',
+          createdAt: '1970-01-01T00:00:00.000Z',
+          signedUpAt: '1970-01-01T00:00:00.000Z',
+          roles: ['id:abc4567'],
+          profile: {
+            fullname: 'Dr Pat Hook'
+          }
+        }
+      }, {
+        id: 'org.couchdb.user:sam',
+        key: 'org.couchdb.user:sam',
+        value: { rev: '1-567' },
+        doc: {
+          _id: 'org.couchdb.user:sam',
+          _rev: '1-567',
+          name: 'sam',
+          createdAt: '1970-01-01T00:00:00.000Z',
+          signedUpAt: '1970-01-01T00:00:00.000Z',
+          roles: ['id:def678'],
+          profile: {
+            fullname: 'Mrs. Saminent'
+          }
+        }
+      }]
+    })
+
+    var accounts = require('../../fixtures/accounts-with-profile.json')
+
+    this.server.inject({
+      method: 'GET',
+      url: '/accounts?include=profile',
+      headers: headers
+    }, function (response) {
+      t.is(couchdb.pendingMocks()[0], undefined, 'all mocks satisfied')
+      delete response.result.meta
+      t.is(response.statusCode, 200, 'returns 200 status')
+      t.deepEqual(response.result, accounts, 'returns the right content')
+      t.end()
+    })
+  })
+
+  group.test('with ?include=foobar', function (t) {
+    var options = _.defaultsDeep({
+      url: '/accounts?include=foobar'
+    }, routeOptions)
+
+    this.server.inject(options, function (response) {
+      t.is(response.statusCode, 400, 'returns 400 status')
+      t.deepEqual(response.result.errors[0].detail, 'Allowed value for ?include is \'profile\'', 'returns error message')
+      t.end()
+    })
+  })
+
+  couchdbErrorTests(group, mockCouchDbGetAccounts, routeOptions)
+
+  group.end()
+})
+
+test('GET /accounts/abc4567', function (group) {
+  group.beforeEach(getServer)
+
+  group.test('No Authorization header sent', function (t) {
+    this.server.inject({
+      method: 'GET',
+      url: '/accounts/abc4567',
+      headers: {}
+    }, function (response) {
+      t.is(response.statusCode, 401, 'returns 401 status')
+      t.end()
+    })
+  })
+
+  group.test('Account found', function (t) {
+    var couchdb = nock('http://localhost:5984')
+      .get('/_users/_design/byId/_view/byId')
+      .query({
+        key: '"abc1234"',
+        include_docs: true
+      })
+      .reply(200, {
+        total_rows: 1,
+        offset: 0,
         rows: [{
-          id: 'org.couchdb.user:pat-doe',
-          key: 'org.couchdb.user:pat-doe',
-          value: { rev: '1-234' },
           doc: {
-            _id: 'org.couchdb.user:pat-doe',
-            _rev: '1-234',
+            roles: [
+              'id:abc1234'
+            ],
             name: 'pat-doe',
             createdAt: '1970-01-01T00:00:00.000Z',
             signedUpAt: '1970-01-01T00:00:00.000Z',
-            roles: ['id:abc4567']
-          }
-        }, {
-          id: 'org.couchdb.user:sam',
-          key: 'org.couchdb.user:sam',
-          value: { rev: '1-567' },
-          doc: {
-            _id: 'org.couchdb.user:sam',
-            _rev: '1-567',
-            name: 'sam',
-            createdAt: '1970-01-01T00:00:00.000Z',
-            signedUpAt: '1970-01-01T00:00:00.000Z',
-            roles: ['id:def678']
+            profile: {
+              fullname: 'Dr. Pat Hook'
+            }
           }
         }]
       })
 
-      var accounts = require('../../fixtures/accounts.json')
+    var account = require('../../fixtures/admin-account.json')
 
-      server.inject(routeOptions, function (response) {
-        t.is(couchdb.pendingMocks()[0], undefined, 'all mocks satisfied')
-        delete response.result.meta
-        t.is(response.statusCode, 200, 'returns 200 status')
+    this.server.inject({
+      method: 'GET',
+      url: '/accounts/abc1234',
+      headers: headers
+    }, function (response) {
+      t.is(couchdb.pendingMocks()[0], undefined, 'all mocks satisfied')
 
-        t.deepEqual(response.result.data, accounts.data, 'returns the right content')
-        t.end()
-      })
+      delete response.result.meta
+      t.is(response.statusCode, 200, 'returns 200 status')
+      t.deepEqual(response.result, account, 'returns the right content')
+      t.end()
     })
+  })
 
-    group.test('with ?include=profile', function (t) {
-      var couchdb = mockCouchDbGetAccounts().reply(200, {
+  group.test('Account not found', function (t) {
+    var couchdb = nock('http://localhost:5984')
+      .get('/_users/_design/byId/_view/byId')
+      .query({
+        key: '"abc1234"',
+        include_docs: true
+      })
+      .reply(200, {total_rows: 1, offset: 0, rows: []})
+
+    this.server.inject({
+      method: 'GET',
+      url: '/accounts/abc1234',
+      headers: headers
+    }, function (response) {
+      t.is(couchdb.pendingMocks()[0], undefined, 'all mocks satisfied')
+      delete response.result.meta
+      t.is(response.statusCode, 404, 'returns 404 status')
+
+      t.end()
+    })
+  })
+
+  group.test('CouchDB Session invalid', function (t) {
+    var options = _.defaultsDeep({
+      url: '/accounts/abc1234',
+      headers: {
+        authorization: 'Session someInvalidSession',
+        accept: 'application/vnd.api+json'
+      }
+    }, routeOptions)
+    this.server.inject(options, function (response) {
+      t.is(response.statusCode, 401, 'returns 401 status')
+      t.is(response.result.errors.length, 1, 'returns one error')
+      t.is(response.result.errors[0].title, 'Unauthorized', 'returns "Unauthorized" error')
+      t.is(response.result.errors[0].detail, 'Session invalid', 'returns "Session invalid" message')
+      t.end()
+    })
+  })
+
+  group.test('Not an admin', function (t) {
+    this.server.inject({
+      method: 'GET',
+      url: '/accounts/abc1234',
+      headers: {
+        // Session ID based on 'pat-doe', 'salt123', 'secret', 1209600
+        authorization: 'Session cGF0LWRvZTpCQkZFMzg4MDqp7ppCNngda1JMi7XcyhtaUxf2nA',
+        accept: 'application/vnd.api+json'
+      }
+    }, function (response) {
+      t.is(response.statusCode, 401, 'returns 401 status')
+      t.is(response.result.errors.length, 1, 'returns one error')
+      t.is(response.result.errors[0].title, 'Unauthorized', 'returns "Unauthorized" error')
+      t.is(response.result.errors[0].detail, 'Session invalid', 'returns Invalid session message')
+      t.end()
+    })
+  })
+
+  group.test('with ?include=profile', function (t) {
+    var couchdb = nock('http://localhost:5984')
+      .get('/_users/_design/byId/_view/byId')
+      .query({
+        key: '"abc1234"',
+        include_docs: true
+      })
+      .reply(200, {
+        total_rows: 1,
+        offset: 0,
         rows: [{
-          id: 'org.couchdb.user:pat-doe',
-          key: 'org.couchdb.user:pat-doe',
-          value: { rev: '1-234' },
           doc: {
-            _id: 'org.couchdb.user:pat-doe',
-            _rev: '1-234',
+            roles: [
+              'id:abc1234'
+            ],
             name: 'pat-doe',
             createdAt: '1970-01-01T00:00:00.000Z',
             signedUpAt: '1970-01-01T00:00:00.000Z',
-            roles: ['id:abc4567'],
             profile: {
               fullname: 'Dr Pat Hook'
             }
           }
-        }, {
-          id: 'org.couchdb.user:sam',
-          key: 'org.couchdb.user:sam',
-          value: { rev: '1-567' },
-          doc: {
-            _id: 'org.couchdb.user:sam',
-            _rev: '1-567',
-            name: 'sam',
-            createdAt: '1970-01-01T00:00:00.000Z',
-            signedUpAt: '1970-01-01T00:00:00.000Z',
-            roles: ['id:def678'],
-            profile: {
-              fullname: 'Mrs. Saminent'
-            }
-          }
         }]
       })
 
-      var accounts = require('../../fixtures/accounts-with-profile.json')
+    var accountWithProfile = require('../../fixtures/admin-account-with-profile.json')
 
-      server.inject({
-        method: 'GET',
-        url: '/accounts?include=profile',
-        headers: headers
-      }, function (response) {
-        t.is(couchdb.pendingMocks()[0], undefined, 'all mocks satisfied')
-        delete response.result.meta
-        t.is(response.statusCode, 200, 'returns 200 status')
-        t.deepEqual(response.result, accounts, 'returns the right content')
-        t.end()
-      })
+    this.server.inject({
+      method: 'GET',
+      url: '/accounts/abc1234?include=profile',
+      headers: headers
+    }, function (response) {
+      t.is(couchdb.pendingMocks()[0], undefined, 'all mocks satisfied')
+      delete response.result.meta
+      t.is(response.statusCode, 200, 'returns 200 status')
+      t.deepEqual(response.result, accountWithProfile, 'returns the right content')
+      t.end()
     })
-
-    group.test('with ?include=foobar', function (t) {
-      var options = _.defaultsDeep({
-        url: '/accounts?include=foobar'
-      }, routeOptions)
-
-      server.inject(options, function (response) {
-        t.is(response.statusCode, 400, 'returns 400 status')
-        t.deepEqual(response.result.errors[0].detail, 'Allowed value for ?include is \'profile\'', 'returns error message')
-        t.end()
-      })
-    })
-
-    couchdbErrorTests(server, group, mockCouchDbGetAccounts, routeOptions)
-
-    group.end()
   })
 
-  test('GET /accounts/abc4567', function (group) {
-    group.test('No Authorization header sent', function (t) {
-      server.inject({
-        method: 'GET',
-        url: '/accounts/abc4567',
-        headers: {}
-      }, function (response) {
-        t.is(response.statusCode, 401, 'returns 401 status')
-        t.end()
-      })
+  group.test('with ?include=foobar', function (t) {
+    this.server.inject({
+      method: 'GET',
+      url: '/accounts/abc1234?include=foobar',
+      headers: headers
+    }, function (response) {
+      t.is(response.statusCode, 400, 'returns 400 status')
+      t.deepEqual(response.result.errors[0].detail, 'Allowed value for ?include is \'profile\'', 'returns error message')
+      t.end()
     })
-
-    group.test('Account found', function (t) {
-      var couchdb = nock('http://localhost:5984')
-        .get('/_users/_design/byId/_view/byId')
-        .query({
-          key: '"abc1234"',
-          include_docs: true
-        })
-        .reply(200, {
-          total_rows: 1,
-          offset: 0,
-          rows: [{
-            doc: {
-              roles: [
-                'id:abc1234'
-              ],
-              name: 'pat-doe',
-              createdAt: '1970-01-01T00:00:00.000Z',
-              signedUpAt: '1970-01-01T00:00:00.000Z',
-              profile: {
-                fullname: 'Dr. Pat Hook'
-              }
-            }
-          }]
-        })
-
-      var account = require('../../fixtures/admin-account.json')
-
-      server.inject({
-        method: 'GET',
-        url: '/accounts/abc1234',
-        headers: headers
-      }, function (response) {
-        t.is(couchdb.pendingMocks()[0], undefined, 'all mocks satisfied')
-
-        delete response.result.meta
-        t.is(response.statusCode, 200, 'returns 200 status')
-        t.deepEqual(response.result, account, 'returns the right content')
-        t.end()
-      })
-    })
-
-    group.test('Account not found', function (t) {
-      var couchdb = nock('http://localhost:5984')
-        .get('/_users/_design/byId/_view/byId')
-        .query({
-          key: '"abc1234"',
-          include_docs: true
-        })
-        .reply(200, {total_rows: 1, offset: 0, rows: []})
-
-      server.inject({
-        method: 'GET',
-        url: '/accounts/abc1234',
-        headers: headers
-      }, function (response) {
-        t.is(couchdb.pendingMocks()[0], undefined, 'all mocks satisfied')
-        delete response.result.meta
-        t.is(response.statusCode, 404, 'returns 404 status')
-
-        t.end()
-      })
-    })
-
-    group.test('CouchDB Session invalid', function (t) {
-      var options = _.defaultsDeep({
-        url: '/accounts/abc1234',
-        headers: {
-          authorization: 'Session someInvalidSession',
-          accept: 'application/vnd.api+json'
-        }
-      }, routeOptions)
-      server.inject(options, function (response) {
-        t.is(response.statusCode, 401, 'returns 401 status')
-        t.is(response.result.errors.length, 1, 'returns one error')
-        t.is(response.result.errors[0].title, 'Unauthorized', 'returns "Unauthorized" error')
-        t.is(response.result.errors[0].detail, 'Session invalid', 'returns "Session invalid" message')
-        t.end()
-      })
-    })
-
-    group.test('Not an admin', function (t) {
-      server.inject({
-        method: 'GET',
-        url: '/accounts/abc1234',
-        headers: {
-          // Session ID based on 'pat-doe', 'salt123', 'secret', 1209600
-          authorization: 'Session cGF0LWRvZTpCQkZFMzg4MDqp7ppCNngda1JMi7XcyhtaUxf2nA',
-          accept: 'application/vnd.api+json'
-        }
-      }, function (response) {
-        t.is(response.statusCode, 401, 'returns 401 status')
-        t.is(response.result.errors.length, 1, 'returns one error')
-        t.is(response.result.errors[0].title, 'Unauthorized', 'returns "Unauthorized" error')
-        t.is(response.result.errors[0].detail, 'Session invalid', 'returns Invalid session message')
-        t.end()
-      })
-    })
-
-    group.test('with ?include=profile', function (t) {
-      var couchdb = nock('http://localhost:5984')
-        .get('/_users/_design/byId/_view/byId')
-        .query({
-          key: '"abc1234"',
-          include_docs: true
-        })
-        .reply(200, {
-          total_rows: 1,
-          offset: 0,
-          rows: [{
-            doc: {
-              roles: [
-                'id:abc1234'
-              ],
-              name: 'pat-doe',
-              createdAt: '1970-01-01T00:00:00.000Z',
-              signedUpAt: '1970-01-01T00:00:00.000Z',
-              profile: {
-                fullname: 'Dr Pat Hook'
-              }
-            }
-          }]
-        })
-
-      var accountWithProfile = require('../../fixtures/admin-account-with-profile.json')
-
-      server.inject({
-        method: 'GET',
-        url: '/accounts/abc1234?include=profile',
-        headers: headers
-      }, function (response) {
-        t.is(couchdb.pendingMocks()[0], undefined, 'all mocks satisfied')
-        delete response.result.meta
-        t.is(response.statusCode, 200, 'returns 200 status')
-        t.deepEqual(response.result, accountWithProfile, 'returns the right content')
-        t.end()
-      })
-    })
-
-    group.test('with ?include=foobar', function (t) {
-      server.inject({
-        method: 'GET',
-        url: '/accounts/abc1234?include=foobar',
-        headers: headers
-      }, function (response) {
-        t.is(response.statusCode, 400, 'returns 400 status')
-        t.deepEqual(response.result.errors[0].detail, 'Allowed value for ?include is \'profile\'', 'returns error message')
-        t.end()
-      })
-    })
-
-    group.end()
   })
+
+  group.end()
 })

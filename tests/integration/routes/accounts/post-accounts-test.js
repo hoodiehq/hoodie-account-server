@@ -43,98 +43,95 @@ var mockCouchDbCreateUserDoc = nock('http://localhost:5984')
   })
   .query(true)
 
-getServer(function (error, server) {
-  if (error) {
-    return test('test setup', function (t) {
-      t.error(error)
+test('POST /accounts', function (group) {
+  group.beforeEach(getServer)
+
+  group.test('No Authorization header sent', function (t) {
+    this.server.inject({
+      method: 'POST',
+      url: '/accounts',
+      headers: {}
+    }, function (response) {
+      t.is(response.statusCode, 401, 'returns 401 status')
+      t.is(response.result.error, 'Unauthorized', 'returns "Unauthorized" error')
+      t.is(response.result.message, 'Authorization header missing', 'returns "Authorization header missing" error')
       t.end()
     })
-  }
-
-  test('POST /accounts', function (group) {
-    group.test('No Authorization header sent', function (t) {
-      server.inject({
-        method: 'POST',
-        url: '/accounts',
-        headers: {}
-      }, function (response) {
-        t.is(response.statusCode, 401, 'returns 401 status')
-        t.is(response.result.error, 'Unauthorized', 'returns "Unauthorized" error')
-        t.is(response.result.message, 'Authorization header missing', 'returns "Authorization header missing" error')
-        t.end()
-      })
-    })
-
-    group.test('Not an admin', function (t) {
-      server.inject({
-        method: 'POST',
-        url: '/accounts',
-        headers: {
-          accept: 'application/vnd.api+json',
-          authorization: 'Session cGF0LWRvZTpCQkZFMzg4MDqp7ppCNngda1JMi7XcyhtaUxf2nA',
-          'content-type': 'application/vnd.api+json'
-        },
-        payload: {
-          data: {
-            type: 'account',
-            attributes: {
-              username: 'pat-doe',
-              password: 'secret'
-            }
-          }
-        }
-      }, function (response) {
-        t.is(response.statusCode, 401, 'returns 401 status')
-        t.is(response.result.errors[0].title, 'Unauthorized', 'returns "Unauthorized" error')
-        t.is(response.result.errors[0].detail, 'Session invalid', 'returns "Session invalid" error')
-        t.end()
-      })
-    })
-
-    // prepared test for https://github.com/hoodiehq/hoodie-account-server/issues/125
-    group.test('Session cannot be found', function (t) {
-      var requestOptions = cloneDeep(routeOptions)
-      requestOptions.headers.authorization = 'Session YWRtaW46__BOGUS'
-
-      server.inject(requestOptions, function (response) {
-        t.is(response.statusCode, 401, 'returns 401 status')
-        t.is(response.result.errors.length, 1, 'returns one error')
-        t.is(response.result.errors[0].title, 'Unauthorized', 'returns "Unauthorized" error')
-        t.is(response.result.errors[0].detail, 'Session invalid', 'returns "Session invalid" error')
-        t.end()
-      })
-    })
-
-    group.test('CouchDB Session valid', function (t) {
-      var couchdb = mockCouchDbCreateUserDoc
-        .reply(201, {
-          ok: true,
-          id: 'org.couchdb.user:pat-doe',
-          rev: '1-234'
-        })
-
-      server.inject(routeOptions, function (response) {
-        t.is(couchdb.pendingMocks()[0], undefined, 'all mocks satisfied')
-        delete response.result.meta
-
-        t.is(response.statusCode, 201, 'returns 201 status')
-        t.is(response.result.data.attributes.username, 'pat-doe', 'returns the right content')
-        t.end()
-      })
-    })
-
-    couchdbErrorTests(server, group, mockCouchDbCreateUserDoc, routeOptions)
-    invalidTypeErrors(server, group, routeOptions, 'account')
-
-    group.end()
   })
 
-  test('POST /accounts?include=foobar', function (t) {
+  group.test('Not an admin', function (t) {
+    this.server.inject({
+      method: 'POST',
+      url: '/accounts',
+      headers: {
+        accept: 'application/vnd.api+json',
+        authorization: 'Session cGF0LWRvZTpCQkZFMzg4MDqp7ppCNngda1JMi7XcyhtaUxf2nA',
+        'content-type': 'application/vnd.api+json'
+      },
+      payload: {
+        data: {
+          type: 'account',
+          attributes: {
+            username: 'pat-doe',
+            password: 'secret'
+          }
+        }
+      }
+    }, function (response) {
+      t.is(response.statusCode, 401, 'returns 401 status')
+      t.is(response.result.errors[0].title, 'Unauthorized', 'returns "Unauthorized" error')
+      t.is(response.result.errors[0].detail, 'Session invalid', 'returns "Session invalid" error')
+      t.end()
+    })
+  })
+
+  // prepared test for https://github.com/hoodiehq/hoodie-account-server/issues/125
+  group.test('Session cannot be found', function (t) {
+    var requestOptions = cloneDeep(routeOptions)
+    requestOptions.headers.authorization = 'Session YWRtaW46__BOGUS'
+
+    this.server.inject(requestOptions, function (response) {
+      t.is(response.statusCode, 401, 'returns 401 status')
+      t.is(response.result.errors.length, 1, 'returns one error')
+      t.is(response.result.errors[0].title, 'Unauthorized', 'returns "Unauthorized" error')
+      t.is(response.result.errors[0].detail, 'Session invalid', 'returns "Session invalid" error')
+      t.end()
+    })
+  })
+
+  group.test('CouchDB Session valid', function (t) {
+    var couchdb = mockCouchDbCreateUserDoc
+      .reply(201, {
+        ok: true,
+        id: 'org.couchdb.user:pat-doe',
+        rev: '1-234'
+      })
+
+    this.server.inject(routeOptions, function (response) {
+      t.is(couchdb.pendingMocks()[0], undefined, 'all mocks satisfied')
+      delete response.result.meta
+
+      t.is(response.statusCode, 201, 'returns 201 status')
+      t.is(response.result.data.attributes.username, 'pat-doe', 'returns the right content')
+      t.end()
+    })
+  })
+
+  couchdbErrorTests(group, mockCouchDbCreateUserDoc, routeOptions)
+  invalidTypeErrors(group, routeOptions, 'account')
+
+  group.end()
+})
+
+test('POST /accounts?include=foobar', function (t) {
+  getServer(function (error, server) {
+    t.error(error)
+
     var options = _.defaultsDeep({
       url: '/accounts?include=foobar'
     }, routeOptions)
 
-    server.inject(options, function (response) {
+    this.server.inject(options, function (response) {
       t.is(response.statusCode, 400, 'returns 400 status')
       t.deepEqual(response.result.errors[0].detail, 'Allowed value for ?include is \'profile\'', 'returns error message')
       t.end()

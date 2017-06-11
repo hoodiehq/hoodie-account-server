@@ -73,13 +73,7 @@ var usernameChangeOptions = {
 }
 
 function mockPasswordChange () {
-  // user document gets fetched 3 times
-  // We might improve that by implementing
-  // an API like account.update({session: id}, change)
   // session.find()
-  mockGetUser()
-
-  // account.update()
   mockGetUser()
 
   couchdbMock.put('/_users/org.couchdb.user%3Apat-doe', function (body) {
@@ -104,20 +98,11 @@ function mockPasswordChange () {
     rev: '2-3456'
   })
 
-  // session.add()
-  mockGetUser()
-
   return couchdbMock
 }
 
 function mockUsernameChange () {
-  // user document gets fetched 3 times
-  // We might improve that by implementing
-  // an API like account.update({session: id}, change)
   // session.find()
-  mockGetUser('pat-doe')
-
-  // account.update()
   mockGetUser('pat-doe')
 
   // account.update(): new doc with new user name
@@ -174,119 +159,110 @@ function mockUsernameChange () {
     rev: '2-3456'
   })
 
-  // session.add()
-  mockGetUser('newName')
-
   return couchdbMock
 }
 
-getServer(function (error, server) {
-  if (error) {
-    return test('test setup', function (t) {
-      t.error(error)
+test('PATCH /session/account', function (group) {
+  group.beforeEach(getServer)
+  invalidTypeErrors(group, passwordChangeOptions, 'account')
+
+  group.test('without valid session', function (t) {
+    var couch = mockGetUser('pat-doe', function () {
+      return [
+        404,
+        {error: 'Not Found'}
+      ]
+    })
+
+    this.server.inject(passwordChangeOptions, function (response) {
+      t.is(couch.pendingMocks()[0], undefined, 'all mocks satisfied')
+
+      t.is(response.statusCode, 401, 'returns 401 status')
+      t.is(response.result.errors.length, 1, 'returns one error')
+      t.is(response.result.errors[0].title, 'Unauthorized', 'returns "Unauthorized" error')
+      t.is(response.result.errors[0].detail, 'Session invalid', 'returns "Session invalid" message')
+
       t.end()
     })
-  }
+  })
 
-  test('PATCH /session/account', function (group) {
-    invalidTypeErrors(server, group, passwordChangeOptions, 'account')
-
-    group.test('without valid session', function (t) {
-      var couch = mockGetUser('pat-doe', function () {
-        return [
-          404,
-          {error: 'Not Found'}
-        ]
-      })
-
-      server.inject(passwordChangeOptions, function (response) {
-        t.is(couch.pendingMocks()[0], undefined, 'all mocks satisfied')
-
-        t.is(response.statusCode, 401, 'returns 401 status')
-        t.is(response.result.errors.length, 1, 'returns one error')
-        t.is(response.result.errors[0].title, 'Unauthorized', 'returns "Unauthorized" error')
-        t.is(response.result.errors[0].detail, 'Session invalid', 'returns "Session invalid" message')
-
-        t.end()
-      })
+  group.test('No Authorization header sent', function (t) {
+    this.server.inject({
+      method: 'PATCH',
+      url: '/session/account',
+      headers: {}
+    }, function (response) {
+      t.is(response.statusCode, 401, 'returns 401 status')
+      t.is(response.result.error, 'Unauthorized', 'returns "Unauthorized" error')
+      t.is(response.result.message, 'Authorization header missing', 'returns "Authorization header missing" error')
+      t.end()
     })
+  })
 
-    group.test('No Authorization header sent', function (t) {
-      server.inject({
-        method: 'PATCH',
-        url: '/session/account',
-        headers: {}
-      }, function (response) {
-        t.is(response.statusCode, 401, 'returns 401 status')
-        t.is(response.result.error, 'Unauthorized', 'returns "Unauthorized" error')
-        t.is(response.result.message, 'Authorization header missing', 'returns "Authorization header missing" error')
-        t.end()
-      })
-    })
-
-    // test prepared for https://github.com/hoodiehq/hoodie-account-server/issues/100
-    group.test('data.id is != account.id belonging to session', function (t) {
-      var couch = mockGetUser()
-      var options = _.defaultsDeep({
-        payload: {
-          data: {
-            id: 'foobar'
-          }
+  // test prepared for https://github.com/hoodiehq/hoodie-account-server/issues/100
+  group.test('data.id is != account.id belonging to session', function (t) {
+    var couch = mockGetUser()
+    var options = _.defaultsDeep({
+      payload: {
+        data: {
+          id: 'foobar'
         }
-      }, passwordChangeOptions)
+      }
+    }, passwordChangeOptions)
 
-      server.inject(options, function (response) {
-        t.is(couch.pendingMocks()[0], undefined, 'all mocks satisfied')
+    this.server.inject(options, function (response) {
+      t.is(couch.pendingMocks()[0], undefined, 'all mocks satisfied')
 
-        t.is(response.statusCode, 409, 'returns 409 status')
-        t.is(response.result.errors.length, 1, 'returns one error')
-        t.is(response.result.errors[0].title, 'Conflict', 'returns "Conflict" error')
-        t.is(response.result.errors[0].detail, 'data.id must be \'userid123\'', 'returns "data.id must be \'userid123\'" message')
+      t.is(response.statusCode, 409, 'returns 409 status')
+      t.is(response.result.errors.length, 1, 'returns one error')
+      t.is(response.result.errors[0].title, 'Conflict', 'returns "Conflict" error')
+      t.is(response.result.errors[0].detail, 'data.id must be \'userid123\'', 'returns "data.id must be \'userid123\'" message')
 
-        t.end()
-      })
+      t.end()
     })
-
-    group.test('changing password', function (t) {
-      var clock = lolex.install(0, ['Date'])
-      var couchdb = mockPasswordChange()
-      server.inject(passwordChangeOptions, function (response) {
-        clock.uninstall()
-
-        t.is(couchdb.pendingMocks()[0], undefined, 'all mocks satisfied')
-
-        t.is(response.statusCode, 204, 'returns 204 status')
-        t.is(response.headers['x-set-session'], 'cGF0LWRvZTpCQkZFMzg4MDqp7ppCNngda1JMi7XcyhtaUxf2nA', 'returns new session id in x-set-session header')
-        t.is(response.result, null, 'returns no body')
-
-        t.end()
-      })
-    })
-
-    group.test('username change', function (t) {
-      var clock = lolex.install(0, ['Date'])
-      var couchdb = mockUsernameChange()
-      server.inject(usernameChangeOptions, function (response) {
-        clock.uninstall()
-
-        t.is(couchdb.pendingMocks()[0], undefined, 'all mocks satisfied')
-
-        t.is(response.headers['x-set-session'], 'bmV3TmFtZTpCQkZFMzg4MDpTPkWlPIu-ZhT_Ghmvh4zmqVpGLQ', 'returns new session id in x-set-session header')
-        t.is(response.statusCode, 204, 'returns 204 status')
-        t.is(response.result, null, 'returns no body')
-
-        t.end()
-      })
-    })
-
-    group.end()
   })
 
-  test('PATCH /session/account?include=profile', {todo: true}, function (t) {
-    t.end()
+  group.test('changing password', function (t) {
+    var clock = lolex.install(0, ['Date'])
+    var couchdb = mockPasswordChange()
+    this.server.inject(passwordChangeOptions, function (response) {
+      clock.uninstall()
+
+      t.is(couchdb.pendingMocks()[0], undefined, 'all mocks satisfied')
+
+      t.is(response.statusCode, 204, 'returns 204 status')
+      t.isNot(response.headers['x-set-session'], 'cGF0LWRvZTpCQkZFMzg4MDqp7ppCNngda1JMi7XcyhtaUxf2nA', 'returns new session id in x-set-session header')
+      t.is(response.result, null, 'returns no body')
+
+      t.end()
+    })
   })
 
-  test('PATCH /session/account?include=foobar', function (t) {
+  group.test('username change', function (t) {
+    var clock = lolex.install(0, ['Date'])
+    var couchdb = mockUsernameChange()
+    this.server.inject(usernameChangeOptions, function (response) {
+      clock.uninstall()
+
+      t.is(couchdb.pendingMocks()[0], undefined, 'all mocks satisfied')
+
+      t.is(response.headers['x-set-session'], 'bmV3TmFtZTpCQkZFMzg4MDpTPkWlPIu-ZhT_Ghmvh4zmqVpGLQ', 'returns new session id in x-set-session header')
+      t.is(response.statusCode, 204, 'returns 204 status')
+      t.is(response.result, null, 'returns no body')
+
+      t.end()
+    })
+  })
+
+  group.end()
+})
+
+test('PATCH /session/account?include=profile')
+
+test('PATCH /session/account?include=foobar', function (t) {
+  getServer(function (error, server) {
+    t.error(error)
+
     var options = _.defaultsDeep({
       url: '/session/account?include=foobar'
     }, passwordChangeOptions)

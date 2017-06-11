@@ -99,256 +99,240 @@ function mockCouchDbUserDocFoundByToken () {
 }
 
 test('PUT /session', function (group) {
-  getServer(function (error, server) {
-    if (error) {
-      group.error(error)
-      group.end()
-      return
-    }
+  group.beforeEach(getServer)
 
-    authorizationHeaderNotAllowedErrorTest(server, group, routeOptions)
-    couchdbErrorTests(server, group, couchdbGetUserMock, routeOptions)
-    invalidTypeErrors(server, group, routeOptions, 'session')
+  authorizationHeaderNotAllowedErrorTest(group, routeOptions)
+  couchdbErrorTests(group, couchdbGetUserMock, routeOptions)
+  invalidTypeErrors(group, routeOptions, 'session')
 
-    group.test('token', function (subGroup) {
-      var sessionResponse = require('../../fixtures/session-response.json')
+  group.test('token', function (subGroup) {
+    var sessionResponse = require('../../fixtures/session-response.json')
 
-      subGroup.test('valid', function (t) {
-        var clock = lolex.install(0, ['Date'])
-        mockCouchDbUserDocFoundByToken()
-        // nock.recorder.rec
+    subGroup.test('valid', function (t) {
+      var clock = lolex.install(0, ['Date'])
+      mockCouchDbUserDocFoundByToken()
+      // nock.recorder.rec
 
-        var options = _.cloneDeep(routeOptions)
-        options.payload.data.attributes = {
-          token: 'token123'
-        }
+      var options = _.cloneDeep(routeOptions)
+      options.payload.data.attributes = {
+        token: 'token123'
+      }
 
-        server.inject(options, function (response) {
-          delete response.result.meta
-          t.is(response.statusCode, 201, 'returns 201 status')
-          t.deepEqual(response.result.data.id, sessionResponse.data.id, 'returns the right content')
+      this.server.inject(options, function (response) {
+        delete response.result.meta
+        t.is(response.statusCode, 201, 'returns 201 status')
+        t.deepEqual(response.result.data.id, sessionResponse.data.id, 'returns the right content')
 
-          clock.uninstall()
-          t.end()
-        })
+        clock.uninstall()
+        t.end()
       })
-
-      subGroup.end()
     })
 
-    group.test('User Found by username', function (subGroup) {
-      var sessionResponse = require('../../fixtures/session-response.json')
+    subGroup.end()
+  })
 
-      subGroup.test('Valid password', function (t) {
-        var clock = lolex.install(0, ['Date'])
-        mockCouchDbUserDocFound()
+  group.test('User Found by username', function (subGroup) {
+    var sessionResponse = require('../../fixtures/session-response.json')
 
-        server.inject(routeOptions, function (response) {
-          delete response.result.meta
-          t.is(response.statusCode, 201, 'returns 201 status')
-          t.deepEqual(response.result.data.id, sessionResponse.data.id, 'returns the right content')
+    subGroup.test('Valid password', function (t) {
+      var clock = lolex.install(0, ['Date'])
+      mockCouchDbUserDocFound()
 
-          clock.uninstall()
-          t.end()
-        })
+      this.server.inject(routeOptions, function (response) {
+        delete response.result.meta
+        t.is(response.statusCode, 201, 'returns 201 status')
+        t.deepEqual(response.result.data.id, sessionResponse.data.id, 'returns the right content')
+
+        clock.uninstall()
+        t.end()
       })
+    })
 
-      subGroup.test('Invalid password', function (t) {
-        var clock = lolex.install(0, ['Date'])
-        var couchdb = mockCouchDbUserDocFound()
+    subGroup.test('Invalid password', function (t) {
+      var clock = lolex.install(0, ['Date'])
+      var couchdb = mockCouchDbUserDocFound()
 
-        var options = _.defaultsDeep({
-          payload: {
-            data: {
-              attributes: {
-                password: 'invalidsecret'
-              }
+      var options = _.defaultsDeep({
+        payload: {
+          data: {
+            attributes: {
+              password: 'invalidsecret'
             }
           }
-        }, routeOptions)
+        }
+      }, routeOptions)
 
-        server.inject(options, function (response) {
-          t.is(couchdb.pendingMocks()[0], undefined, 'CouchDB received request')
-          t.is(response.statusCode, 401, 'returns 401 status')
-          t.is(response.result.errors.length, 1, 'returns one error')
-          t.is(response.result.errors[0].title, 'Unauthorized', 'returns "Unauthorized" error')
-          t.is(response.result.errors[0].detail, 'Invalid credentials', 'returns "Invalid credentials" message')
-
-          clock.uninstall()
-          t.end()
-        })
-      })
-
-      subGroup.test('Valid password, but user has no id:... role', function (t) {
-        var couchdb = mockCouchDbUserDocFound({
-          roles: ['mycustomrole']
-        })
-
-        server.inject(routeOptions, function (response) {
-          delete response.result.meta
-
-          t.is(couchdb.pendingMocks()[0], undefined, 'CouchDB received request')
-          t.is(response.statusCode, 403, 'returns 403 status')
-          t.is(response.result.errors.length, 1, 'returns one error')
-          t.is(response.result.errors[0].title, 'Forbidden', 'returns "Forbidden" error')
-          t.is(response.result.errors[0].detail, '"id:..." role missing (https://github.com/hoodiehq/hoodie-account-server/blob/master/how-it-works.md#id-role)')
-          t.end()
-        })
-      })
-
-      subGroup.end()
-    })
-
-    group.test('User not found', function (t) {
-      var couchdb = couchdbGetUserMock.reply(404, {error: 'Not Found'})
-
-      server.inject(routeOptions, function (response) {
+      this.server.inject(options, function (response) {
         t.is(couchdb.pendingMocks()[0], undefined, 'CouchDB received request')
         t.is(response.statusCode, 401, 'returns 401 status')
         t.is(response.result.errors.length, 1, 'returns one error')
         t.is(response.result.errors[0].title, 'Unauthorized', 'returns "Unauthorized" error')
         t.is(response.result.errors[0].detail, 'Invalid credentials', 'returns "Invalid credentials" message')
 
+        clock.uninstall()
         t.end()
       })
     })
 
-    group.test('User Is admin', function (subGroup) {
-      subGroup.test('Valid password', function (t) {
-        var clock = lolex.install(0, ['Date'])
-
-        var options = _.defaultsDeep({
-          payload: {
-            data: {
-              attributes: {
-                username: 'admin',
-                password: 'secret'
-              }
-            }
-          }
-        }, routeOptions)
-
-        var adminSessionResponse = require('../../fixtures/session-admin-response.json')
-
-        server.inject(options, function (response) {
-          delete response.result.meta
-          t.is(response.statusCode, 201, 'returns 201 status')
-          t.deepEqual(response.result, adminSessionResponse, 'returns the right content')
-
-          clock.uninstall()
-          t.end()
-        })
+    subGroup.test('Valid password, but user has no id:... role', function (t) {
+      var couchdb = mockCouchDbUserDocFound({
+        roles: ['mycustomrole']
       })
 
-      subGroup.test('Invalid password', function (t) {
-        var clock = lolex.install(0, ['Date'])
+      this.server.inject(routeOptions, function (response) {
+        delete response.result.meta
 
-        var options = _.defaultsDeep({
-          payload: {
-            data: {
-              attributes: {
-                username: 'admin',
-                password: 'invalidsecret'
-              }
-            }
-          }
-        }, routeOptions)
-
-        server.inject(options, function (response) {
-          t.is(response.statusCode, 401, 'returns 401 status')
-          t.is(response.result.errors.length, 1, 'returns one error')
-          t.is(response.result.errors[0].title, 'Unauthorized', 'returns "Unauthorized" error')
-          t.is(response.result.errors[0].detail, 'Invalid credentials', 'returns "Invalid credentials" message')
-
-          clock.uninstall()
-          t.end()
-        })
+        t.is(couchdb.pendingMocks()[0], undefined, 'CouchDB received request')
+        t.is(response.statusCode, 403, 'returns 403 status')
+        t.is(response.result.errors.length, 1, 'returns one error')
+        t.is(response.result.errors[0].title, 'Forbidden', 'returns "Forbidden" error')
+        t.is(response.result.errors[0].detail, '"id:..." role missing (https://github.com/hoodiehq/hoodie-account-server/blob/master/how-it-works.md#id-role)')
+        t.end()
       })
-
-      subGroup.end()
     })
 
-    group.end()
+    subGroup.end()
   })
+
+  group.test('User not found', function (t) {
+    var couchdb = couchdbGetUserMock.reply(404, {error: 'Not Found'})
+
+    this.server.inject(routeOptions, function (response) {
+      t.is(couchdb.pendingMocks()[0], undefined, 'CouchDB received request')
+      t.is(response.statusCode, 401, 'returns 401 status')
+      t.is(response.result.errors.length, 1, 'returns one error')
+      t.is(response.result.errors[0].title, 'Unauthorized', 'returns "Unauthorized" error')
+      t.is(response.result.errors[0].detail, 'Invalid credentials', 'returns "Invalid credentials" message')
+
+      t.end()
+    })
+  })
+
+  group.test('User Is admin', function (subGroup) {
+    subGroup.test('Valid password', function (t) {
+      var clock = lolex.install(0, ['Date'])
+
+      var options = _.defaultsDeep({
+        payload: {
+          data: {
+            attributes: {
+              username: 'admin',
+              password: 'secret'
+            }
+          }
+        }
+      }, routeOptions)
+
+      var adminSessionResponse = require('../../fixtures/session-admin-response.json')
+
+      this.server.inject(options, function (response) {
+        delete response.result.meta
+        t.is(response.statusCode, 201, 'returns 201 status')
+        t.deepEqual(response.result, adminSessionResponse, 'returns the right content')
+
+        clock.uninstall()
+        t.end()
+      })
+    })
+
+    subGroup.test('Invalid password', function (t) {
+      var clock = lolex.install(0, ['Date'])
+
+      var options = _.defaultsDeep({
+        payload: {
+          data: {
+            attributes: {
+              username: 'admin',
+              password: 'invalidsecret'
+            }
+          }
+        }
+      }, routeOptions)
+
+      this.server.inject(options, function (response) {
+        t.is(response.statusCode, 401, 'returns 401 status')
+        t.is(response.result.errors.length, 1, 'returns one error')
+        t.is(response.result.errors[0].title, 'Unauthorized', 'returns "Unauthorized" error')
+        t.is(response.result.errors[0].detail, 'Invalid credentials', 'returns "Invalid credentials" message')
+
+        clock.uninstall()
+        t.end()
+      })
+    })
+
+    subGroup.end()
+  })
+
+  group.end()
 })
 
 test('PUT /session?include=account.profile', function (group) {
-  getServer(function (error, server) {
-    if (error) {
-      group.error(error)
-      group.end()
-      return
-    }
+  var putSessionRouteWithProfileOptions = _.defaultsDeep({
+    url: '/session?include=account.profile'
+  }, routeOptions)
 
-    var putSessionRouteWithProfileOptions = _.defaultsDeep({
-      url: '/session?include=account.profile'
-    }, routeOptions)
+  group.beforeEach(getServer)
 
-    group.test('User Found', function (subGroup) {
-      var sessionWithProfileResponse = require('../../fixtures/session-with-profile-response.json')
+  group.test('User Found', function (subGroup) {
+    var sessionWithProfileResponse = require('../../fixtures/session-with-profile-response.json')
 
-      subGroup.test('Valid password', function (t) {
-        var clock = lolex.install(0, ['Date'])
-        mockCouchDbUserDocFound({
-          profile: {
-            fullName: 'pat Doe',
-            email: 'pat@example.com'
-          }
-        })
-
-        server.inject(putSessionRouteWithProfileOptions, function (response) {
-          delete response.result.meta
-          t.is(response.statusCode, 201, 'returns 201 status')
-          t.deepEqual(response.result.included, sessionWithProfileResponse.included, 'returns the right content')
-
-          clock.uninstall()
-          t.end()
-        })
+    subGroup.test('Valid password', function (t) {
+      var clock = lolex.install(0, ['Date'])
+      mockCouchDbUserDocFound({
+        profile: {
+          fullName: 'pat Doe',
+          email: 'pat@example.com'
+        }
       })
 
-      subGroup.end()
+      this.server.inject(putSessionRouteWithProfileOptions, function (response) {
+        delete response.result.meta
+        t.is(response.statusCode, 201, 'returns 201 status')
+        t.deepEqual(response.result.included, sessionWithProfileResponse.included, 'returns the right content')
+
+        clock.uninstall()
+        t.end()
+      })
     })
 
-    group.test('User Is admin', function (subGroup) {
-      subGroup.test('Valid password', function (t) {
-        var clock = lolex.install(0, ['Date'])
+    subGroup.end()
+  })
 
-        var options = _.defaultsDeep({
-          payload: {
-            data: {
-              attributes: {
-                username: 'admin',
-                password: 'secret'
-              }
+  group.test('User Is admin', function (subGroup) {
+    subGroup.test('Valid password', function (t) {
+      var clock = lolex.install(0, ['Date'])
+
+      var options = _.defaultsDeep({
+        payload: {
+          data: {
+            attributes: {
+              username: 'admin',
+              password: 'secret'
             }
           }
-        }, putSessionRouteWithProfileOptions)
+        }
+      }, putSessionRouteWithProfileOptions)
 
-        server.inject(options, function (response) {
-          t.is(response.statusCode, 400, 'returns 400 status')
-          t.is(response.result.errors.length, 1, 'returns one error')
-          t.is(response.result.errors[0].title, 'Bad Request', 'returns "Bad Request" error')
-          t.is(response.result.errors[0].detail, 'Admins have no account', 'returns "Admins have no account" message')
+      this.server.inject(options, function (response) {
+        t.is(response.statusCode, 400, 'returns 400 status')
+        t.is(response.result.errors.length, 1, 'returns one error')
+        t.is(response.result.errors[0].title, 'Bad Request', 'returns "Bad Request" error')
+        t.is(response.result.errors[0].detail, 'Admins have no account', 'returns "Admins have no account" message')
 
-          clock.uninstall()
-          t.end()
-        })
+        clock.uninstall()
+        t.end()
       })
-
-      subGroup.end()
     })
 
-    group.end()
+    subGroup.end()
   })
+
+  group.end()
 })
 
 test('PUT /session with uppercase letter (hoodiehq/hoodie#499)', function (t) {
   getServer(function (error, server) {
-    if (error) {
-      t.error(error)
-      t.end()
-      return
-    }
+    t.error(error)
 
     var options = _.defaultsDeep({
       payload: {
