@@ -67,12 +67,12 @@ function mockCouchDbDeleteResponse () {
 
 test('DELETE /accounts/abc4567', function (group) {
   group.beforeEach(getServer)
+
   group.test('No Authorization header sent', function (t) {
-    this.server.inject({
-      method: 'DELETE',
-      url: '/accounts/abc4567',
-      headers: {}
-    }, function (response) {
+    var options = _.clone(routeOptions)
+    options.headers = {}
+
+    this.server.inject(options, function (response) {
       t.is(response.statusCode, 401, 'returns 401 status')
       t.is(response.result.error, 'Unauthorized', 'returns "Unauthorized" error')
       t.is(response.result.message, 'Authorization header missing', 'returns "Authorization header missing" error')
@@ -80,8 +80,17 @@ test('DELETE /accounts/abc4567', function (group) {
     })
   })
 
-  group.test('CouchDB Session invalid', {todo: true}, function (t) {
-    t.end()
+  group.test('Session invalid', function (t) {
+    var options = _.defaultsDeep({
+      headers: {
+        authorization: 'Session invalid'
+      }
+    }, routeOptions)
+
+    this.server.inject(options, function (response) {
+      t.is(response.statusCode, 401, '401 not found')
+      t.end()
+    })
   })
 
   group.test('Not an admin', {todo: true}, function (t) {
