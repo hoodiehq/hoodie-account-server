@@ -212,7 +212,6 @@ function accountRoutes (server, options, next) {
           password: password,
           profile: profile
         }, {
-          sessionId: sessionId,
           include: request.query.include
         })
       })
@@ -260,8 +259,16 @@ function accountRoutes (server, options, next) {
     handler: function (request, reply) {
       var sessionId = toSessionId(request)
 
-      return accounts.remove(request.params.id, {
-        sessionId: sessionId
+      return admins.validateSession(sessionId)
+
+      .catch(function () {
+        throw errors.INVALID_SESSION
+      })
+
+      .then(function () {
+        return accounts.remove(request.params.id, {
+          sessionId: sessionId
+        })
       })
 
       .then(function (/* json */) {
