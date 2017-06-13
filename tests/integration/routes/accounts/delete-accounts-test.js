@@ -93,8 +93,20 @@ test('DELETE /accounts/abc4567', function (group) {
     })
   })
 
-  group.test('Not an admin', {todo: true}, function (t) {
-    t.end()
+  group.test('Not an admin', function (t) {
+    var options = _.defaultsDeep({
+      headers: {
+        // Session ID based on 'pat-doe', 'salt123', 'secret', 1209600
+        authorization: 'Session cGF0LWRvZTpCQkZFMzg4MDqp7ppCNngda1JMi7XcyhtaUxf2nA'
+      }
+    }, routeOptions)
+
+    this.server.inject(options, function (response) {
+      t.is(response.statusCode, 401, 'returns 401 status')
+      t.is(response.result.errors[0].title, 'Unauthorized', 'returns "Unauthorized" error')
+      t.is(response.result.errors[0].detail, 'Session invalid', 'returns "Session invalid" error')
+      t.end()
+    })
   })
 
   group.test('account not found', function (t) {
