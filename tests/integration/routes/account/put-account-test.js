@@ -64,7 +64,7 @@ test('PUT /session/account', function (group) {
 
     var accountFixture = require('../../fixtures/account.json')
 
-    var clock = lolex.install(0, ['Date'])
+    var clock = lolex.install({now: 0, toFake: ['Date']})
     this.server.inject(routeOptions, function (response) {
       clock.uninstall()
 
@@ -89,7 +89,7 @@ test('PUT /session/account', function (group) {
         reason: 'Document update conflict'
       })
 
-    var clock = lolex.install(0, ['Date'])
+    var clock = lolex.install({now: 0, toFake: ['Date']})
 
     this.server.inject(routeOptions, function (response) {
       clock.uninstall()

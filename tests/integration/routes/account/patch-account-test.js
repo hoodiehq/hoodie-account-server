@@ -223,7 +223,7 @@ test('PATCH /session/account', function (group) {
   })
 
   group.test('changing password', function (t) {
-    var clock = lolex.install(0, ['Date'])
+    var clock = lolex.install({now: 0, toFake: ['Date']})
     var couchdb = mockPasswordChange()
     this.server.inject(passwordChangeOptions, function (response) {
       clock.uninstall()
@@ -239,7 +239,7 @@ test('PATCH /session/account', function (group) {
   })
 
   group.test('username change', function (t) {
-    var clock = lolex.install(0, ['Date'])
+    var clock = lolex.install({now: 0, toFake: ['Date']})
     var couchdb = mockUsernameChange()
     this.server.inject(usernameChangeOptions, function (response) {
       clock.uninstall()

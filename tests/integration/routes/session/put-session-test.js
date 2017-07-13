@@ -109,7 +109,7 @@ test('PUT /session', function (group) {
     var sessionResponse = require('../../fixtures/session-response.json')
 
     subGroup.test('valid', function (t) {
-      var clock = lolex.install(0, ['Date'])
+      var clock = lolex.install({now: 0, toFake: ['Date']})
       mockCouchDbUserDocFoundByToken()
       // nock.recorder.rec
 
@@ -135,7 +135,7 @@ test('PUT /session', function (group) {
     var sessionResponse = require('../../fixtures/session-response.json')
 
     subGroup.test('Valid password', function (t) {
-      var clock = lolex.install(0, ['Date'])
+      var clock = lolex.install({now: 0, toFake: ['Date']})
       mockCouchDbUserDocFound()
 
       this.server.inject(routeOptions, function (response) {
@@ -149,7 +149,7 @@ test('PUT /session', function (group) {
     })
 
     subGroup.test('Invalid password', function (t) {
-      var clock = lolex.install(0, ['Date'])
+      var clock = lolex.install({now: 0, toFake: ['Date']})
       var couchdb = mockCouchDbUserDocFound()
 
       var options = _.defaultsDeep({
@@ -210,7 +210,7 @@ test('PUT /session', function (group) {
 
   group.test('User Is admin', function (subGroup) {
     subGroup.test('Valid password', function (t) {
-      var clock = lolex.install(0, ['Date'])
+      var clock = lolex.install({now: 0, toFake: ['Date']})
 
       var options = _.defaultsDeep({
         payload: {
@@ -236,7 +236,7 @@ test('PUT /session', function (group) {
     })
 
     subGroup.test('Invalid password', function (t) {
-      var clock = lolex.install(0, ['Date'])
+      var clock = lolex.install({now: 0, toFake: ['Date']})
 
       var options = _.defaultsDeep({
         payload: {
@@ -277,7 +277,7 @@ test('PUT /session?include=account.profile', function (group) {
     var sessionWithProfileResponse = require('../../fixtures/session-with-profile-response.json')
 
     subGroup.test('Valid password', function (t) {
-      var clock = lolex.install(0, ['Date'])
+      var clock = lolex.install({now: 0, toFake: ['Date']})
       mockCouchDbUserDocFound({
         profile: {
           fullName: 'pat Doe',
@@ -300,7 +300,7 @@ test('PUT /session?include=account.profile', function (group) {
 
   group.test('User Is admin', function (subGroup) {
     subGroup.test('Valid password', function (t) {
-      var clock = lolex.install(0, ['Date'])
+      var clock = lolex.install({now: 0, toFake: ['Date']})
 
       var options = _.defaultsDeep({
         payload: {
@@ -346,7 +346,7 @@ test('PUT /session with uppercase letter (hoodiehq/hoodie#499)', function (t) {
     }, routeOptions)
 
     var sessionResponse = require('../../fixtures/session-response.json')
-    var clock = lolex.install(0, ['Date'])
+    var clock = lolex.install({now: 0, toFake: ['Date']})
     mockCouchDbUserDocFound()
 
     server.inject(options, function (response) {
