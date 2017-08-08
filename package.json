@@ -9,8 +9,7 @@
     "pretest": "standard",
     "test": "nyc tap 'tests/{unit,integration}/**/*-test.js'",
     "test:watch": "gaze 'bin/watch-and-test.sh $path' 'tests/**/*.js' '*.js' 'api/**/*.js' 'plugin/**/*.js' 'routes/**/*.js' 'utils/**/*.js'",
-    "semantic-release": "semantic-release pre && npm publish && semantic-release post",
-    "postpublish": "greenkeeper-postpublish"
+    "semantic-release": "semantic-release pre && npm publish && semantic-release post"
   },
   "nyc": {
     "//": "since we override the default excludes, we have to also (re)exclude the tests directory and node_modules",
@@ -40,7 +39,6 @@
   "devDependencies": {
     "coveralls": "^2.11.6",
     "gaze-cli": "^0.2.0",
-    "greenkeeper-postpublish": "^1.0.0",
     "hapi": "^16.0.0",
     "lolex": "^2.0.0",
     "memdown": "^1.1.2",
