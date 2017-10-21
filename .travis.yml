@@ -2,18 +2,19 @@ sudo: false
 language: node_js
 cache:
   directories:
-    - node_modules
+    - $HOME/.npm
 notifications:
   email: false
 node_js:
   - 4
   - 6
   - 8
-before_script:
-  - npm prune
 after_success:
   - npm run semantic-release
   - npm run coverage
+# Trigger a push build on master and greenkeeper branches + PRs build on every branches
+# Avoid double build on PRs (See https://github.com/travis-ci/travis-ci/issues/1147)
 branches:
-  except:
-    - "/^v\\d+\\.\\d+\\.\\d+$/"
+  only:
+    - master
+    - /^greenkeeper.*$/
