@@ -9,7 +9,7 @@
     "pretest": "standard",
     "test": "nyc tap 'tests/{unit,integration}/**/*-test.js'",
     "test:watch": "gaze 'bin/watch-and-test.sh $path' 'tests/**/*.js' '*.js' 'api/**/*.js' 'plugin/**/*.js' 'routes/**/*.js' 'utils/**/*.js'",
-    "semantic-release": "semantic-release pre && npm publish && semantic-release post"
+    "semantic-release": "semantic-release"
   },
   "nyc": {
     "//": "since we override the default excludes, we have to also (re)exclude the tests directory and node_modules",
