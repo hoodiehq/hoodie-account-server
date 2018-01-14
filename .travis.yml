@@ -23,3 +23,8 @@ jobs:
       node_js: lts/*
       script:
         - npm run semantic-release
+
+stages:
+  - test
+  - name: release
+    if: branch = master
