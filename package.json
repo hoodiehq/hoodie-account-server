@@ -41,7 +41,7 @@
     "gaze-cli": "^0.2.0",
     "hapi": "^16.0.0",
     "lolex": "^2.0.0",
-    "memdown": "^1.1.2",
+    "memdown": "^2.0.0",
     "nock": "^9.0.0",
     "nodemailer-stub-transport": "^1.0.0",
     "nyc": "^11.0.0",
