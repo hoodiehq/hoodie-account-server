@@ -49,16 +49,16 @@ function accountRoutes (server, options, next) {
         id: id
       })
 
-      .then(serialise)
+        .then(serialise)
 
-      .then(function (json) {
-        reply(json).code(201)
-      })
+        .then(function (json) {
+          reply(json).code(201)
+        })
 
-      .catch(function (error) {
-        error = errors.parse(error)
-        reply(Boom.create(error.status || 400, error.message))
-      })
+        .catch(function (error) {
+          error = errors.parse(error)
+          reply(Boom.create(error.status || 400, error.message))
+        })
     }
   }
 
@@ -79,39 +79,39 @@ function accountRoutes (server, options, next) {
       // check for admin. If not found, check for user
       admins.validateSession(sessionId)
 
-      .then(
+        .then(
         // if admin
-        function (doc) {
-          throw errors.NO_ADMIN_ACCOUNT
-        },
+          function (doc) {
+            throw errors.NO_ADMIN_ACCOUNT
+          },
 
-        // if not admin
-        function (error) {
-          if (error.status === 404) {
-            return sessions.find(sessionId, {
-              include: request.query.include === 'profile' ? 'account.profile' : undefined
-            }).catch(function (error) {
-              if (error.status === 404) {
-                throw errors.INVALID_SESSION
-              }
-            })
-          }
+          // if not admin
+          function (error) {
+            if (error.status === 404) {
+              return sessions.find(sessionId, {
+                include: request.query.include === 'profile' ? 'account.profile' : undefined
+              }).catch(function (error) {
+                if (error.status === 404) {
+                  throw errors.INVALID_SESSION
+                }
+              })
+            }
 
-          throw error
+            throw error
+          })
+
+        .then(function (session) {
+          return session.account
         })
 
-      .then(function (session) {
-        return session.account
-      })
+        .then(serialise)
 
-      .then(serialise)
+        .then(reply)
 
-      .then(reply)
-
-      .catch(function (error) {
-        error = errors.parse(error)
-        reply(Boom.create(error.status, error.message))
-      })
+        .catch(function (error) {
+          error = errors.parse(error)
+          reply(Boom.create(error.status, error.message))
+        })
     }
   }
 
@@ -135,57 +135,57 @@ function accountRoutes (server, options, next) {
       var id = request.payload.data.id
 
       admins.validateSession(sessionId)
-      .then(
+        .then(
         // if admin
-        function (doc) {
-          throw errors.FORBIDDEN_ADMIN_ACCOUNT
-        },
+          function (doc) {
+            throw errors.FORBIDDEN_ADMIN_ACCOUNT
+          },
 
-        // if not admin
-        function (error) {
-          if (error.status === 404) {
-            return sessions.find(sessionId)
-              .catch(function (error) {
-                if (error.status === 404) {
-                  throw errors.INVALID_SESSION
-                }
-              })
+          // if not admin
+          function (error) {
+            if (error.status === 404) {
+              return sessions.find(sessionId)
+                .catch(function (error) {
+                  if (error.status === 404) {
+                    throw errors.INVALID_SESSION
+                  }
+                })
+            }
+            throw error
+          })
+
+        .then(function (session) {
+          if (session.account.id !== id) {
+            throw errors.accountIdConflict(session.account.id)
           }
-          throw error
+          return accounts.update(session.account, {
+            username: newUsername,
+            password: newPassword
+          }, {
+            include: request.query.include
+          })
         })
 
-      .then(function (session) {
-        if (session.account.id !== id) {
-          throw errors.accountIdConflict(session.account.id)
-        }
-        return accounts.update(session.account, {
-          username: newUsername,
-          password: newPassword
-        }, {
-          include: request.query.include
-        })
-      })
-
-      .then(function (account) {
+        .then(function (account) {
         // no auth param, act as 'admin' (we already validated the old session above)
-        return sessions.add({
-          account: {
-            username: account.username
-          }
+          return sessions.add({
+            account: {
+              username: account.username
+            }
+          })
         })
-      })
 
-      .then(function (session) {
-        reply()
-          .code(204)
-          .header('x-set-session', session.id)
-      })
+        .then(function (session) {
+          reply()
+            .code(204)
+            .header('x-set-session', session.id)
+        })
 
-      .catch(function (error) {
-        error = errors.parse(error)
+        .catch(function (error) {
+          error = errors.parse(error)
 
-        reply(Boom.create(error.status, error.message))
-      })
+          reply(Boom.create(error.status, error.message))
+        })
     }
   }
 
@@ -205,45 +205,45 @@ function accountRoutes (server, options, next) {
       // check for admin. If not found, check for user
       admins.validateSession(sessionId)
 
-      .then(
+        .then(
         // if admin
-        function (doc) {
-          throw errors.FORBIDDEN_ADMIN_ACCOUNT
-        },
+          function (doc) {
+            throw errors.FORBIDDEN_ADMIN_ACCOUNT
+          },
 
-        // if not admin
-        function (error) {
-          if (error.status === 404) {
-            return sessions.find(sessionId, {
-              include: request.query.include === 'profile' ? 'account.profile' : undefined
-            }).catch(function (error) {
-              if (error.status === 404) {
-                throw errors.INVALID_SESSION
-              }
-            })
+          // if not admin
+          function (error) {
+            if (error.status === 404) {
+              return sessions.find(sessionId, {
+                include: request.query.include === 'profile' ? 'account.profile' : undefined
+              }).catch(function (error) {
+                if (error.status === 404) {
+                  throw errors.INVALID_SESSION
+                }
+              })
+            }
+
+            throw error
+          })
+
+        .then(function (session) {
+          return accounts.remove(session.account, {
+            include: request.query.include
+          })
+        })
+
+        .then(function (account) {
+          if (request.query.include) {
+            return reply(serialise(account)).code(200)
           }
 
-          throw error
+          reply().code(204)
         })
 
-      .then(function (session) {
-        return accounts.remove(session.account, {
-          include: request.query.include
+        .catch(function (error) {
+          error = errors.parse(error)
+          reply(Boom.create(error.status, error.message))
         })
-      })
-
-      .then(function (account) {
-        if (request.query.include) {
-          return reply(serialise(account)).code(200)
-        }
-
-        reply().code(204)
-      })
-
-      .catch(function (error) {
-        error = errors.parse(error)
-        reply(Boom.create(error.status, error.message))
-      })
     }
   }
 

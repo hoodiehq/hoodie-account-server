@@ -43,44 +43,44 @@ function requestRoutes (server, options, next) {
 
       api.accounts.update({username: username}, {password: newPassword})
 
-      .then(function (account) {
-        var transportConfig = options.notifications.transport
-        var transporter = nodemailer.createTransport(transportConfig)
+        .then(function (account) {
+          var transportConfig = options.notifications.transport
+          var transporter = nodemailer.createTransport(transportConfig)
 
-        return transporter.sendMail({
-          from: options.notifications.from,
-          to: account.username,
-          subject: 'Password reset',
-          text: `Hello there,
+          return transporter.sendMail({
+            from: options.notifications.from,
+            to: account.username,
+            subject: 'Password reset',
+            text: `Hello there,
 
 you can now sign in with
 username: ${account.username}
 password: ${newPassword}`
-        })
+          })
 
-        .then(function (result) {
-          return {
-            data: {
-              type: 'request',
-              id: requestId,
-              attributes: {
-                username: username,
-                messageId: result.messageId,
-                createdAt: new Date().toISOString()
+            .then(function (result) {
+              return {
+                data: {
+                  type: 'request',
+                  id: requestId,
+                  attributes: {
+                    username: username,
+                    messageId: result.messageId,
+                    createdAt: new Date().toISOString()
+                  }
+                }
               }
-            }
-          }
+            })
         })
-      })
 
-      .then(function (json) {
-        reply(json).code(201)
-      })
+        .then(function (json) {
+          reply(json).code(201)
+        })
 
-      .catch(function (error) {
-        error = errors.parse(error)
-        reply(Boom.create(error.status || 400, error.message))
-      })
+        .catch(function (error) {
+          error = errors.parse(error)
+          reply(Boom.create(error.status || 400, error.message))
+        })
     }
   }
 

@@ -21,12 +21,12 @@ function mockCouchDbGetAccounts () {
   return nock('http://localhost:5984', {
     encodedQueryParams: true
   })
-  .get('/_users/_all_docs')
-  .query({
-    include_docs: true,
-    startkey: '%22org.couchdb.user%3A%22',
-    endkey: '%22org.couchdb.user%3A%EF%BF%B0%22'
-  })
+    .get('/_users/_all_docs')
+    .query({
+      include_docs: true,
+      startkey: '%22org.couchdb.user%3A%22',
+      endkey: '%22org.couchdb.user%3A%EF%BF%B0%22'
+    })
 }
 
 test('GET /accounts', function (group) {

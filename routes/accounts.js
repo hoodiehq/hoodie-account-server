@@ -37,36 +37,36 @@ function accountRoutes (server, options, next) {
       // check for admin. If not found, check for user
       admins.validateSession(sessionId)
 
-      .then(function (doc) {
-        return accounts.add({
-          username: username,
-          password: password,
-          include: query.include
+        .then(function (doc) {
+          return accounts.add({
+            username: username,
+            password: password,
+            include: query.include
+          })
         })
-      })
 
-      .then(function (account) {
-        return serialise({
-          baseUrl: server.info.uri,
-          include: request.query.include
-        }, account)
-      })
+        .then(function (account) {
+          return serialise({
+            baseUrl: server.info.uri,
+            include: request.query.include
+          }, account)
+        })
 
-      .then(function (json) {
-        reply(json).code(201)
-      })
+        .then(function (json) {
+          reply(json).code(201)
+        })
 
-      .catch(function (error) {
-        if (error.status === 401) {
-          error.message = 'Session invalid'
-        }
-        if (error.message === 'missing') {
-          error = errors.INVALID_SESSION
-        }
-        error = errors.parse(error)
+        .catch(function (error) {
+          if (error.status === 401) {
+            error.message = 'Session invalid'
+          }
+          if (error.message === 'missing') {
+            error = errors.INVALID_SESSION
+          }
+          error = errors.parse(error)
 
-        reply(Boom.wrap(error, error.status, error.message))
-      })
+          reply(Boom.wrap(error, error.status, error.message))
+        })
     }
   }
 
@@ -86,36 +86,36 @@ function accountRoutes (server, options, next) {
 
       admins.validateSession(sessionId)
 
-      .catch(function (error) {
+        .catch(function (error) {
         // pouchdb-admins throws MISSING_DOC with status 404 if the admin doc is not found
-        if (error.status === 404) {
-          throw errors.INVALID_SESSION
-        }
+          if (error.status === 404) {
+            throw errors.INVALID_SESSION
+          }
 
-        throw error
-      })
-
-      .then(function () {
-        return accounts.findAll({
-          db: options.db,
-          sessionId: sessionId,
-          include: request.query.include
+          throw error
         })
-      })
 
-      .then(function (accounts) {
-        return serialise({
-          baseUrl: server.info.uri,
-          include: request.query.include
-        }, accounts)
-      })
+        .then(function () {
+          return accounts.findAll({
+            db: options.db,
+            sessionId: sessionId,
+            include: request.query.include
+          })
+        })
 
-      .then(reply)
+        .then(function (accounts) {
+          return serialise({
+            baseUrl: server.info.uri,
+            include: request.query.include
+          }, accounts)
+        })
 
-      .catch(function (error) {
-        error = errors.parse(error)
-        reply(Boom.create(error.status, error.message))
-      })
+        .then(reply)
+
+        .catch(function (error) {
+          error = errors.parse(error)
+          reply(Boom.create(error.status, error.message))
+        })
     }
   }
 
@@ -135,50 +135,50 @@ function accountRoutes (server, options, next) {
 
       admins.validateSession(sessionId)
 
-      .catch(function (error) {
+        .catch(function (error) {
         // pouchdb-admins throws MISSING_DOC with status 404 if the admin doc is not found
-        if (error.status === 404) {
-          throw errors.INVALID_SESSION
-        }
+          if (error.status === 404) {
+            throw errors.INVALID_SESSION
+          }
 
-        throw error
-      })
-
-      .catch(function (error) {
-        // pouchdb-admins throws MISSING_DOC with status 404 if the admin doc is not found
-        if (error.status === 404) {
-          throw errors.INVALID_SESSION
-        }
-
-        throw error
-      })
-
-      .then(function () {
-        return accounts.find(request.params.id, {
-          sessionId: sessionId,
-          include: request.query.include
+          throw error
         })
-      })
 
-      .then(function (account) {
-        return serialise({
-          baseUrl: server.info.uri,
-          include: request.query.include,
-          admin: true
-        }, account)
-      })
+        .catch(function (error) {
+        // pouchdb-admins throws MISSING_DOC with status 404 if the admin doc is not found
+          if (error.status === 404) {
+            throw errors.INVALID_SESSION
+          }
 
-      .then(reply)
+          throw error
+        })
 
-      .catch(function (error) {
-        if (error.status === 401) {
-          error.message = 'Session invalid'
-        }
+        .then(function () {
+          return accounts.find(request.params.id, {
+            sessionId: sessionId,
+            include: request.query.include
+          })
+        })
 
-        error = errors.parse(error)
+        .then(function (account) {
+          return serialise({
+            baseUrl: server.info.uri,
+            include: request.query.include,
+            admin: true
+          }, account)
+        })
 
-        reply(Boom.create(error.status, error.message))
-      })
+        .then(reply)
+
+        .catch(function (error) {
+          if (error.status === 401) {
+            error.message = 'Session invalid'
+          }
+
+          error = errors.parse(error)
+
+          reply(Boom.create(error.status, error.message))
+        })
     }
   }
 
@@ -202,27 +202,27 @@ function accountRoutes (server, options, next) {
 
       return admins.validateSession(sessionId)
 
-      .catch(function () {
-        throw errors.INVALID_SESSION
-      })
-
-      .then(function () {
-        return accounts.update(request.params.id, {
-          username: username,
-          password: password,
-          profile: profile
-        }, {
-          include: request.query.include
+        .catch(function () {
+          throw errors.INVALID_SESSION
         })
-      })
 
-      .then(function (account) {
-        return serialise({
-          baseUrl: server.info.uri,
-          include: request.query.include,
-          admin: true
-        }, account)
-      },
+        .then(function () {
+          return accounts.update(request.params.id, {
+            username: username,
+            password: password,
+            profile: profile
+          }, {
+            include: request.query.include
+          })
+        })
+
+        .then(function (account) {
+          return serialise({
+            baseUrl: server.info.uri,
+            include: request.query.include,
+            admin: true
+          }, account)
+        },
         function (error) {
           if (error.status === 404) {
             throw errors.ACCOUNT_ID_NOT_FOUND
@@ -231,18 +231,18 @@ function accountRoutes (server, options, next) {
           throw error
         })
 
-      .then(function (json) {
-        if (profile) {
-          reply(json).code(201)
-        } else {
-          reply(json).code(204)
-        }
-      })
+        .then(function (json) {
+          if (profile) {
+            reply(json).code(201)
+          } else {
+            reply(json).code(204)
+          }
+        })
 
-      .catch(function (error) {
-        error = errors.parse(error)
-        reply(Boom.create(error.status, error.message))
-      })
+        .catch(function (error) {
+          error = errors.parse(error)
+          reply(Boom.create(error.status, error.message))
+        })
     }
   }
 
@@ -261,24 +261,24 @@ function accountRoutes (server, options, next) {
 
       return admins.validateSession(sessionId)
 
-      .catch(function () {
-        throw errors.INVALID_SESSION
-      })
-
-      .then(function () {
-        return accounts.remove(request.params.id, {
-          sessionId: sessionId
+        .catch(function () {
+          throw errors.INVALID_SESSION
         })
-      })
 
-      .then(function (/* json */) {
-        reply().code(204)
-      })
+        .then(function () {
+          return accounts.remove(request.params.id, {
+            sessionId: sessionId
+          })
+        })
 
-      .catch(function (error) {
-        error = errors.parse(error)
-        reply(Boom.create(error.status, error.message))
-      })
+        .then(function (/* json */) {
+          reply().code(204)
+        })
+
+        .catch(function (error) {
+          error = errors.parse(error)
+          reply(Boom.create(error.status, error.message))
+        })
     }
   }
 

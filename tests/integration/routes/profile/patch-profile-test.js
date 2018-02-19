@@ -76,7 +76,7 @@ test('PATCH /session/account/profile', function (group) {
 
   group.test('Session does not exist', function (t) {
     var couch = mockCouchDbGetUserDoc
-          .reply(404, {error: 'not_found', reason: 'missing'})
+      .reply(404, {error: 'not_found', reason: 'missing'})
 
     this.server.inject(routeOptions, function (response) {
       t.is(couch.pendingMocks()[0], undefined, 'all mocks satisfied')

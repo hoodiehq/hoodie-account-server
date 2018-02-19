@@ -91,12 +91,12 @@ function mockPasswordChange () {
 
     return error === null
   })
-  .query(true)
-  .reply(201, {
-    ok: true,
-    id: 'org.couchdb.user:pat-doe',
-    rev: '2-3456'
-  })
+    .query(true)
+    .reply(201, {
+      ok: true,
+      id: 'org.couchdb.user:pat-doe',
+      rev: '2-3456'
+    })
 
   return couchdbMock
 }
@@ -125,12 +125,12 @@ function mockUsernameChange () {
 
     return error === null
   })
-  .query(true)
-  .reply(201, {
-    ok: true,
-    id: 'org.couchdb.user:newName',
-    rev: '2-3456'
-  })
+    .query(true)
+    .reply(201, {
+      ok: true,
+      id: 'org.couchdb.user:newName',
+      rev: '2-3456'
+    })
 
   // account.update(): deleted old doc
   couchdbMock.put('/_users/org.couchdb.user%3Apat-doe', function (body) {
@@ -153,11 +153,11 @@ function mockUsernameChange () {
 
     return error === null
   })
-  .query(true)
-  .reply(201, {
-    id: 'org.couchdb.user:pat-doe',
-    rev: '2-3456'
-  })
+    .query(true)
+    .reply(201, {
+      id: 'org.couchdb.user:pat-doe',
+      rev: '2-3456'
+    })
 
   return couchdbMock
 }

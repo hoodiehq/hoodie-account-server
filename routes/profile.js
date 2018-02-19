@@ -36,40 +36,40 @@ function profileRoutes (server, options, next) {
       // check for admin. If not found, check for user
       admins.validateSession(sessionId)
 
-      .then(
+        .then(
         // if admin
-        function (doc) {
-          throw errors.NO_PROFILE_ACCOUNT
-        },
+          function (doc) {
+            throw errors.NO_PROFILE_ACCOUNT
+          },
 
-        // if not admin
-        function (error) {
-          if (error.status === 404) {
-            return sessions.find(sessionId, {
-              include: 'account.profile'
-            })
-            .catch(function (error) {
-              if (error.status === 404) {
-                throw errors.INVALID_SESSION
-              }
-            })
-          }
+          // if not admin
+          function (error) {
+            if (error.status === 404) {
+              return sessions.find(sessionId, {
+                include: 'account.profile'
+              })
+                .catch(function (error) {
+                  if (error.status === 404) {
+                    throw errors.INVALID_SESSION
+                  }
+                })
+            }
 
-          throw error
+            throw error
+          })
+
+        .then(function (session) {
+          return session.account
         })
 
-      .then(function (session) {
-        return session.account
-      })
+        .then(serialise)
 
-      .then(serialise)
+        .then(reply)
 
-      .then(reply)
-
-      .catch(function (error) {
-        error = errors.parse(error)
-        reply(Boom.create(error.status, error.message))
-      })
+        .catch(function (error) {
+          error = errors.parse(error)
+          reply(Boom.create(error.status, error.message))
+        })
     }
   }
 

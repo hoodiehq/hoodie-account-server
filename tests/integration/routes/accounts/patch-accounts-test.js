@@ -117,16 +117,16 @@ test('PATCH /accounts/abc4567', function (group) {
 
   group.test('Not found', function (t) {
     var couchdb = nock('http://localhost:5984')
-        .get('/_users/_design/byId/_view/byId')
-        .query({
-          key: '"xyz1234"',
-          include_docs: true
-        })
-        .reply(200, {
-          total_rows: 1,
-          offset: 0,
-          rows: []
-        })
+      .get('/_users/_design/byId/_view/byId')
+      .query({
+        key: '"xyz1234"',
+        include_docs: true
+      })
+      .reply(200, {
+        total_rows: 1,
+        offset: 0,
+        rows: []
+      })
 
     this.server.inject({
       method: 'PATCH',

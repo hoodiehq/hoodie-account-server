@@ -44,42 +44,42 @@ function sessionRoutes (server, options, next) {
         // check for admin. If not found, check for user
         promise = admins.validatePassword(username, password)
 
-        .then(
+          .then(
           // if admin
-          function () {
-            if (query.include) {
-              throw errors.FORBIDDEN_ADMIN_ACCOUNT
-            }
-
-            return admins.calculateSessionId(username)
-
-            .then(function (sessionId) {
-              return {
-                id: sessionId
+            function () {
+              if (query.include) {
+                throw errors.FORBIDDEN_ADMIN_ACCOUNT
               }
+
+              return admins.calculateSessionId(username)
+
+                .then(function (sessionId) {
+                  return {
+                    id: sessionId
+                  }
+                })
+            },
+
+            // if not admin
+            function (error) {
+              if (error.status === 404) {
+                return sessions.add({
+                  account: {
+                    username: username,
+                    password: password
+                  },
+                  include: query.include
+                })
+                  .catch(function (error) {
+                    if (error.status === 404) {
+                      throw errors.INVALID_CREDENTIALS
+                    }
+                    throw error
+                  })
+              }
+
+              throw error
             })
-          },
-
-          // if not admin
-          function (error) {
-            if (error.status === 404) {
-              return sessions.add({
-                account: {
-                  username: username,
-                  password: password
-                },
-                include: query.include
-              })
-              .catch(function (error) {
-                if (error.status === 404) {
-                  throw errors.INVALID_CREDENTIALS
-                }
-                throw error
-              })
-            }
-
-            throw error
-          })
       } else {
         promise = sessions.add({
           account: {
@@ -91,14 +91,14 @@ function sessionRoutes (server, options, next) {
 
       promise.then(serialise)
 
-      .then(function (json) {
-        reply(json).code(201)
-      })
+        .then(function (json) {
+          reply(json).code(201)
+        })
 
-      .catch(function (error) {
-        error = errors.parse(error)
-        reply(Boom.create(error.status, error.message))
-      })
+        .catch(function (error) {
+          error = errors.parse(error)
+          reply(Boom.create(error.status, error.message))
+        })
     }
   }
 
@@ -120,43 +120,43 @@ function sessionRoutes (server, options, next) {
       // check for admin. If not found, check for user
       admins.validateSession(sessionId)
 
-      .then(
+        .then(
         // if admin
-        function (doc) {
-          if (query.include) {
-            throw errors.FORBIDDEN_ADMIN_ACCOUNT
-          }
+          function (doc) {
+            if (query.include) {
+              throw errors.FORBIDDEN_ADMIN_ACCOUNT
+            }
 
-          return {
-            id: sessionId
-          }
-        },
+            return {
+              id: sessionId
+            }
+          },
 
-        // if not admin
-        function (error) {
-          if (error.status === 404) {
-            return sessions.find(sessionId, {
-              include: request.query.include
-            })
-            .catch(function (error) {
-              if (error.status === 401 || error.status === 404) {
-                throw errors.INVALID_SESSION
-              }
-              throw error
-            })
-          }
+          // if not admin
+          function (error) {
+            if (error.status === 404) {
+              return sessions.find(sessionId, {
+                include: request.query.include
+              })
+                .catch(function (error) {
+                  if (error.status === 401 || error.status === 404) {
+                    throw errors.INVALID_SESSION
+                  }
+                  throw error
+                })
+            }
 
-          throw error
+            throw error
+          })
+
+        .then(serialise)
+
+        .then(reply)
+
+        .catch(function (error) {
+          error = errors.parse(error)
+          reply(Boom.create(error.status, error.message))
         })
-
-      .then(serialise)
-
-      .then(reply)
-
-      .catch(function (error) {
-        error = errors.parse(error)
-        reply(Boom.create(error.status, error.message))
-      })
     }
   }
 
@@ -178,42 +178,42 @@ function sessionRoutes (server, options, next) {
       // check for admin. If not found, check for user
       admins.validateSession(sessionId)
 
-      .then(
+        .then(
         // if admin
-        function (doc) {
-          if (query.include) {
-            throw errors.FORBIDDEN_ADMIN_ACCOUNT
-          }
-        },
+          function (doc) {
+            if (query.include) {
+              throw errors.FORBIDDEN_ADMIN_ACCOUNT
+            }
+          },
 
-        // if not admin
-        function (error) {
-          if (error.status === 404) {
-            return sessions.remove(sessionId, {
-              include: request.query.include
-            })
-            .catch(function (error) {
-              if (error.status === 404 || error.status === 401) {
-                throw errors.INVALID_SESSION
-              }
-              throw error
-            })
-          }
+          // if not admin
+          function (error) {
+            if (error.status === 404) {
+              return sessions.remove(sessionId, {
+                include: request.query.include
+              })
+                .catch(function (error) {
+                  if (error.status === 404 || error.status === 401) {
+                    throw errors.INVALID_SESSION
+                  }
+                  throw error
+                })
+            }
 
-          throw error
+            throw error
+          })
+
+        .then(function (session) {
+          if (!request.query.include) {
+            return reply().code(204)
+          }
+          reply(serialise(session)).code(200)
         })
 
-      .then(function (session) {
-        if (!request.query.include) {
-          return reply().code(204)
-        }
-        reply(serialise(session)).code(200)
-      })
-
-      .catch(function (error) {
-        error = errors.parse(error)
-        reply(Boom.create(error.status, error.message))
-      })
+        .catch(function (error) {
+          error = errors.parse(error)
+          reply(Boom.create(error.status, error.message))
+        })
     }
   }
 
