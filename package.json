@@ -49,7 +49,7 @@
     "pouchdb-core": "^6.0.7",
     "pouchdb-mapreduce": "^6.0.7",
     "semantic-release": "^12.2.2",
-    "standard": "^10.0.0",
+    "standard": "^11.0.0",
     "tap": "^11.0.1"
   },
   "dependencies": {
