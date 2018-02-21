@@ -42,7 +42,7 @@
     "hapi": "^16.0.0",
     "lolex": "^2.0.0",
     "memdown": "^1.1.2",
-    "nock": "^9.0.0",
+    "nock": "^9.1.9",
     "nodemailer-stub-transport": "^1.0.0",
     "nyc": "^11.0.0",
     "pouchdb-adapter-http": "^6.0.7",
