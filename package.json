@@ -40,7 +40,7 @@
     "coveralls": "^3.0.0",
     "gaze-cli": "^0.2.0",
     "hapi": "^16.0.0",
-    "lolex": "^2.0.0",
+    "lolex": "2.3.2",
     "memdown": "^1.1.2",
     "nock": "^9.0.0",
     "nodemailer-stub-transport": "^1.0.0",
