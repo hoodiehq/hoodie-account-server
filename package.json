@@ -44,7 +44,7 @@
     "memdown": "^1.1.2",
     "nock": "^9.0.0",
     "nodemailer-stub-transport": "^1.0.0",
-    "nyc": "^11.0.0",
+    "nyc": "^11.7.3",
     "pouchdb-adapter-http": "^6.0.7",
     "pouchdb-core": "^6.0.7",
     "pouchdb-mapreduce": "^6.0.7",
